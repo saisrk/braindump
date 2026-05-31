@@ -7,6 +7,6 @@ export default async function RootPage() {
   if (session?.user) {
     redirect('/home');
   } else {
-    redirect('/login');
+    redirect('/landing');
   }
 }
