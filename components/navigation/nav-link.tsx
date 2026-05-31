@@ -3,29 +3,40 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface NavLinkProps {
   href: string;
   label: string;
   icon?: ReactNode;
+  badge?: number;
   compact?: boolean;
 }
 
-export function NavLink({ href, label, icon, compact }: NavLinkProps) {
+export function NavLink({ href, label, icon, badge, compact }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname.startsWith(href);
+  const isActive = pathname === href || pathname.startsWith(href + '/');
 
   if (compact) {
     return (
       <Link
         href={href}
-        className={`flex flex-col items-center justify-center px-2 py-1.5 text-xs font-medium transition-colors ${
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-medium transition-colors',
           isActive
             ? 'text-brand-600 dark:text-brand-400'
-            : 'text-text-secondary dark:text-text-dark-secondary'
-        }`}
+            : 'text-muted-foreground'
+        )}
       >
-        {icon && <span className="h-4 w-4">{icon}</span>}
+        <span className="relative grid h-5 w-5 place-items-center">
+          {icon}
+          {badge ? (
+            <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-500 px-1 text-[9px] font-bold text-white">
+              {badge}
+            </span>
+          ) : null}
+        </span>
         {label}
       </Link>
     );
@@ -34,14 +45,21 @@ export function NavLink({ href, label, icon, compact }: NavLinkProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
-          ? 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400'
-          : 'text-text-secondary hover:bg-surface-secondary hover:text-text-primary dark:text-text-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-text-dark-primary'
-      }`}
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      )}
     >
-      {icon && <span className="h-5 w-5">{icon}</span>}
-      {label}
+      <span className="grid h-5 w-5 place-items-center">{icon}</span>
+      <span className="flex-1">{label}</span>
+      {badge ? (
+        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand-500 px-1.5 text-xs font-semibold text-white">
+          {badge}
+        </span>
+      ) : null}
     </Link>
   );
 }

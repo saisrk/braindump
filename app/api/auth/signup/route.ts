@@ -4,6 +4,9 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
+// Make route dynamic to prevent static collection during build
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 

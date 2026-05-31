@@ -1,8 +1,8 @@
 /**
  * Environment variable validation.
  *
- * This module validates required environment variables at import time,
- * causing a clear startup failure if any are missing.
+ * This module provides access to required environment variables,
+ * validating them only when accessed (to support build-time operations).
  */
 
 function requireEnv(name: string): string {
@@ -16,7 +16,12 @@ function requireEnv(name: string): string {
   return value;
 }
 
+// Use lazy getters to defer validation until actually needed
 export const env = {
-  DATABASE_URL: requireEnv('DATABASE_URL'),
-  AUTH_SECRET: requireEnv('AUTH_SECRET'),
+  get DATABASE_URL(): string {
+    return requireEnv('DATABASE_URL');
+  },
+  get AUTH_SECRET(): string {
+    return requireEnv('AUTH_SECRET');
+  },
 };

@@ -1,8 +1,8 @@
-import { forwardRef, type InputHTMLAttributes, useId } from 'react';
+import { forwardRef, type TextareaHTMLAttributes, useId } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface InputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
+export interface TextareaProps
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id'> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -10,28 +10,28 @@ export interface InputProps
   id?: string;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, helperText, className, id: customId, ...props }, ref) => {
     const generatedId = useId();
-    const inputId = customId || generatedId;
-    const descriptionId = `${inputId}-description`;
+    const textareaId = customId || generatedId;
+    const descriptionId = `${textareaId}-description`;
     const hasDescription = !!error || !!helperText;
 
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
           <label
-            htmlFor={inputId}
+            htmlFor={textareaId}
             className="text-sm font-medium text-foreground"
           >
             {label}
           </label>
         )}
-        <input
+        <textarea
           ref={ref}
-          id={inputId}
+          id={textareaId}
           className={cn(
-            'h-10 rounded-lg border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+            'min-h-24 rounded-lg border bg-card px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 resize-y',
             error ? 'border-danger focus:ring-danger' : 'border-input',
             className
           )}
@@ -55,6 +55,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = 'Input';
+Textarea.displayName = 'Textarea';
 
-export { Input };
+export { Textarea };

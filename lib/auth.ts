@@ -6,8 +6,11 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
+// Check if db is properly initialized (not empty object from build-time initialization)
+const hasDb = db && Object.keys(db).length > 0;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: DrizzleAdapter(db),
+  ...(hasDb ? { adapter: DrizzleAdapter(db) } : {}),
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
@@ -20,6 +23,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        if (!hasDb) return null;
 
         const [user] = await db
           .select()
