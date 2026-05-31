@@ -142,11 +142,11 @@ export interface DashboardStats {
 export async function getDashboardStats(
   userId: string
 ): Promise<DashboardStats> {
-  const weekAgo = new Date(Date.now() - 7 * 86400000);
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
   const [row] = await db
     .select({
       total: sql<number>`count(*)::int`,
-      week: sql<number>`count(*) filter (where ${learnings.createdAt} >= ${weekAgo})::int`,
+      week: sql<number>`count(*) filter (where ${learnings.createdAt} >= ${weekAgo}::timestamp)::int`,
     })
     .from(learnings)
     .where(eq(learnings.userId, userId));
