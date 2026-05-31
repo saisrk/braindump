@@ -9,17 +9,11 @@ import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { getReviewItems } from '@/lib/actions/insights'
 import { gradeReviewItem } from '@/lib/actions/review'
-
-interface ReviewItem {
-  id: string
-  title: string
-  question: string
-  answer: string
-}
+import type { DueReviewItem } from '@/lib/data/reviews'
 
 export default function ReviewPage() {
   const router = useRouter()
-  const [items, setItems] = useState<ReviewItem[]>([])
+  const [items, setItems] = useState<DueReviewItem[]>([])
   const [loading, setLoading] = useState(true)
   const [current, setCurrent] = useState(0)
   const [showing, setShowing] = useState<'question' | 'answer'>('question')
@@ -50,7 +44,7 @@ export default function ReviewPage() {
   if (items.length === 0) {
     return (
       <EmptyState
-        icon={CheckCircle2}
+        icon={<CheckCircle2 className="h-12 w-12" />}
         title="All caught up!"
         description="You have no items due for review right now."
         action={
@@ -68,7 +62,7 @@ export default function ReviewPage() {
   const handleRating = async (confidence: number) => {
     setReviewing(true)
     try {
-      const gradeMap = { 1: 'hard', 2: 'ok', 3: 'easy' } as const
+      const gradeMap = { 1: 'hard', 2: 'good', 3: 'easy' } as const
       await gradeReviewItem({ itemId: item.id, grade: gradeMap[confidence as 1 | 2 | 3] })
       if (current < items.length - 1) {
         setCurrent(current + 1)
@@ -87,7 +81,7 @@ export default function ReviewPage() {
     <div className="flex flex-col">
       <PageHeader
         title="Review Session"
-        description={`${current + 1} of ${items.length} items`}
+        subtitle={`${current + 1} of ${items.length} items`}
       />
 
       <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
@@ -157,7 +151,6 @@ export default function ReviewPage() {
                   <span className="text-xs text-muted-foreground">Somewhat sure</span>
                 </Button>
                 <Button
-                  variant="default"
                   onClick={() => handleRating(3)}
                   disabled={reviewing}
                   className="flex flex-col items-center justify-center h-20"

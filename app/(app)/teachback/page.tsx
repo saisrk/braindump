@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import { submitTeachBack } from '@/lib/actions/teachback'
+import type { TeachBackFeedback } from '@/lib/ai/teachback'
 
 type TeachbackStep = 'intro' | 'input' | 'result'
 
@@ -17,7 +18,7 @@ export default function TeachbackPage() {
   const [step, setStep] = useState<TeachbackStep>('intro')
   const [explanation, setExplanation] = useState('')
   const [loading, setLoading] = useState(false)
-  const [feedback, setFeedback] = useState<string>('')
+  const [feedback, setFeedback] = useState<TeachBackFeedback | null>(null)
   // Mock learning ID - in a real app this would be passed or extracted from route
   const mockLearningId = 'learning-1'
 
@@ -30,7 +31,7 @@ export default function TeachbackPage() {
         explanation,
       })
       if (result.ok && result.feedback) {
-        setFeedback(result.feedback.content || 'Great teach back!')
+        setFeedback(result.feedback)
         setStep('result')
       }
     } catch (error) {
@@ -44,7 +45,7 @@ export default function TeachbackPage() {
     <div className="flex flex-col">
       <PageHeader
         title="Teach Back"
-        description="Explain what you learned in your own words"
+        subtitle="Explain what you learned in your own words"
       />
 
       <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
@@ -132,18 +133,76 @@ export default function TeachbackPage() {
           </div>
         )}
 
-        {step === 'result' && (
+        {step === 'result' && feedback && (
           <div className="max-w-2xl space-y-6">
-            <Card className="p-6 border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <h3 className="font-semibold text-green-900 dark:text-green-200">
-                  Great Teach Back!
-                </h3>
+            <Card className={`p-6 border-l-4 ${
+              feedback.verdict === 'strong' ? 'border-l-success bg-success/5' :
+              feedback.verdict === 'partial' ? 'border-l-warning bg-warning/5' :
+              'border-l-danger bg-danger/5'
+            }`}>
+              <div className="flex items-start gap-3 mb-4">
+                <CheckCircle2 className={`h-5 w-5 flex-shrink-0 ${
+                  feedback.verdict === 'strong' ? 'text-success' :
+                  feedback.verdict === 'partial' ? 'text-warning' :
+                  'text-danger'
+                }`} />
+                <div>
+                  <h3 className="font-semibold text-foreground">
+                    {feedback.verdict === 'strong' && 'Excellent Teach Back!'}
+                    {feedback.verdict === 'partial' && 'Good Effort!'}
+                    {feedback.verdict === 'shaky' && 'Keep Learning!'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Comprehension: {feedback.gapScore}%
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-green-800 dark:text-green-300 leading-relaxed">
-                {feedback}
+              
+              <p className="text-sm text-foreground italic mb-4">
+                {feedback.encouragement}
               </p>
+
+              {feedback.nailed.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-foreground mb-2">What you got right:</p>
+                  <ul className="space-y-1">
+                    {feedback.nailed.map((item, idx) => (
+                      <li key={idx} className="text-xs text-foreground flex gap-2">
+                        <span>✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {feedback.gaps.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-foreground mb-2">Areas to improve:</p>
+                  <ul className="space-y-1">
+                    {feedback.gaps.map((item, idx) => (
+                      <li key={idx} className="text-xs text-foreground flex gap-2">
+                        <span>•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {feedback.followUpQuestions.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Next steps:</p>
+                  <ul className="space-y-1">
+                    {feedback.followUpQuestions.map((q, idx) => (
+                      <li key={idx} className="text-xs text-foreground flex gap-2">
+                        <span>Q:</span>
+                        <span>{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </Card>
 
             <div className="flex gap-3">

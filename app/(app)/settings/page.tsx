@@ -96,7 +96,7 @@ export default function SettingsPage() {
                     Adjust how frequently items appear in reviews
                   </p>
                 </div>
-                <Badge variant="secondary">Standard</Badge>
+                <Badge variant="default">Standard</Badge>
               </div>
               <div className="flex items-start justify-between py-3 border-b border-border">
                 <div>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
                     Get notified about due reviews
                   </p>
                 </div>
-                <Badge variant="secondary">Off</Badge>
+                <Badge variant="default">Off</Badge>
               </div>
             </div>
           </Card>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleLogout}
                 disabled={logging}
-                variant="destructive"
+                variant="danger"
                 className="w-full"
               >
                 <LogOut className="mr-2 h-4 w-4" />

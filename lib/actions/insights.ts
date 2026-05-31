@@ -10,6 +10,7 @@ import {
   getTodayLog,
   saveTodaySummary,
   getDashboardStats as getStats,
+  getStreak,
 } from '@/lib/data/activity';
 import { suggestWhatsNext, type WhatsNextSuggestion } from '@/lib/ai/capture';
 import { generateDailySummary } from '@/lib/ai/express';
@@ -24,8 +25,18 @@ export interface DashboardData {
 }
 
 export async function getDashboardStats(): Promise<DashboardData> {
-  await requireUserId();
-  return getStats();
+  const userId = await requireUserId();
+  const streak = await getStreak(userId);
+  const today = await getTodaysCaptures(userId);
+  const due = await getDueReviewItems(userId);
+  const stats = await getStats(userId);
+  
+  return {
+    streak: streak.currentCount ?? 0,
+    todayLearnings: today.length,
+    due: due.length,
+    total: stats.totalLearnings,
+  };
 }
 
 export async function getLibraryData() {

@@ -40,12 +40,12 @@ export default function LibraryPage() {
     if (search) {
       result = result.filter(
         (l) =>
-          l.learning.title.toLowerCase().includes(search.toLowerCase()) ||
-          l.learning.summary?.toLowerCase().includes(search.toLowerCase())
+          l.title.toLowerCase().includes(search.toLowerCase()) ||
+          l.summary?.toLowerCase().includes(search.toLowerCase())
       )
     }
     if (categoryFilter) {
-      result = result.filter((l) => l.learning.topic === categoryFilter)
+      result = result.filter((l) => l.topic === categoryFilter)
     }
     setFiltered(result)
   }, [search, categoryFilter, learnings])
@@ -131,25 +131,25 @@ export default function LibraryPage() {
         ) : (
           <div className="space-y-4">
             {filtered.map((item) => (
-              <Link key={item.learning.id} href={`/library/${item.learning.id}`} className="block no-underline">
+              <Link key={item.id} href={`/library/${item.id}`} className="block no-underline">
                 <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-foreground truncate">
-                        {item.learning.title}
+                        {item.title}
                       </h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                        {item.learning.summary}
+                        {item.summary}
                       </p>
                       <div className="flex gap-2 mt-3 flex-wrap">
-                        {item.learning.topic && (
-                          <Badge variant="secondary" className="capitalize text-xs">
-                            {item.learning.topic}
+                        {item.topic && (
+                          <Badge variant="brand" className="capitalize text-xs">
+                            {item.topic}
                           </Badge>
                         )}
-                        {item.learning.sourceRef && (
+                        {item.sourceRef && (
                           <Badge variant="outline" className="text-xs">
-                            {item.learning.sourceRef.split('/')[2]}
+                            {item.sourceRef.split('/')[2]}
                           </Badge>
                         )}
                       </div>
