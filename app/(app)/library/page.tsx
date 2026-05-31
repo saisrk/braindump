@@ -10,19 +10,11 @@ import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { getLibraryData } from '@/lib/actions/insights'
-
-interface Learning {
-  id: string
-  title: string
-  summary: string
-  category: string
-  source: string
-  createdAt: Date
-}
+import type { LearningWithMeta } from '@/lib/data/learnings'
 
 export default function LibraryPage() {
-  const [learnings, setLearnings] = useState<Learning[]>([])
-  const [filtered, setFiltered] = useState<Learning[]>([])
+  const [learnings, setLearnings] = useState<LearningWithMeta[]>([])
+  const [filtered, setFiltered] = useState<LearningWithMeta[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
@@ -48,12 +40,12 @@ export default function LibraryPage() {
     if (search) {
       result = result.filter(
         (l) =>
-          l.title.toLowerCase().includes(search.toLowerCase()) ||
-          l.summary.toLowerCase().includes(search.toLowerCase())
+          l.learning.title.toLowerCase().includes(search.toLowerCase()) ||
+          l.learning.summary?.toLowerCase().includes(search.toLowerCase())
       )
     }
     if (categoryFilter) {
-      result = result.filter((l) => l.category === categoryFilter)
+      result = result.filter((l) => l.learning.topic === categoryFilter)
     }
     setFiltered(result)
   }, [search, categoryFilter, learnings])
@@ -69,7 +61,7 @@ export default function LibraryPage() {
   if (learnings.length === 0) {
     return (
       <EmptyState
-        icon={BookMarked}
+        icon={<BookMarked className="h-12 w-12" />}
         title="Your library is empty"
         description="Start by capturing your first learning"
         action={
@@ -85,7 +77,7 @@ export default function LibraryPage() {
     <div className="flex flex-col">
       <PageHeader
         title="Library"
-        description={`${learnings.length} learnings in your collection`}
+        subtitle={`${learnings.length} learnings in your collection`}
       />
 
       <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
@@ -138,24 +130,28 @@ export default function LibraryPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filtered.map((learning) => (
-              <Link key={learning.id} href={`/library/${learning.id}`} className="block no-underline">
+            {filtered.map((item) => (
+              <Link key={item.learning.id} href={`/library/${item.learning.id}`} className="block no-underline">
                 <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-foreground truncate">
-                        {learning.title}
+                        {item.learning.title}
                       </h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                        {learning.summary}
+                        {item.learning.summary}
                       </p>
                       <div className="flex gap-2 mt-3 flex-wrap">
-                        <Badge variant="secondary" className="capitalize text-xs">
-                          {learning.category}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {learning.source}
-                        </Badge>
+                        {item.learning.topic && (
+                          <Badge variant="secondary" className="capitalize text-xs">
+                            {item.learning.topic}
+                          </Badge>
+                        )}
+                        {item.learning.sourceRef && (
+                          <Badge variant="outline" className="text-xs">
+                            {item.learning.sourceRef.split('/')[2]}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>

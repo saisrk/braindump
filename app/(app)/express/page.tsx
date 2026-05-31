@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { runExpress } from '@/lib/actions/express'
+import type { ExpressResult } from '@/lib/ai/express'
 
 type ExpressMode = 'select' | 'generating' | 'result'
 
 export default function ExpressPage() {
   const [mode, setMode] = useState<ExpressMode>('select')
-  const [output, setOutput] = useState<string>('')
+  const [result, setResult] = useState<ExpressResult | null>(null)
   const [copied, setCopied] = useState(false)
 
   const formats = [
@@ -21,7 +22,7 @@ export default function ExpressPage() {
       desc: 'Key points for interviews or conversations',
     },
     {
-      id: 'star-story',
+      id: 'star',
       name: 'STAR Stories',
       desc: 'Situation, Task, Action, Result framework',
     },
@@ -30,14 +31,19 @@ export default function ExpressPage() {
       name: 'Profile Summary',
       desc: 'Professional profile or bio snippet',
     },
+    {
+      id: 'summary',
+      name: 'Learning Summary',
+      desc: 'Markdown summary for sharing',
+    },
   ]
 
   const handleGenerate = async (format: string) => {
     setMode('generating')
     try {
-      const result = await runExpress({ format: format as any })
-      if (result.ok && result.result) {
-        setOutput(result.result.content)
+      const res = await runExpress({ format: format as any })
+      if (res.ok && res.result) {
+        setResult(res.result)
         setMode('result')
       }
     } catch (error) {
@@ -46,17 +52,42 @@ export default function ExpressPage() {
     }
   }
 
+  const formatOutput = (res: ExpressResult): string => {
+    if (res.talkingPoints) {
+      return res.talkingPoints
+        .map((p) => `• ${p.headline}\n  ${p.detail}`)
+        .join('\n\n')
+    }
+    if (res.starAnswers) {
+      return res.starAnswers
+        .map(
+          (a) =>
+            `Q: ${a.prompt}\n\nS: ${a.situation}\nT: ${a.task}\nA: ${a.action}\nR: ${a.result}`
+        )
+        .join('\n\n---\n\n')
+    }
+    if (res.profileBullets) {
+      return res.profileBullets.map((b) => `• ${b}`).join('\n')
+    }
+    if (res.narrative) {
+      return res.narrative
+    }
+    return ''
+  }
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(output)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (result) {
+      navigator.clipboard.writeText(formatOutput(result))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   return (
     <div className="flex flex-col">
       <PageHeader
         title="Express Mode"
-        description="Turn your learnings into professional content"
+        subtitle="Turn your learnings into professional content"
       />
 
       <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
@@ -90,11 +121,11 @@ export default function ExpressPage() {
           </div>
         )}
 
-        {mode === 'result' && (
+        {mode === 'result' && result && (
           <div className="max-w-2xl space-y-6">
             <Card className="p-8 bg-muted/50">
               <div className="prose prose-sm max-w-none text-foreground dark:prose-invert whitespace-pre-wrap">
-                {output}
+                {formatOutput(result)}
               </div>
             </Card>
             <div className="flex gap-3">

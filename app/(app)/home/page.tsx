@@ -47,7 +47,7 @@ export default function HomePage() {
   if (!data) {
     return (
       <EmptyState
-        icon={Brain}
+        icon={<Brain className="h-12 w-12" />}
         title="Dashboard unavailable"
         description="There was an error loading your dashboard."
       />
@@ -58,7 +58,7 @@ export default function HomePage() {
     <div className="flex flex-col">
       <PageHeader
         title={`Today, ${format(new Date(), 'MMM d')}`}
-        description="Your learning progress for today"
+        subtitle="Your learning progress for today"
       />
 
       <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
@@ -114,7 +114,7 @@ export default function HomePage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Link href="/capture" className="no-underline">
-              <Button variant="default" className="w-full" size="lg">
+              <Button className="w-full" size="lg">
                 <Plus className="mr-2 h-4 w-4" />
                 New Learning
               </Button>
