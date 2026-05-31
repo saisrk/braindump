@@ -9,9 +9,36 @@ import {
   getTodaysCaptures,
   getTodayLog,
   saveTodaySummary,
+  getDashboardStats as getStats,
 } from '@/lib/data/activity';
 import { suggestWhatsNext, type WhatsNextSuggestion } from '@/lib/ai/capture';
 import { generateDailySummary } from '@/lib/ai/express';
+import { listLearnings } from '@/lib/data/learnings';
+import { getDueReviewItems } from '@/lib/data/reviews';
+
+export interface DashboardData {
+  streak: number;
+  todayLearnings: number;
+  due: number;
+  total: number;
+}
+
+export async function getDashboardStats(): Promise<DashboardData> {
+  await requireUserId();
+  return getStats();
+}
+
+export async function getLibraryData() {
+  const userId = await requireUserId();
+  const learnings = await listLearnings(userId, {});
+  return learnings;
+}
+
+export async function getReviewItems() {
+  const userId = await requireUserId();
+  const items = await getDueReviewItems(userId);
+  return items;
+}
 
 export async function getWhatsNext(): Promise<{
   ok: boolean;
