@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Dark mode: class-based strategy (toggle via .dark class on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Source paths for Tailwind class detection */
+@source "../app";
+@source "../components";
+
+@theme {
+  /* Brand color palette */
+  --color-brand-50: #f0f7ff;
+  --color-brand-100: #e0efff;
+  --color-brand-200: #b8dbff;
+  --color-brand-300: #7ac0ff;
+  --color-brand-400: #3aa3ff;
+  --color-brand-500: #0d87f2;
+  --color-brand-600: #0068cc;
+  --color-brand-700: #0052a5;
+  --color-brand-800: #004588;
+  --color-brand-900: #003a70;
+
+  /* Surface colors */
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-dark: #0f172a;
+  --color-surface-dark-secondary: #1e293b;
+
+  /* Text colors */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-dark-primary: #f1f5f9;
+  --color-text-dark-secondary: #94a3b8;
+
+  /* Font families */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Custom spacing */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+}
+
+/* Base styles */
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+.dark body {
+  background-color: var(--color-surface-dark);
+  color: var(--color-text-dark-primary);
+}
