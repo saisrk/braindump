@@ -82,7 +82,7 @@ export async function listLearnings(
     .where(and(...conditions))
     .orderBy(desc(learnings.createdAt));
 
-  return rows.map((r) => ({
+  return rows.map((r: any) => ({
     ...r.learning,
     reviewCount: r.reviewCount,
     teachBackCount: r.teachBackCount,

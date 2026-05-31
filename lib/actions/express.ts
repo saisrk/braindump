@@ -51,7 +51,7 @@ export async function runExpress(input: {
     const result = await generateExpress({
       format: input.format,
       audience: input.audience,
-      learnings: rows.map((l) => ({
+      learnings: rows.map((l: typeof learnings.$inferSelect) => ({
         title: l.title,
         summary: l.summary,
         topic: l.topic,

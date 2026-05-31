@@ -28,7 +28,7 @@ export async function getDueReviewItems(
     .orderBy(asc(reviewItems.dueDate))
     .limit(limit);
 
-  return rows.map((r) => ({
+  return rows.map((r: any) => ({
     ...r.item,
     learningTitle: r.learningTitle,
     learningId: r.item.learningId,
