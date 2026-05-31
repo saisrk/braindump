@@ -8,47 +8,129 @@
 @source "../components";
 
 @theme {
-  /* Brand color palette */
-  --color-brand-50: #f0f7ff;
-  --color-brand-100: #e0efff;
-  --color-brand-200: #b8dbff;
-  --color-brand-300: #7ac0ff;
-  --color-brand-400: #3aa3ff;
+  /* Brand color palette (blue) */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
   --color-brand-500: #0d87f2;
   --color-brand-600: #0068cc;
   --color-brand-700: #0052a5;
-  --color-brand-800: #004588;
-  --color-brand-900: #003a70;
+  --color-brand-800: #00427f;
+  --color-brand-900: #06325f;
 
-  /* Surface colors */
-  --color-surface: #ffffff;
-  --color-surface-secondary: #f8fafc;
-  --color-surface-dark: #0f172a;
-  --color-surface-dark-secondary: #1e293b;
+  /* Semantic tokens — light mode defaults */
+  --color-background: #f6f8fb;
+  --color-foreground: #0b1220;
+  --color-card: #ffffff;
+  --color-card-foreground: #0b1220;
+  --color-muted: #eef2f7;
+  --color-muted-foreground: #5b6878;
+  --color-border: #e3e9f0;
+  --color-input: #e3e9f0;
+  --color-ring: #0d87f2;
 
-  /* Text colors */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-dark-primary: #f1f5f9;
-  --color-text-dark-secondary: #94a3b8;
+  --color-primary: #0d87f2;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #eef2f7;
+  --color-secondary-foreground: #0b1220;
+  --color-accent: #eff6ff;
+  --color-accent-foreground: #0052a5;
 
-  /* Font families */
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --color-success: #16a34a;
+  --color-success-foreground: #ffffff;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-danger-foreground: #ffffff;
 
-  /* Custom spacing */
-  --spacing-18: 4.5rem;
-  --spacing-88: 22rem;
+  /* Confidence / difficulty signal colors */
+  --color-signal-low: #dc2626;
+  --color-signal-mid: #d97706;
+  --color-signal-high: #16a34a;
+
+  /* Font families (variables injected by next/font in layout.tsx) */
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radii */
+  --radius: 0.75rem;
+}
+
+/* Dark mode token overrides */
+.dark {
+  --color-background: #070b14;
+  --color-foreground: #e8eef6;
+  --color-card: #0f1623;
+  --color-card-foreground: #e8eef6;
+  --color-muted: #161f2e;
+  --color-muted-foreground: #93a1b4;
+  --color-border: #1e293b;
+  --color-input: #1e293b;
+  --color-ring: #3aa3ff;
+
+  --color-primary: #2b95f5;
+  --color-primary-foreground: #061222;
+  --color-secondary: #161f2e;
+  --color-secondary-foreground: #e8eef6;
+  --color-accent: #11243d;
+  --color-accent-foreground: #93c5fd;
 }
 
 /* Base styles */
-body {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
+* {
+  border-color: var(--color-border);
 }
 
-.dark body {
-  background-color: var(--color-surface-dark);
-  color: var(--color-text-dark-primary);
+html {
+  background-color: var(--color-background);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+
+/* Animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
 }

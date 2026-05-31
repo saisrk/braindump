@@ -1,10 +1,43 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'Braindump',
+  title: {
+    default: 'Braindump — Externalize what you learn',
+    template: '%s · Braindump',
+  },
   description:
-    'Turn what you learn into knowledge you can retrieve, prove, and express.',
+    'A knowledge externalization engine. Capture what you learn, prove you understand it, retain it with spaced repetition, and express it when it matters.',
+  applicationName: 'Braindump',
+  keywords: [
+    'learning',
+    'spaced repetition',
+    'knowledge management',
+    'teach-back',
+    'interview prep',
+  ],
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f8fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#070b14' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -13,7 +46,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrainsMono.variable} bg-background`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -30,7 +67,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-surface text-text-primary dark:bg-surface-dark dark:text-text-dark-primary font-sans antialiased">
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased">
         {children}
       </body>
     </html>
