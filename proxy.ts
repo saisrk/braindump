@@ -5,8 +5,9 @@ import { auth } from '@/lib/auth';
 export async function proxy(request: NextRequest) {
   const session = await auth();
 
-  // Allow unauthenticated access to auth-related routes
+  // Allow unauthenticated access to auth-related routes and landing page
   if (
+    request.nextUrl.pathname === '/' ||
     request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/signup') ||
     request.nextUrl.pathname.startsWith('/api/auth')
