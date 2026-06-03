@@ -3,14 +3,14 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 const cardVariants = cva(
-  'rounded-xl border border-border bg-card text-card-foreground',
+  'relative border border-border bg-card backdrop-filter backdrop-blur-sm text-card-foreground rounded-none',
   {
     variants: {
       variant: {
-        default: '',
-        elevated: 'shadow-sm',
+        default: 'hud-frame',
+        elevated: 'hud-frame shadow-lg shadow-primary/10',
         interactive:
-          'transition-all hover:border-brand-300 hover:shadow-sm dark:hover:border-brand-700',
+          'hud-frame transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20',
       },
       padding: {
         none: '',

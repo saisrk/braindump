@@ -1,17 +1,32 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { JetBrains_Mono, Chakra_Petch, Rajdhani, Share_Tech_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-jetbrains-mono',
+  display: 'swap',
+});
+
+const chakraPetch = Chakra_Petch({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  variable: '--font-sans-custom',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const shareTechiMono = Share_Tech_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono-custom',
+  weight: ['400'],
   display: 'swap',
 });
 
@@ -34,8 +49,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f6f8fb' },
-    { media: '(prefers-color-scheme: dark)', color: '#070b14' },
+    { media: '(prefers-color-scheme: dark)', color: '#020608' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -49,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${jetbrainsMono.variable} ${chakraPetch.variable} ${rajdhani.variable} ${shareTechiMono.variable}`}
       suppressHydrationWarning
     >
       <head>
@@ -58,10 +72,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var mode = localStorage.getItem('theme');
-                  if (mode === 'dark' || (!mode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  }
+                  document.documentElement.classList.add('dark');
                 } catch (e) {}
               })();
             `,
