@@ -49,10 +49,10 @@
   --color-signal-mid: #ffcc00;
   --color-signal-high: #00ff9c;
 
-  /* Font families */
-  --font-display: 'Chakra Petch', var(--font-inter), system-ui, sans-serif;
-  --font-sans: 'Rajdhani', var(--font-inter), system-ui, sans-serif;
-  --font-mono: 'Share Tech Mono', var(--font-jetbrains-mono), monospace;
+  /* Font families - only reference the Google fonts imported in layout.tsx */
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-sans: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
 
   /* Radii */
   --radius: 0rem;
