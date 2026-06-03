@@ -21,11 +21,8 @@ export default function LandingPage() {
             <span className="text-xl font-bold text-foreground">Braindump</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Get Started</Button>
+            <Link href="/home">
+              <Button>Open App</Button>
             </Link>
           </div>
         </div>
@@ -44,15 +41,10 @@ export default function LandingPage() {
               and express your learnings with confidence.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup">
+              <Link href="/home">
                 <Button size="lg" className="w-full sm:w-auto text-base px-8">
-                  Start Learning Free
+                  Start Learning
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8">
-                  Sign In
                 </Button>
               </Link>
             </div>
@@ -230,9 +222,9 @@ export default function LandingPage() {
             <p className="text-muted-foreground mb-8">
               Join learners who are capturing, retaining, and expressing their knowledge with Braindump.
             </p>
-            <Link href="/signup">
+            <Link href="/home">
               <Button size="lg" className="text-base px-8">
-                Get Started Free
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
