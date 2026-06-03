@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* HUD Navigation */}
