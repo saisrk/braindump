@@ -2,16 +2,18 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Plus, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
-import { analyzeCapture, saveCapture } from '@/lib/actions/capture'
+import { analyzeCapture, saveCapture, analyzeContentMetadata } from '@/lib/actions/capture'
+import { isVideoUrl } from '@/lib/video-detection'
+import type { ContentMetadata } from '@/lib/actions/capture'
 
-type CaptureMode = 'quick' | 'wizard' | 'result'
+type CaptureMode = 'quick' | 'wizard' | 'organize' | 'result'
 
 export default function CapturePage() {
   const router = useRouter()
@@ -21,13 +23,16 @@ export default function CapturePage() {
   const [category, setCategory] = useState('general')
   const [source, setSource] = useState('')
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<{ title: string; summary: string } | null>(null)
+  const [summary, setSummary] = useState<{ title: string; summary: string; resolvedContent?: string; sourceRef?: string } | null>(null)
+  const [metadata, setMetadata] = useState<ContentMetadata | null>(null)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
 
   const categories = ['general', 'technical', 'business', 'personal', 'research']
 
   const handleQuickCapture = async () => {
     if (!url && !text) return
     setLoading(true)
+    setAnalyzeError(null)
     try {
       const content = url || text
       const sourceType = url ? 'url' : 'text'
@@ -37,11 +42,52 @@ export default function CapturePage() {
         sourceRef: source || undefined,
       })
       if (result.ok && result.summary) {
-        setSummary({ title: result.summary.title, summary: result.summary.summary })
-        setMode('result')
+        setSummary({ 
+          title: result.summary.title, 
+          summary: result.summary.summary,
+          resolvedContent: result.resolvedContent,
+          sourceRef: url || source,
+        })
+        // If URL provided, go to organize metadata step; otherwise jump to result
+        if (url) {
+          setMode('organize')
+        } else {
+          setMode('result')
+        }
+      } else {
+        setAnalyzeError(result.error || 'Failed to analyze')
       }
     } catch (error) {
       console.error('[v0] Capture failed:', error)
+      setAnalyzeError('An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleOrganizeMetadata = async () => {
+    if (!summary?.sourceRef) return
+    setLoading(true)
+    setAnalyzeError(null)
+    try {
+      // Check if it's a video
+      const isVideo = isVideoUrl(summary.sourceRef)
+      
+      const result = await analyzeContentMetadata({
+        sourceRef: summary.sourceRef,
+        sourceType: isVideo ? 'video' : 'url',
+        resolvedContent: summary.resolvedContent || summary.summary,
+      })
+
+      if (result.ok && result.metadata) {
+        setMetadata(result.metadata)
+        setMode('result')
+      } else {
+        setAnalyzeError(result.error || 'Failed to analyze metadata')
+      }
+    } catch (error) {
+      console.error('[v0] Metadata analysis failed:', error)
+      setAnalyzeError('Failed to analyze content')
     } finally {
       setLoading(false)
     }
@@ -52,6 +98,8 @@ export default function CapturePage() {
       setMode('wizard')
     } else if (mode === 'wizard') {
       handleQuickCapture()
+    } else if (mode === 'organize') {
+      handleOrganizeMetadata()
     }
   }
 
@@ -107,6 +155,104 @@ export default function CapturePage() {
                     Skip Details
                   </Button>
                 </div>
+              </div>
+              </Card>
+            </div>
+        )}
+
+        {mode === 'organize' && summary && (
+          <div className="max-w-2xl space-y-6">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4">
+                {metadata ? 'Content Analyzed' : 'Analyzing Content...'}
+              </h2>
+              
+              {analyzeError && (
+                <div className="flex gap-2 p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{analyzeError}</p>
+                </div>
+              )}
+
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-muted-foreground">Analyzing your content...</span>
+                </div>
+              ) : metadata ? (
+                <div className="space-y-4">
+                  {metadata.author && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Author</p>
+                      <p className="font-medium text-foreground">{metadata.author}</p>
+                    </div>
+                  )}
+                  
+                  {metadata.domain && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Source Domain</p>
+                      <p className="font-medium text-foreground">{metadata.domain}</p>
+                    </div>
+                  )}
+                  
+                  {metadata.publishDate && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Published</p>
+                      <p className="font-medium text-foreground">{new Date(metadata.publishDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  
+                  {metadata.contentType && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Content Type</p>
+                      <Badge className="capitalize">{metadata.contentType}</Badge>
+                    </div>
+                  )}
+
+                  {metadata.videoTitle && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Video Title</p>
+                      <p className="font-medium text-foreground">{metadata.videoTitle}</p>
+                    </div>
+                  )}
+
+                  {metadata.videoChannel && (
+                    <div className="pb-3 border-b border-border">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Channel</p>
+                      <p className="font-medium text-foreground">{metadata.videoChannel}</p>
+                    </div>
+                  )}
+                  
+                  {metadata.keyPoints.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Key Takeaways</p>
+                      <ul className="space-y-1">
+                        {metadata.keyPoints.map((point, idx) => (
+                          <li key={idx} className="text-sm text-foreground flex gap-2">
+                            <span className="text-primary">•</span>
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+              
+              <div className="flex gap-3 pt-6 mt-6 border-t border-border">
+                <Button
+                  variant="outline"
+                  onClick={() => setMode('wizard')}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setMode('result')}
+                  className="flex-1"
+                >
+                  Continue
+                </Button>
               </div>
             </Card>
           </div>

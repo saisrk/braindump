@@ -9,6 +9,8 @@ import {
   type CaptureSummary,
 } from '@/lib/ai/capture';
 import { extractFromUrl, isValidUrl } from '@/lib/extract';
+import { analyzeBlogContent, analyzeVideoMetadata } from '@/lib/ai/content-analysis';
+import { detectVideoUrl } from '@/lib/video-detection';
 import { recordActivity } from '@/lib/data/activity';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
@@ -90,6 +92,15 @@ export interface SaveCaptureInput {
   keyPoints?: string[];
   /** When false, skip AI review-item generation (faster save). */
   generateReviews?: boolean;
+  // NEW: Content metadata from organization step
+  author?: string;
+  publishDate?: string;
+  domain?: string;
+  videoUrl?: string;
+  videoTitle?: string;
+  videoChannel?: string;
+  videoDuration?: number;
+  contentType?: string;
 }
 
 export interface SaveCaptureResult {
@@ -124,6 +135,17 @@ export async function saveCapture(
         difficulty: input.difficulty ?? null,
         sourceType: input.sourceType,
         sourceRef: input.sourceRef ?? null,
+        // NEW: Persist content metadata
+        author: input.author ?? null,
+        publishDate: input.publishDate ? new Date(input.publishDate) : null,
+        domain: input.domain ?? null,
+        videoUrl: input.videoUrl ?? null,
+        videoTitle: input.videoTitle ?? null,
+        videoChannel: input.videoChannel ?? null,
+        videoDuration: input.videoDuration ?? null,
+        contentType: input.contentType ?? null,
+        keyPoints: input.keyPoints ?? [],
+        isAiGenerated: true,
       })
       .returning();
 
@@ -169,5 +191,91 @@ export async function saveCapture(
   } catch (err) {
     console.log('[v0] saveCapture error:', (err as Error).message);
     return { ok: false, error: 'Failed to save. Please try again.' };
+  }
+}
+
+/**
+ * NEW: When user clicks "Next: Organize", analyze content metadata using LLM
+ * This enriches blog/video content with author, date, domain, and key points
+ */
+export interface AnalyzeContentMetadataInput {
+  sourceRef: string; // URL or video URL
+  sourceType: 'url' | 'video' | 'text';
+  resolvedContent: string; // The extracted/cleaned content
+}
+
+export interface ContentMetadata {
+  author?: string;
+  publishDate?: string;
+  domain?: string;
+  videoTitle?: string;
+  videoChannel?: string;
+  videoDuration?: number;
+  keyPoints: string[];
+  contentType?: string;
+}
+
+export interface AnalyzeContentMetadataResult {
+  ok: boolean;
+  error?: string;
+  metadata?: ContentMetadata;
+}
+
+export async function analyzeContentMetadata(
+  input: AnalyzeContentMetadataInput
+): Promise<AnalyzeContentMetadataResult> {
+  await requireUserId();
+
+  if (!input.sourceRef?.trim()) {
+    return { ok: false, error: 'No source URL provided.' };
+  }
+
+  try {
+    // Check if it's a video
+    const videoInfo = detectVideoUrl(input.sourceRef);
+    
+    if (videoInfo) {
+      // Analyze video metadata
+      const videoMetadata = await analyzeVideoMetadata(
+        input.sourceRef,
+        input.resolvedContent
+      );
+      
+      return {
+        ok: true,
+        metadata: {
+          videoTitle: videoMetadata.videoTitle,
+          videoChannel: videoMetadata.videoChannel,
+          videoDuration: videoMetadata.videoDuration,
+          keyPoints: videoMetadata.keyPoints,
+          contentType: 'video',
+          domain: new URL(input.sourceRef).hostname.replace('www.', ''),
+        },
+      };
+    }
+
+    // Analyze blog/article metadata
+    const blogMetadata = await analyzeBlogContent(
+      input.sourceRef,
+      input.resolvedContent,
+      null
+    );
+
+    return {
+      ok: true,
+      metadata: {
+        author: blogMetadata.author,
+        publishDate: blogMetadata.publishDate,
+        domain: blogMetadata.domain,
+        contentType: blogMetadata.contentType,
+        keyPoints: blogMetadata.keyPoints,
+      },
+    };
+  } catch (err) {
+    console.log('[v0] analyzeContentMetadata error:', (err as Error).message);
+    return {
+      ok: false,
+      error: 'Failed to analyze content. Please try again.',
+    };
   }
 }

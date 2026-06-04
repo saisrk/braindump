@@ -1,4 +1,15 @@
 import 'server-only';
+import { isVideoUrl } from './video-detection';
+
+/**
+ * Extended extraction result with optional metadata
+ */
+export interface ExtractedContent {
+  text: string;
+  title: string | null;
+  isVideo: boolean;
+  domain?: string;
+}
 
 /**
  * Lightweight readability-style text extraction for a URL.
@@ -7,8 +18,19 @@ import 'server-only';
  */
 export async function extractFromUrl(
   url: string
-): Promise<{ text: string; title: string | null } | null> {
+): Promise<ExtractedContent | null> {
   try {
+    // Check if it's a video URL first
+    const isVideo = isVideoUrl(url);
+    if (isVideo) {
+      return {
+        text: `Video content from: ${url}`,
+        title: null,
+        isVideo: true,
+        domain: new URL(url).hostname.replace('www.', ''),
+      };
+    }
+
     const res = await fetch(url, {
       headers: {
         'User-Agent':
@@ -28,7 +50,12 @@ export async function extractFromUrl(
     const text = htmlToText(html);
     if (!text) return null;
 
-    return { text: text.slice(0, 8000), title };
+    return {
+      text: text.slice(0, 8000),
+      title,
+      isVideo: false,
+      domain: new URL(url).hostname.replace('www.', ''),
+    };
   } catch {
     return null;
   }
