@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { summarize } from '@/lib/mockAI';
 import { Learning } from '@/lib/types';
@@ -15,17 +15,16 @@ interface SummarizeResult {
 }
 
 export default function CaptureForm() {
-  const router = useRouter();
   const addLearning = useStore((s) => s.addLearning);
 
   const [input, setInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<SummarizeResult | null>(null);
 
-  // Editable fields from result
   const [title, setTitle] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [savedLearningId, setSavedLearningId] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     if (!input.trim()) return;
@@ -63,7 +62,8 @@ export default function CaptureForm() {
     };
 
     addLearning(learning);
-    router.push('/');
+    setSavedLearningId(learning.id);
+    setIsSaving(false);
   };
 
   const handleReset = () => {
@@ -75,7 +75,33 @@ export default function CaptureForm() {
 
   return (
     <div className="space-y-5">
-      {!result ? (
+      {savedLearningId ? (
+        /* Step 3: Post-save prompt */
+        <div className="space-y-5">
+          <div className="flex items-center gap-2 text-xs text-green-400 bg-green-950 border border-green-800 rounded-xl px-3 py-2">
+            <span>✓</span>
+            <span>Saved to your library!</span>
+          </div>
+
+          <div className="text-center space-y-1 py-2">
+            <p className="text-slate-200 font-semibold">Test your understanding?</p>
+            <p className="text-slate-500 text-xs">Explain the concept back in your own words</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Link href={`/teach-back/${savedLearningId}`}>
+              <button className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors">
+                Test your understanding
+              </button>
+            </Link>
+            <Link href="/">
+              <button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3.5 rounded-xl text-sm transition-colors border border-slate-700">
+                Done
+              </button>
+            </Link>
+          </div>
+        </div>
+      ) : !result ? (
         /* Step 1: Input */
         <div className="space-y-4">
           <textarea
@@ -102,6 +128,7 @@ export default function CaptureForm() {
         </div>
       ) : (
         /* Step 2: Review & confirm */
+
         <div className="space-y-5">
           {/* AI result banner */}
           <div className="flex items-center gap-2 text-xs text-violet-400 bg-violet-950 border border-violet-800 rounded-xl px-3 py-2">

@@ -32,10 +32,29 @@ export interface Streak {
   freezeTokens: number;
 }
 
+export interface TeachBackFeedback {
+  score: number; // 0-100
+  strengths: string[];
+  improvements: string[];
+  followUpQuestions: string[];
+  overallFeedback: string;
+}
+
+export interface TeachBack {
+  id: string;
+  learningId: string;
+  userExplanation: string;
+  aiFeedback: TeachBackFeedback;
+  score: number;
+  createdAt: string;
+}
+
 export interface AppState {
   learnings: Learning[];
   reviewItems: ReviewItem[];
+  teachBacks: TeachBack[];
   streak: Streak;
   addLearning: (learning: Learning) => void;
   updateReviewItem: (id: string, rating: number) => void;
+  addTeachBack: (teachBack: TeachBack) => void;
 }

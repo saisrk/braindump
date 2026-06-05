@@ -5,7 +5,12 @@ import { useStore } from '@/lib/store';
 import LearningCard from '@/components/LearningCard';
 
 export default function LibraryPage() {
-  const { learnings } = useStore();
+  const { learnings, teachBacks } = useStore();
+
+  const latestScoreByLearning = teachBacks.reduce<Record<string, number>>((acc, tb) => {
+    if (!(tb.learningId in acc)) acc[tb.learningId] = tb.score;
+    return acc;
+  }, {});
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
@@ -80,7 +85,11 @@ export default function LibraryPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((learning) => (
-            <LearningCard key={learning.id} learning={learning} />
+            <LearningCard
+                key={learning.id}
+                learning={learning}
+                lastTeachBackScore={latestScoreByLearning[learning.id]}
+              />
           ))}
         </div>
       )}

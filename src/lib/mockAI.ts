@@ -1,4 +1,4 @@
-import { Learning } from './types';
+import { Learning, TeachBackFeedback } from './types';
 
 interface SummarizeResult {
   title: string;
@@ -11,13 +11,6 @@ interface SummarizeResult {
 interface QuizQuestion {
   question: string;
   answer: string;
-}
-
-interface TeachBackFeedback {
-  score: number; // 0-100
-  strengths: string[];
-  improvements: string[];
-  overallFeedback: string;
 }
 
 function delay(ms: number): Promise<void> {
@@ -146,8 +139,14 @@ export async function gradeTeachBack(
       explanationLength > 100 ? 'Good depth of explanation provided.' : 'You made an attempt to recall the concept.',
     ],
     improvements: [
-      score < 70 ? 'Try to include more specific details from the source material.' : 'Consider adding examples.',
+      score < 70 ? 'Try to include more specific details from the source material.' : 'Consider adding examples to illustrate your point.',
       'Reviewing the original summary may help reinforce key points.',
+    ],
+    followUpQuestions: [
+      score < 70
+        ? 'Can you re-read the summary and identify the two most important points?'
+        : 'How would you apply this concept in a practical scenario?',
+      'What questions do you still have about this topic?',
     ],
     overallFeedback:
       score >= 80

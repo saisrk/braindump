@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AppState, Learning, ReviewItem, Streak } from './types';
+import { AppState, Learning, ReviewItem, Streak, TeachBack } from './types';
 import { sm2 } from './sm2';
 
 const today = new Date().toISOString();
@@ -95,6 +95,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       learnings: sampleLearnings,
       reviewItems: sampleReviewItems,
+      teachBacks: [],
       streak: initialStreak,
 
       addLearning: (learning: Learning) => {
@@ -136,6 +137,12 @@ export const useStore = create<AppState>()(
 
         set((state) => ({
           reviewItems: state.reviewItems.map((r) => (r.id === id ? updated : r)),
+        }));
+      },
+
+      addTeachBack: (teachBack: TeachBack) => {
+        set((state) => ({
+          teachBacks: [teachBack, ...state.teachBacks],
         }));
       },
     }),

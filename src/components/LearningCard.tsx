@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { Learning } from '@/lib/types';
 
 interface LearningCardProps {
   learning: Learning;
+  lastTeachBackScore?: number;
 }
 
 const difficultyColors: Record<Learning['difficulty'], string> = {
@@ -16,7 +18,7 @@ const sourceTypeIcon: Record<Learning['sourceType'], string> = {
   wizard: '🧙',
 };
 
-export default function LearningCard({ learning }: LearningCardProps) {
+export default function LearningCard({ learning, lastTeachBackScore }: LearningCardProps) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 hover:border-slate-700 transition-colors">
       {/* Title row */}
@@ -52,18 +54,41 @@ export default function LearningCard({ learning }: LearningCardProps) {
         >
           {learning.difficulty}
         </span>
+
+        {/* Teach-back score badge */}
+        {lastTeachBackScore !== undefined && (
+          <span
+            className={`text-xs border rounded-md px-2 py-0.5 shrink-0 ${
+              lastTeachBackScore >= 80
+                ? 'text-green-400 bg-green-950 border-green-800'
+                : lastTeachBackScore >= 60
+                ? 'text-yellow-400 bg-yellow-950 border-yellow-800'
+                : 'text-red-400 bg-red-950 border-red-800'
+            }`}
+          >
+            Last: {lastTeachBackScore}
+          </span>
+        )}
       </div>
 
-      {/* Date */}
-      <div className="text-xs text-slate-600">
-        {new Date(learning.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })}
-        {learning.topic && (
-          <span className="ml-2 text-slate-700">· {learning.topic}</span>
-        )}
+      {/* Date + teach-back link */}
+      <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+        <div className="text-xs text-slate-600">
+          {new Date(learning.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+          {learning.topic && (
+            <span className="ml-2 text-slate-700">· {learning.topic}</span>
+          )}
+        </div>
+        <Link
+          href={`/teach-back/${learning.id}`}
+          className="text-xs text-violet-400 hover:text-violet-300 transition-colors shrink-0"
+        >
+          Teach back →
+        </Link>
       </div>
     </div>
   );
