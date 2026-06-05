@@ -14,6 +14,7 @@ export const users = pgTable('users', {
   isPro: boolean('is_pro').default(false),
   proTrialEndsAt: timestamp('pro_trial_ends_at', { withTimezone: true }),
   proSubscriptionEndsAt: timestamp('pro_subscription_ends_at', { withTimezone: true }),
+  onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
