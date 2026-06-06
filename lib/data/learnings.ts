@@ -93,6 +93,8 @@ export async function listLearnings(
 }
 
 export async function getLearning(userId: string, id: string) {
+  if (!userId) return null;
+
   const [learning] = await db
     .select()
     .from(learnings)
@@ -109,7 +111,15 @@ export async function getLearning(userId: string, id: string) {
       .orderBy(desc(teachBacks.createdAt)),
   ]);
 
-  return { learning, reviewItems: items, teachBacks: teaches };
+  // Compute confidence from SM-2 state.
+  const confidence = items.length
+    ? confidenceFromSr(
+        items.reduce((s: number, i: { srInterval?: number | null }) => s + (i.srInterval ?? 1), 0) / items.length,
+        items.reduce((s: number, i: { srEase?: number | null }) => s + (i.srEase ?? 2.5), 0) / items.length
+      )
+    : 0;
+
+  return { learning, reviewItems: items, teachBacks: teaches, confidence };
 }
 
 export async function getRecentTopics(
