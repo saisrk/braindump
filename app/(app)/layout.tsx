@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { reviewItems, learnings, users } from '@/db/schema';
+import { reviewItems, learnings, users, userProfiles } from '@/db/schema';
 import { eq, and, lte } from 'drizzle-orm';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { BottomNav } from '@/components/navigation/bottom-nav';
@@ -20,9 +20,13 @@ export default async function AppLayout({
     const userId = await getOptionalUserId();
 
     if (userId) {
-      // Check if user has completed onboarding; redirect if not.
-      const [user] = await db.select().from(users).where(eq(users.id, userId));
-      if (user && !user.onboardedAt) {
+      // Fetch auth record (email/name) and profile (onboarding status) in parallel.
+      const [[user], [profile]] = await Promise.all([
+        db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)),
+        db.select({ onboardedAt: userProfiles.onboardedAt }).from(userProfiles).where(eq(userProfiles.userId, userId)),
+      ]);
+
+      if (!profile?.onboardedAt) {
         redirect('/onboarding');
       }
       userEmail = user?.email ?? undefined;

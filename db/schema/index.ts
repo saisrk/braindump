@@ -1,4 +1,5 @@
 export { users } from './users';
+export { userProfiles } from './user-profiles';
 export { accounts, sessions, verificationTokens } from './auth';
 export { learnings } from './learnings';
 export { teachBacks } from './teach-backs';
