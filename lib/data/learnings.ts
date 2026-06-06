@@ -10,6 +10,7 @@ export interface LearningWithMeta extends Learning {
   reviewCount: number;
   teachBackCount: number;
   confidence: number;
+  dueCount: number;
 }
 
 /** All distinct topics + tags for a user (for filter chips). */
@@ -35,6 +36,7 @@ export interface ListLearningsOptions {
   search?: string;
   topic?: string;
   tag?: string;
+  sort?: 'recent' | 'due' | 'confidence';
 }
 
 export async function listLearnings(
@@ -77,15 +79,38 @@ export async function listLearnings(
         select avg(${reviewItems.srEase}) from ${reviewItems}
         where ${reviewItems.learningId} = ${learnings.id}
       ), 2.5)`,
+      dueCount: sql<number>`coalesce((
+        select count(*)::int from ${reviewItems}
+        where ${reviewItems.learningId} = ${learnings.id}
+          and ${reviewItems.dueDate} <= current_date
+      ), 0)`,
     })
     .from(learnings)
     .where(and(...conditions))
-    .orderBy(desc(learnings.createdAt));
+    .orderBy(
+      ...(() => {
+        const sort = opts.sort ?? 'recent';
+        if (sort === 'due') {
+          return [
+            sql`coalesce((select count(*)::int from ${reviewItems} where ${reviewItems.learningId} = ${learnings.id} and ${reviewItems.dueDate} <= current_date), 0) desc`,
+            desc(learnings.createdAt),
+          ];
+        } else if (sort === 'confidence') {
+          return [
+            sql`coalesce((select avg(${reviewItems.srInterval}) from ${reviewItems} where ${reviewItems.learningId} = ${learnings.id}), 0) asc`,
+            desc(learnings.createdAt),
+          ];
+        } else {
+          return [desc(learnings.createdAt)];
+        }
+      })()
+    );
 
   return rows.map((r: any) => ({
     ...r.learning,
     reviewCount: r.reviewCount,
     teachBackCount: r.teachBackCount,
+    dueCount: r.dueCount,
     confidence: r.reviewCount
       ? confidenceFromSr(Number(r.avgInterval), Number(r.avgEase))
       : 0,

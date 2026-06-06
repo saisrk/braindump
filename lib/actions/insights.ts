@@ -14,7 +14,7 @@ import {
 } from '@/lib/data/activity';
 import { suggestWhatsNext, type WhatsNextSuggestion } from '@/lib/ai/capture';
 import { generateDailySummary } from '@/lib/ai/express';
-import { listLearnings } from '@/lib/data/learnings';
+import { listLearnings, getUserFacets } from '@/lib/data/learnings';
 import { getDueReviewItems } from '@/lib/data/reviews';
 
 export interface DashboardData {
@@ -39,10 +39,21 @@ export async function getDashboardStats(): Promise<DashboardData> {
   };
 }
 
-export async function getLibraryData() {
+export interface LibraryOptions {
+  search?: string;
+  topic?: string;
+  tag?: string;
+  sort?: 'recent' | 'due' | 'confidence';
+}
+
+export async function getLibraryData(opts: LibraryOptions = {}) {
   const userId = await requireUserId();
-  const learnings = await listLearnings(userId, {});
-  return learnings;
+  return listLearnings(userId, opts);
+}
+
+export async function getLibraryFacets() {
+  const userId = await requireUserId();
+  return getUserFacets(userId);
 }
 
 export async function getReviewItems() {
