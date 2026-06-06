@@ -22,5 +22,6 @@ export const learnings = pgTable('learnings', {
   videoChannel: text('video_channel'),
   videoDuration: integer('video_duration'), // in seconds
   isAiGenerated: boolean('is_ai_generated').default(true), // whether metadata came from LLM analysis
+  status: text('status').default('ready').notNull(), // 'processing' | 'ready' | 'failed'
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });

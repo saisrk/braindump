@@ -222,6 +222,53 @@ export interface AnalyzeContentMetadataResult {
   metadata?: ContentMetadata;
 }
 
+export interface SaveSkeletonResult {
+  ok: boolean;
+  error?: string;
+  learningId?: string;
+}
+
+/**
+ * Saves a minimal skeleton learning row immediately (status='processing').
+ * The caller should then fire an enrich request to fill in AI fields.
+ */
+export async function saveSkeleton(input: {
+  sourceType: SourceType;
+  sourceRef?: string | null;
+  rawContent?: string; // original text/URL the user entered
+}): Promise<SaveSkeletonResult> {
+  const userId = await requireUserId();
+  try {
+    // Derive a placeholder title from the URL domain or raw content preview.
+    let placeholderTitle = 'Analyzing…';
+    if (input.sourceRef) {
+      try {
+        placeholderTitle = new URL(input.sourceRef).hostname.replace('www.', '');
+      } catch {}
+    } else if (input.rawContent) {
+      placeholderTitle = input.rawContent.slice(0, 60) + (input.rawContent.length > 60 ? '…' : '');
+    }
+
+    const [learning] = await db
+      .insert(learnings)
+      .values({
+        userId,
+        title: placeholderTitle,
+        sourceType: input.sourceType,
+        sourceRef: input.sourceRef ?? null,
+        status: 'processing',
+        isAiGenerated: true,
+      })
+      .returning({ id: learnings.id });
+
+    revalidatePath('/library');
+    return { ok: true, learningId: learning.id };
+  } catch (err) {
+    console.error('[capture] saveSkeleton error:', (err as Error).message);
+    return { ok: false, error: 'Failed to save. Please try again.' };
+  }
+}
+
 export async function analyzeContentMetadata(
   input: AnalyzeContentMetadataInput
 ): Promise<AnalyzeContentMetadataResult> {
