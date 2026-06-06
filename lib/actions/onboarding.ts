@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { users, learnings, reviewItems } from '@/db/schema';
+import { users, userProfiles, learnings, reviewItems } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { todayISO } from '@/lib/utils';
@@ -112,10 +112,20 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
   const userId = await requireUserId();
   const today = todayISO();
 
+  // Update display name on the auth record.
   await db
     .update(users)
-    .set({ name: name.trim() || null, goals, onboardedAt: new Date(), updatedAt: new Date() })
+    .set({ name: name.trim() || null, updatedAt: new Date() })
     .where(eq(users.id, userId));
+
+  // Upsert profile — ensure profile row exists then set goals + onboardedAt.
+  await db
+    .insert(userProfiles)
+    .values({ userId, goals, onboardedAt: new Date() })
+    .onConflictDoUpdate({
+      target: userProfiles.userId,
+      set: { goals, onboardedAt: new Date(), updatedAt: new Date() },
+    });
 
   // Seed up to 2 relevant starter learnings so the app isn't empty.
   const seeds = goals

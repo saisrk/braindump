@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { users } from '@/db/schema';
+import { userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { getRecentTopics } from '@/lib/data/learnings';
@@ -58,13 +58,13 @@ export async function getWhatsNext(): Promise<{
 }> {
   const userId = await requireUserId();
   try {
-    const [topics, [user]] = await Promise.all([
+    const [topics, [profile]] = await Promise.all([
       getRecentTopics(userId),
-      db.select({ goals: users.goals }).from(users).where(eq(users.id, userId)),
+      db.select({ goals: userProfiles.goals }).from(userProfiles).where(eq(userProfiles.userId, userId)),
     ]);
     const suggestions = await suggestWhatsNext({
       recentTopics: topics,
-      goals: user?.goals ?? [],
+      goals: profile?.goals ?? [],
     });
     return { ok: true, suggestions };
   } catch (err) {

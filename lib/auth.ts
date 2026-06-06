@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db';
-import { users } from '@/db/schema';
+import { users, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
@@ -44,6 +44,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  events: {
+    async createUser({ user }) {
+      // Auto-create an empty profile row whenever a new user is registered.
+      if (user.id && hasDb) {
+        await db.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
+      }
+    },
+  },
   callbacks: {
     async session({ session, token }) {
       if (token.sub) {
