@@ -46,29 +46,14 @@ export function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      // Verify the OTP against our own endpoint first.
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Invalid code. Try again.');
-        return;
-      }
-
-      // OTP valid — sign in via NextAuth credentials using email as token.
-      // We use the email-otp provider which the adapter handles.
       const result = await signIn('email-otp', {
         email,
+        otp,
         redirect: false,
       });
 
       if (result?.error) {
-        // Fallback: OTP was valid, try refreshing to pick up the session.
-        router.push(callbackUrl);
-        router.refresh();
+        setError('Invalid or expired code. Try again.');
         return;
       }
 
