@@ -1,10 +1,8 @@
 import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db';
-import { users, userProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+import { userProfiles } from '@/db/schema';
 
 // Check if db is properly initialized (not empty object from build-time initialization)
 const hasDb = db && Object.keys(db).length > 0;
@@ -14,34 +12,56 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
+    verifyRequest: '/login/verify',
   },
   providers: [
-    Credentials({
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+    // Email OTP provider — NextAuth sends a magic-link/OTP via email.
+    // We override the sendVerificationRequest to use Resend and send a
+    // 6-digit code instead of a magic link.
+    {
+      id: 'email-otp',
+      name: 'Email',
+      type: 'email',
+      from: process.env.EMAIL_FROM ?? 'noreply@braindump.app',
+      server: {},
+      maxAge: 10 * 60, // OTP valid for 10 minutes
+      async generateVerificationToken() {
+        // In non-production, always return the hardcoded dev OTP.
+        if (process.env.NODE_ENV !== 'production') return '123456';
+        return String(Math.floor(100000 + Math.random() * 900000));
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        if (!hasDb) return null;
-
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email as string));
-
-        if (!user || !user.passwordHash) return null;
-
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
-
-        if (!isValid) return null;
-
-        return { id: user.id, email: user.email, name: user.name };
+      async sendVerificationRequest({ identifier: email, token, url }) {
+        if (process.env.NODE_ENV !== 'production') {
+          // Skip sending in dev — developer uses 123456.
+          console.log(`[auth] Dev OTP for ${email}: ${token}`);
+          return;
+        }
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM ?? 'noreply@braindump.app',
+          to: email,
+          subject: `${token} — your Braindump sign-in code`,
+          html: `
+            <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;">
+              <h2 style="margin:0 0 8px;">Your sign-in code</h2>
+              <p style="margin:0 0 24px;color:#64748b;">Enter this code in Braindump. It expires in 10 minutes.</p>
+              <div style="font-size:40px;font-weight:800;letter-spacing:8px;color:#7c3aed;">${token}</div>
+              <p style="margin:32px 0 0;font-size:12px;color:#94a3b8;">
+                If you didn't request this, you can safely ignore this email.
+              </p>
+            </div>
+          `,
+        });
+        // NextAuth expects the URL to be fetched to validate the token internally.
+        // We're using OTP (code entry) not a magic link, so we don't redirect to the URL.
+        // The URL is still generated but not sent to the user.
+        void url;
       },
+    },
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
     }),
   ],
   events: {

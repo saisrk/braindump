@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Loader2, Plus, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -17,6 +18,7 @@ type CaptureMode = 'quick' | 'wizard' | 'organize' | 'result'
 
 export default function CapturePage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [mode, setMode] = useState<CaptureMode>('quick')
   const [url, setUrl] = useState('')
   const [text, setText] = useState('')
@@ -336,19 +338,35 @@ export default function CapturePage() {
 
             <Card className="p-6">
               <h3 className="font-semibold text-foreground mb-4">What&apos;s Next?</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Now teach back what you learned to reinforce the knowledge, then we&apos;ll add it to your spaced repetition schedule.
-                </p>
-              </div>
-              <div className="flex gap-3 mt-6">
-                <Button variant="outline" onClick={handleDone} className="flex-1">
-                  Skip to Library
-                </Button>
-                <Button onClick={() => router.push('/teachback')} className="flex-1">
-                  Teach Back Now
-                </Button>
-              </div>
+              {session?.user ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Teach back what you learned to reinforce it, then we&apos;ll add it to your spaced repetition schedule.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button variant="outline" onClick={handleDone} className="flex-1">
+                      Skip to Library
+                    </Button>
+                    <Button onClick={() => router.push('/teachback')} className="flex-1">
+                      Teach Back Now
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Sign in to save this to your library, start spaced repetition reviews, and test your understanding with teach-back.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button variant="outline" onClick={() => router.push('/login')} className="flex-1">
+                      Sign in
+                    </Button>
+                    <Button onClick={() => router.push('/login')} className="flex-1">
+                      Create account
+                    </Button>
+                  </div>
+                </>
+              )}
             </Card>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import { learnings, reviewItems } from '@/db/schema';
-import { requireUserId } from '@/lib/session';
+import { requireUserId, getOptionalUserId } from '@/lib/session';
 import {
   summarizeCapture,
   generateReviewItems,
@@ -35,7 +35,8 @@ export async function analyzeCapture(input: {
   sourceRef?: string;
   whyItMatters?: string;
 }): Promise<AnalyzeResult> {
-  await requireUserId();
+  // Analysis is intentionally public — no auth required to see a summary.
+  // Auth is enforced at saveCapture() when we need a userId to persist.
 
   let content = input.content?.trim() ?? '';
   let sourceRef = input.sourceRef?.trim() || null;
