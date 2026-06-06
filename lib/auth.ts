@@ -48,10 +48,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             .insert(users)
             .values({ email, emailVerified: new Date() })
             .returning();
-          await db.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
         } else if (!user.emailVerified) {
           await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, user.id));
         }
+
+        // Ensure profile row exists for all users (new and returning).
+        await db.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
 
         return { id: user.id, email: user.email, name: user.name, image: user.image };
       },
@@ -84,8 +86,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               emailVerified: new Date(),
             })
             .returning();
-          await db.insert(userProfiles).values({ userId: existing.id }).onConflictDoNothing();
         }
+        // Ensure profile row exists for all users (new and returning).
+        await db.insert(userProfiles).values({ userId: existing.id }).onConflictDoNothing();
         // Set the user id to our db id so it flows into the JWT.
         user.id = existing.id;
       }
