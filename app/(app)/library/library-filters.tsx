@@ -20,11 +20,8 @@ interface Props {
   currentSort: Sort;
 }
 
-const SORT_OPTIONS: { value: Sort; label: string }[] = [
-  { value: 'recent', label: 'Recent' },
-  { value: 'due', label: 'Due first' },
-  { value: 'confidence', label: 'Weakest first' },
-];
+const selectClass =
+  'h-9 rounded-none border border-border bg-input text-foreground text-sm px-3 pr-8 appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors hover:border-primary/50 min-w-0';
 
 export function LibraryFilters({ facets, currentSearch, currentTopic, currentTag, currentSort }: Props) {
   const router = useRouter();
@@ -35,13 +32,7 @@ export function LibraryFilters({ facets, currentSearch, currentTopic, currentTag
   const buildUrl = useCallback(
     (overrides: Record<string, string>) => {
       const p = new URLSearchParams();
-      const vals = {
-        search,
-        topic: currentTopic,
-        tag: currentTag,
-        sort: currentSort,
-        ...overrides,
-      };
+      const vals = { search, topic: currentTopic, tag: currentTag, sort: currentSort, ...overrides };
       if (vals.search) p.set('search', vals.search);
       if (vals.topic) p.set('topic', vals.topic);
       if (vals.tag) p.set('tag', vals.tag);
@@ -63,96 +54,97 @@ export function LibraryFilters({ facets, currentSearch, currentTopic, currentTag
     return () => clearTimeout(debounceRef.current);
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function setTopic(t: string) {
-    router.push(buildUrl({ topic: t, tag: '' }));
-  }
-
-  function setTag(t: string) {
-    router.push(buildUrl({ tag: t }));
-  }
-
-  function setSort(s: Sort) {
-    router.push(buildUrl({ sort: s }));
-  }
-
-  // Tags visible in the current topic context
-  const visibleTags = facets.tags;
-
   return (
-    <div className="mb-6 space-y-3">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Sort */}
-      <div className="flex gap-2">
-        {SORT_OPTIONS.map((o) => (
-          <button
-            key={o.value}
-            onClick={() => setSort(o.value)}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
-              currentSort === o.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground hover:bg-muted/80'
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Topic chips */}
-      {facets.topics.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setTopic('')}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
-              !currentTopic
-                ? 'bg-primary/20 text-primary border border-primary/30'
-                : 'bg-muted text-foreground hover:bg-muted/80'
-            }`}
-          >
-            All topics
-          </button>
-          {facets.topics.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTopic(currentTopic === t ? '' : t)}
-              className={`px-3 py-1 rounded-full text-sm capitalize transition-colors ${
-                currentTopic === t
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-foreground hover:bg-muted/80'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+    <div className="mb-5 space-y-2">
+      {/* Row 1: search + dropdowns */}
+      <div className="flex gap-2 items-center">
+        {/* Search — grows to fill space */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Search…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9"
+          />
         </div>
-      )}
 
-      {/* Tag chips — shown below topics */}
-      {visibleTags.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {visibleTags.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTag(currentTag === t ? '' : t)}
-              className={`px-3 py-1 rounded-full text-xs transition-colors border ${
-                currentTag === t
-                  ? 'border-primary/60 bg-primary/10 text-primary'
-                  : 'border-border bg-background text-muted-foreground hover:text-foreground'
-              }`}
+        {/* Sort dropdown */}
+        <div className="relative flex-shrink-0">
+          <select
+            value={currentSort}
+            onChange={(e) => router.push(buildUrl({ sort: e.target.value }))}
+            className={selectClass}
+            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235e93a0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+          >
+            <option value="recent">Recent</option>
+            <option value="due">Due first</option>
+            <option value="confidence">Weakest first</option>
+          </select>
+        </div>
+
+        {/* Topic dropdown */}
+        {facets.topics.length > 0 && (
+          <div className="relative flex-shrink-0">
+            <select
+              value={currentTopic}
+              onChange={(e) => router.push(buildUrl({ topic: e.target.value, tag: '' }))}
+              className={selectClass}
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235e93a0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
             >
-              #{t}
+              <option value="">All topics</option>
+              {facets.topics.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Tag dropdown */}
+        {facets.tags.length > 0 && (
+          <div className="relative flex-shrink-0">
+            <select
+              value={currentTag}
+              onChange={(e) => router.push(buildUrl({ tag: e.target.value }))}
+              className={selectClass}
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235e93a0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+            >
+              <option value="">All tags</option>
+              {facets.tags.map((t) => (
+                <option key={t} value={t}>#{t}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Active filter pills — show what's currently selected for easy removal */}
+      {(currentTopic || currentTag || currentSort !== 'recent') && (
+        <div className="flex gap-2 flex-wrap">
+          {currentSort !== 'recent' && (
+            <button
+              onClick={() => router.push(buildUrl({ sort: 'recent' }))}
+              className="flex items-center gap-1 px-2 py-0.5 text-xs rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              {currentSort === 'due' ? 'Due first' : 'Weakest first'} ×
             </button>
-          ))}
+          )}
+          {currentTopic && (
+            <button
+              onClick={() => router.push(buildUrl({ topic: '', tag: '' }))}
+              className="flex items-center gap-1 px-2 py-0.5 text-xs rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              {currentTopic} ×
+            </button>
+          )}
+          {currentTag && (
+            <button
+              onClick={() => router.push(buildUrl({ tag: '' }))}
+              className="flex items-center gap-1 px-2 py-0.5 text-xs rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              #{currentTag} ×
+            </button>
+          )}
         </div>
       )}
     </div>

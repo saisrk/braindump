@@ -29,7 +29,7 @@ function ConfidenceDot({ score }: { score: number }) {
 
 export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {items.map((item) => {
         const processing = item.status === 'processing';
         const failed = item.status === 'failed';
@@ -37,8 +37,8 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
 
         return (
           <Link key={item.id} href={`/library/${item.id}`} className="block no-underline">
-            <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-start gap-3">
+            <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+              <div className="flex items-start gap-3 flex-1">
                 {/* Confidence dot (only for ready items with reviews) */}
                 {!processing && item.reviewCount > 0 && (
                   <ConfidenceDot score={item.confidence} />
@@ -46,21 +46,24 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 className="text-base font-semibold text-foreground truncate">
+                    <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
                       {item.title}
                     </h3>
+                  </div>
+
+                  <div className="flex gap-1.5 flex-wrap mb-2">
                     {isNew(item.createdAt) && !processing && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/15 text-primary uppercase tracking-wide flex-shrink-0">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/15 text-primary uppercase tracking-wide">
                         New
                       </span>
                     )}
                     {due && !processing && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-500 uppercase tracking-wide flex-shrink-0">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-500 uppercase tracking-wide">
                         {item.dueCount} due
                       </span>
                     )}
                     {failed && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/15 text-red-400 uppercase tracking-wide flex-shrink-0">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/15 text-red-400 uppercase tracking-wide">
                         Failed
                       </span>
                     )}
@@ -74,15 +77,15 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
                   ) : (
                     <>
                       {item.summary && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        <p className="text-xs text-muted-foreground line-clamp-3 mb-2 leading-relaxed">
                           {item.summary}
                         </p>
                       )}
-                      <div className="flex gap-1.5 flex-wrap">
+                      <div className="flex gap-1.5 flex-wrap mt-auto">
                         {item.topic && (
                           <Badge variant="brand" className="text-xs">{item.topic}</Badge>
                         )}
-                        {(item.tags ?? []).slice(0, 3).map((t) => (
+                        {(item.tags ?? []).slice(0, 2).map((t) => (
                           <Badge key={t} variant="outline" className="text-xs">#{t}</Badge>
                         ))}
                         {item.domain && (
@@ -95,7 +98,7 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
                   )}
                 </div>
 
-                <div className="text-xs text-muted-foreground flex-shrink-0 pt-0.5">
+                <div className="text-xs text-muted-foreground flex-shrink-0 pt-0.5 whitespace-nowrap">
                   {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </div>
               </div>
