@@ -28,13 +28,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Settings"
-        subtitle="Customize your Braindump experience"
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title="Settings"
+          subtitle="Customize your Braindump experience"
+          className="mb-4"
+        />
         <div className="max-w-2xl space-y-6">
           {/* Theme Settings */}
           <Card className="p-6">
@@ -141,6 +141,7 @@ export default function SettingsPage() {
             </div>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   )

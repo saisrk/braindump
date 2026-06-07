@@ -38,7 +38,7 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     )
@@ -55,13 +55,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title={`Today, ${format(new Date(), 'MMM d')}`}
-        subtitle="Your learning progress for today"
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title={`Today, ${format(new Date(), 'MMM d')}`}
+          subtitle="Your learning progress for today"
+          className="mb-4"
+        />
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 mb-8">
           {/* Streak */}
@@ -147,6 +147,7 @@ export default function HomePage() {
             </div>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   )

@@ -42,13 +42,13 @@ export default function TeachbackPage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Teach Back"
-        subtitle="Explain what you learned in your own words"
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title="Teach Back"
+          subtitle="Explain what you learned in your own words"
+          className="mb-4"
+        />
         {step === 'intro' && (
           <div className="max-w-2xl">
             <Card className="p-8 space-y-6">
@@ -219,6 +219,7 @@ export default function TeachbackPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

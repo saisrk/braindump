@@ -84,13 +84,13 @@ export default function ExpressPage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Express Mode"
-        subtitle="Turn your learnings into professional content"
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title="Express Mode"
+          subtitle="Turn your learnings into professional content"
+          className="mb-4"
+        />
         {mode === 'select' && (
           <div className="max-w-2xl space-y-4">
             <p className="text-sm text-muted-foreground mb-6">
@@ -147,6 +147,7 @@ export default function ExpressPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
