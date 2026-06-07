@@ -35,7 +35,7 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     )
@@ -78,13 +78,13 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Review Session"
-        subtitle={`${current + 1} of ${items.length} items`}
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title="Review Session"
+          subtitle={`${current + 1} of ${items.length} items`}
+          className="mb-4"
+        />
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -162,6 +162,7 @@ export default function ReviewPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
