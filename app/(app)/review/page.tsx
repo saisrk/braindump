@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, CheckCircle2, HelpCircle } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { getReviewItems } from '@/lib/actions/insights'
 import { gradeReviewItem } from '@/lib/actions/review'
@@ -20,23 +18,16 @@ export default function ReviewPage() {
   const [reviewing, setReviewing] = useState(false)
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getReviewItems()
-        setItems(data)
-      } catch (error) {
-        console.error('[v0] Failed to load reviews:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
+    getReviewItems()
+      .then(setItems)
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground text-sm">Loading…</div>
       </div>
     )
   }
@@ -47,11 +38,7 @@ export default function ReviewPage() {
         icon={<CheckCircle2 className="h-12 w-12" />}
         title="All caught up!"
         description="You have no items due for review right now."
-        action={
-          <Button onClick={() => router.push('/home')}>
-            Back to Home
-          </Button>
-        }
+        action={<Button onClick={() => router.push('/home')}>Back to Home</Button>}
       />
     )
   }
@@ -59,11 +46,10 @@ export default function ReviewPage() {
   const item = items[current]
   const progress = Math.round(((current + 1) / items.length) * 100)
 
-  const handleRating = async (confidence: number) => {
+  const handleRating = async (grade: 'again' | 'hard' | 'good' | 'easy') => {
     setReviewing(true)
     try {
-      const gradeMap = { 1: 'hard', 2: 'good', 3: 'easy' } as const
-      await gradeReviewItem({ itemId: item.id, grade: gradeMap[confidence as 1 | 2 | 3] })
+      await gradeReviewItem({ itemId: item.id, grade })
       if (current < items.length - 1) {
         setCurrent(current + 1)
         setShowing('question')
@@ -80,87 +66,81 @@ export default function ReviewPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
-        <PageHeader
-          title="Review Session"
-          subtitle={`${current + 1} of ${items.length} items`}
-          className="mb-4"
-        />
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Progress</span>
-            <span className="text-sm text-muted-foreground">{progress}%</span>
-          </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+            Recall · {items.length} card{items.length !== 1 ? 's' : ''} due
+          </p>
+          <h1 className="font-display font-bold text-foreground" style={{ fontSize: '28px' }}>Smart Review</h1>
+          <p className="text-sm text-muted-foreground mt-1">Recall before you reveal — pulled from your books</p>
+        </div>
+
+        {/* Flashcard */}
+        <div className="flex justify-center mb-6">
+          <div
+            className="relative w-full max-w-xl rounded-2xl bg-card border border-border flex flex-col justify-center text-center"
+            style={{ minHeight: '280px', padding: '40px 34px', boxShadow: '0 24px 60px -40px rgba(42,38,32,.5)' }}
+          >
+            {/* Gold corner bookmark */}
             <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              className="absolute top-0 right-8 w-3.5 h-12 rounded-b"
+              style={{ background: '#c79a3e', boxShadow: '0 3px 5px rgba(0,0,0,.2)' }}
             />
+
+            <p className="absolute top-5 left-6 text-xs uppercase tracking-widest text-muted-foreground">
+              {item.learningTitle} · Card {current + 1} of {items.length}
+            </p>
+
+            <div className="mt-6">
+              <p className="font-display font-semibold text-foreground leading-snug" style={{ fontSize: '22px' }}>
+                {showing === 'question' ? item.question : item.answer}
+              </p>
+            </div>
+
+            {showing === 'question' && (
+              <button
+                onClick={() => setShowing('answer')}
+                className="mt-6 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ▸ tap to reveal answer
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Card */}
-        <div className="max-w-2xl">
-          <Card className="p-8 min-h-96 flex flex-col justify-center mb-6">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                {showing === 'question' ? 'Question' : 'Answer'}
-              </p>
-              <div className="text-2xl font-semibold text-foreground leading-relaxed">
-                {showing === 'question' ? item.question : item.answer}
-              </div>
-            </div>
-          </Card>
+        {/* Rating buttons — 4 grades */}
+        {showing === 'answer' && (
+          <div className="flex gap-3 justify-center max-w-xl mx-auto mb-6">
+            {[
+              { grade: 'again' as const, label: 'Again', sub: '<1m', color: '#b5462f' },
+              { grade: 'hard' as const, label: 'Hard', sub: '10m', color: '#9c7a23' },
+              { grade: 'good' as const, label: 'Good', sub: '1d', color: '#46557a' },
+              { grade: 'easy' as const, label: 'Easy', sub: '4d', color: '#4f6b3a' },
+            ].map(({ grade, label, sub, color }) => (
+              <button
+                key={grade}
+                onClick={() => handleRating(grade)}
+                disabled={reviewing}
+                className="flex-1 rounded-xl border bg-card py-3 font-semibold text-sm transition-all hover:shadow-md disabled:opacity-50"
+                style={{ borderColor: color, color }}
+              >
+                {label}
+                <span className="block text-[10px] opacity-60 mt-0.5 font-normal">{sub}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-          {/* Reveal Button */}
-          {showing === 'question' && (
-            <Button
-              variant="outline"
-              onClick={() => setShowing('answer')}
-              className="w-full mb-6"
-              size="lg"
-            >
-              <HelpCircle className="mr-2 h-4 w-4" />
-              Show Answer
-            </Button>
-          )}
-
-          {/* Confidence Rating */}
-          {showing === 'answer' && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                How confident are you in your answer?
-              </p>
-              <div className="grid grid-cols-3 gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => handleRating(1)}
-                  disabled={reviewing}
-                  className="flex flex-col items-center justify-center h-20"
-                >
-                  {reviewing && <Loader2 className="h-4 w-4 animate-spin mb-2" />}
-                  <span className="text-xs text-muted-foreground">Not sure</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleRating(2)}
-                  disabled={reviewing}
-                  className="flex flex-col items-center justify-center h-20"
-                >
-                  {reviewing && <Loader2 className="h-4 w-4 animate-spin mb-2" />}
-                  <span className="text-xs text-muted-foreground">Somewhat sure</span>
-                </Button>
-                <Button
-                  onClick={() => handleRating(3)}
-                  disabled={reviewing}
-                  className="flex flex-col items-center justify-center h-20"
-                >
-                  {reviewing && <Loader2 className="h-4 w-4 animate-spin mb-2" />}
-                  <span className="text-xs">Very sure</span>
-                </Button>
-              </div>
-            </div>
-          )}
+        {/* Progress */}
+        <div className="max-w-xl mx-auto text-center">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+            Session progress · {current + 1} of {items.length}
+          </p>
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${progress}%`, background: '#b5462f' }}
+            />
+          </div>
         </div>
       </div>
     </div>

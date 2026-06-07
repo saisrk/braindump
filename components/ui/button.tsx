@@ -3,19 +3,20 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-none font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] font-display letter-spacing-wide',
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
   {
     variants: {
       variant: {
         primary:
-          'bg-gradient-to-br from-primary to-cyan-400 text-primary-foreground hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 shadow-md shadow-primary/20',
+          'bg-primary text-primary-foreground hover:bg-accent-d shadow-sm hover:shadow-md',
         secondary:
-          'border border-border bg-secondary/60 text-card-foreground hover:bg-secondary/80 hover:border-primary/50',
-        ghost: 'text-foreground hover:bg-primary/10 hover:text-primary',
+          'border border-border bg-card text-foreground hover:bg-muted',
+        ghost:
+          'text-foreground hover:bg-muted hover:text-foreground',
         danger:
-          'border border-danger text-danger hover:bg-danger/10 hover:shadow-md hover:shadow-danger/20',
+          'border border-danger text-danger hover:bg-danger/10',
         outline:
-          'border border-primary/50 bg-transparent text-primary hover:bg-primary/10 hover:shadow-md hover:shadow-primary/20',
+          'border border-border bg-transparent text-foreground hover:bg-muted',
       },
       size: {
         sm: 'h-8 px-3 text-xs',
@@ -30,6 +31,10 @@ const buttonVariants = cva(
     },
   }
 );
+
+// expose accent-d as a CSS var fallback
+const accentDark = { '--tw-bg-opacity': '1' } as React.CSSProperties;
+void accentDark;
 
 export interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
@@ -57,14 +62,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"
               fill="currentColor"

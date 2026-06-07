@@ -8,57 +8,55 @@
 @source "../components";
 
 @theme {
-  /* Holographic HUD color palette */
-  --color-brand-50: #f0fffe;
-  --color-brand-100: #ccffff;
-  --color-brand-200: #99ffff;
-  --color-brand-300: #66ffff;
-  --color-brand-400: #00f0ff;
-  --color-brand-500: #00f0ff;
-  --color-brand-600: #00d9e6;
-  --color-brand-700: #00b8cc;
-  --color-brand-800: #0088aa;
-  --color-brand-900: #005577;
+  /* Warm editorial palette — light mode */
+  --color-background: #f5f2ec;
+  --color-foreground: #2a2620;
+  --color-card: #ffffff;
+  --color-card-foreground: #2a2620;
+  --color-muted: #efe9dd;
+  --color-muted-foreground: #7c7361;
+  --color-border: #e6e0d4;
+  --color-input: #ffffff;
+  --color-ring: #b5462f;
 
-  /* Semantic tokens — holographic HUD aesthetic */
-  --color-background: #020608;
-  --color-foreground: #cdf6ff;
-  --color-card: rgba(6, 22, 28, 0.6);
-  --color-card-foreground: #cdf6ff;
-  --color-muted: #5e93a0;
-  --color-muted-foreground: #5e93a0;
-  --color-border: rgba(0, 240, 255, 0.18);
-  --color-input: rgba(2, 8, 10, 0.7);
-  --color-ring: #00f0ff;
+  --color-primary: #b5462f;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #efe9dd;
+  --color-secondary-foreground: #2a2620;
+  --color-accent: #b5462f;
+  --color-accent-foreground: #ffffff;
 
-  --color-primary: #00f0ff;
-  --color-primary-foreground: #020608;
-  --color-secondary: rgba(6, 22, 28, 0.6);
-  --color-secondary-foreground: #cdf6ff;
-  --color-accent: #00f0ff;
-  --color-accent-foreground: #020608;
+  --color-success: #6f8a5a;
+  --color-success-foreground: #ffffff;
+  --color-warning: #c79a3e;
+  --color-warning-foreground: #ffffff;
+  --color-danger: #b5462f;
+  --color-danger-foreground: #ffffff;
 
-  --color-success: #00ff9c;
-  --color-success-foreground: #020608;
-  --color-warning: #ffcc00;
-  --color-danger: #ff3b5c;
-  --color-danger-foreground: #fff;
+  /* Topic accent colors */
+  --color-terra: #c97a4a;
+  --color-moss: #6f8a5a;
+  --color-indigo: #46557a;
+  --color-gold: #c79a3e;
+  --color-plum: #8a5072;
+  --color-shelf: #d8cdb8;
 
-  /* Confidence / difficulty signal colors */
-  --color-signal-low: #ff3b5c;
-  --color-signal-mid: #ffcc00;
-  --color-signal-high: #00ff9c;
+  /* Signal colors (confidence) */
+  --color-signal-low: #b5462f;
+  --color-signal-mid: #c79a3e;
+  --color-signal-high: #6f8a5a;
 
-  /* Font families - only reference the Google fonts imported in layout.tsx */
-  --font-display: 'Chakra Petch', sans-serif;
-  --font-sans: 'Rajdhani', sans-serif;
-  --font-mono: 'Share Tech Mono', monospace;
+  /* Typography */
+  --font-display: 'Spectral', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
 
   /* Radii */
-  --radius: 0rem;
+  --radius: 0.5rem;
 }
 
-/* Base styles */
+/* ── Base ───────────────────────────────────────────────── */
+
 * {
   border-color: var(--color-border);
 }
@@ -74,152 +72,131 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  position: relative;
-  overflow-x: hidden;
 }
 
-/* Holographic HUD background grid */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: 
-    radial-gradient(900px 600px at 70% -5%, rgba(0, 240, 255, 0.08), transparent 60%),
-    radial-gradient(700px 700px at 0% 100%, rgba(0, 255, 156, 0.05), transparent 55%);
+/* ── Dark mode overrides ────────────────────────────────── */
+
+.dark {
+  --color-background: #1a1714;
+  --color-foreground: #e8dfd0;
+  --color-card: #221e1a;
+  --color-card-foreground: #e8dfd0;
+  --color-muted: #2d2820;
+  --color-muted-foreground: #9e9080;
+  --color-border: #3d362e;
+  --color-input: #2d2820;
+
+  --color-primary: #c9583e;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #2d2820;
+  --color-secondary-foreground: #e8dfd0;
+  --color-accent: #c9583e;
+  --color-accent-foreground: #ffffff;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  -webkit-mask-image: radial-gradient(140% 110% at 50% 0%, #000 35%, transparent 92%);
-  mask-image: radial-gradient(140% 110% at 50% 0%, #000 35%, transparent 92%);
-}
+/* ── Scrollbars ─────────────────────────────────────────── */
 
-/* Ensure content sits above grid */
-main, [role="main"] {
-  position: relative;
-  z-index: 2;
-}
-
-/* Thin, unobtrusive scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 240, 255, 0.3) transparent;
+  scrollbar-color: #d8cdb8 transparent;
 }
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 240, 255, 0.3);
+  background-color: #d8cdb8;
   border-radius: 9999px;
 }
-*::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 240, 255, 0.5);
-}
+*::-webkit-scrollbar-thumb:hover { background-color: #c4b89e; }
 
-/* hud-frame-sm: border only, no corner brackets — for small/compact cards where corners crowd content */
-.hud-frame-sm {
+.dark * { scrollbar-color: #3d362e transparent; }
+.dark *::-webkit-scrollbar-thumb { background-color: #3d362e; }
+
+/* ── Typography helpers ─────────────────────────────────── */
+
+.font-display { font-family: var(--font-display); }
+.font-sans    { font-family: var(--font-sans); }
+
+/* ── Book / Shelf styles ────────────────────────────────── */
+
+/* Book spine — gradient set via inline style per topic */
+.book {
   position: relative;
-  border: 1px solid rgba(0, 240, 255, 0.18);
-  background: rgba(6, 22, 28, 0.62);
-  backdrop-filter: blur(8px);
+  border-radius: 3px 4px 4px 3px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 11px;
+  box-shadow:
+    inset 3px 0 0 rgba(255, 255, 255, 0.2),
+    inset -3px 0 7px rgba(0, 0, 0, 0.15),
+    2px 3px 8px -3px rgba(42, 38, 32, 0.4);
 }
 
-/* HUD corner brackets for cards — top corners only via card pseudo-elements */
-.hud-frame {
-  position: relative;
-  border: 1px solid rgba(0, 240, 255, 0.18);
-  background: rgba(6, 22, 28, 0.62);
-  backdrop-filter: blur(8px);
+.book:hover {
+  transform: translateY(-9px);
 }
 
-.hud-frame::before,
-.hud-frame::after {
-  content: '';
+.book span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  max-height: 140px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Gold bookmark ribbon on a book */
+.book-ribbon {
   position: absolute;
-  width: 10px;
+  top: -4px;
+  right: 11px;
+  width: 8px;
+  height: 28px;
+  background: #c79a3e;
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Shelf board below books */
+.shelf-board {
   height: 10px;
-  border: 1.5px solid rgba(0, 240, 255, 0.5);
-  z-index: 10;
-  pointer-events: none;
+  background: #d8cdb8;
+  border: 1px solid #e6e0d4;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 10px 22px -14px rgba(42, 38, 32, 0.5);
 }
 
-.hud-frame::before {
-  top: -1px;
-  left: -1px;
-  border-right: 0;
-  border-bottom: 0;
+.dark .shelf-board {
+  background: #3d362e;
+  border-color: #4a4038;
 }
 
-.hud-frame::after {
-  top: -1px;
-  right: -1px;
-  border-left: 0;
-  border-bottom: 0;
-}
+/* ── Animations ─────────────────────────────────────────── */
 
-/* Glow effects for accent elements */
-.glow-cyan {
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1);
-}
-
-.glow-green {
-  box-shadow: 0 0 16px rgba(0, 255, 156, 0.3);
-}
-
-.glow-amber {
-  box-shadow: 0 0 16px rgba(255, 204, 0, 0.2);
-}
-
-.glow-red {
-  box-shadow: 0 0 16px rgba(255, 59, 92, 0.2);
-}
-
-/* Animations */
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out both;
-}
+.animate-fade-in-up { animation: fade-in-up 0.4s ease-out both; }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out both;
-}
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
-  }
+/* Loader scan-line animation for capture page */
+@keyframes scan-highlight {
+  0%   { width: 0; }
+  30%  { width: 100%; }
+  100% { width: 100%; }
 }
-.animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
+.animate-scan { animation: scan-highlight 2.6s ease-in-out infinite; }
+.animate-scan-2 { animation: scan-highlight 2.6s ease-in-out 0.5s infinite; }
+.animate-scan-3 { animation: scan-highlight 2.6s ease-in-out 1s infinite; }
+.animate-scan-4 { animation: scan-highlight 2.6s ease-in-out 1.5s infinite; }

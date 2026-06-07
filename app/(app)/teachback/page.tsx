@@ -2,12 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Loader2, CheckCircle2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { PageHeader } from '@/components/ui/page-header'
-import { Badge } from '@/components/ui/badge'
 import { submitTeachBack } from '@/lib/actions/teachback'
 import type { TeachBackFeedback } from '@/lib/ai/teachback'
 
@@ -19,17 +16,13 @@ export default function TeachbackPage() {
   const [explanation, setExplanation] = useState('')
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<TeachBackFeedback | null>(null)
-  // Mock learning ID - in a real app this would be passed or extracted from route
   const mockLearningId = 'learning-1'
 
   const handleSubmit = async () => {
     if (!explanation.trim()) return
     setLoading(true)
     try {
-      const result = await submitTeachBack({
-        learningId: mockLearningId,
-        explanation,
-      })
+      const result = await submitTeachBack({ learningId: mockLearningId, explanation })
       if (result.ok && result.feedback) {
         setFeedback(result.feedback)
         setStep('result')
@@ -41,181 +34,141 @@ export default function TeachbackPage() {
     }
   }
 
+  const verdictColor = feedback?.verdict === 'strong' ? '#6f8a5a' : feedback?.verdict === 'partial' ? '#c79a3e' : '#b5462f'
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
         <PageHeader
-          title="Teach Back"
-          subtitle="Explain what you learned in your own words"
-          className="mb-4"
+          eyebrow="Teach Back"
+          title="Explain what you learned"
+          subtitle="In your own words, like you're teaching a friend"
+          className="mb-6"
         />
+
         {step === 'intro' && (
-          <div className="max-w-2xl">
-            <Card className="p-8 space-y-6">
+          <div className="max-w-xl">
+            <div className="rounded-xl border border-border bg-card p-8 space-y-6">
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">
-                  Teach Back Method
-                </h2>
+                <h2 className="font-display font-semibold text-foreground text-xl mb-2">The Teach Back Method</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  The best way to learn is to teach. Explain what you just learned in your own words as if you&apos;re teaching someone else. This reinforces your understanding and helps us identify gaps.
+                  The best way to learn is to teach. Explain what you just learned as if teaching someone else. This reinforces understanding and helps identify gaps.
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    1
+              <div className="space-y-4">
+                {[
+                  { n: '1', title: 'Explain the concept', desc: "In your own words, like you're teaching a friend" },
+                  { n: '2', title: 'Get AI feedback', desc: "We'll review your explanation and find gaps" },
+                  { n: '3', title: 'Schedule for review', desc: 'Added to your spaced repetition schedule' },
+                ].map((s) => (
+                  <div key={s.n} className="flex gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full border-2 grid place-items-center font-display font-bold flex-shrink-0"
+                      style={{ borderColor: '#b5462f', color: '#b5462f' }}
+                    >
+                      {s.n}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{s.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">Explain the concept</p>
-                    <p className="text-xs text-muted-foreground">In your own words, like you&apos;re teaching a friend</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    2
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">Get AI feedback</p>
-                    <p className="text-xs text-muted-foreground">We&apos;ll review your explanation and suggest improvements</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold flex-shrink-0">
-                    3
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">Schedule for review</p>
-                    <p className="text-xs text-muted-foreground">We&apos;ll add it to your spaced repetition schedule</p>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              <Button onClick={() => setStep('input')} className="w-full">
+              <button
+                onClick={() => setStep('input')}
+                className="w-full rounded-lg py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+                style={{ background: '#b5462f', boxShadow: '0 6px 14px -6px rgba(181,70,47,.6)' }}
+              >
                 Let&apos;s Begin
-              </Button>
-            </Card>
+              </button>
+            </div>
           </div>
         )}
 
         {step === 'input' && (
-          <div className="max-w-2xl">
-            <Card className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-3">
-                  Your Explanation
-                </label>
-                <Textarea
-                  placeholder="Explain what you learned. Be thorough and detailed..."
-                  value={explanation}
-                  onChange={(e) => setExplanation(e.target.value)}
-                  rows={8}
-                />
-              </div>
+          <div className="max-w-xl">
+            <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+              <label className="block font-display font-semibold text-foreground">Your Explanation</label>
+              <Textarea
+                placeholder="Explain what you learned. Be thorough and detailed…"
+                value={explanation}
+                onChange={(e) => setExplanation(e.target.value)}
+                rows={8}
+              />
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
+                <button
                   onClick={() => setStep('intro')}
-                  className="flex-1"
+                  className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                 >
                   Back
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleSubmit}
                   disabled={loading || !explanation.trim()}
-                  className="flex-1"
+                  className="flex-1 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all"
+                  style={{ background: '#b5462f' }}
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Get Feedback
-                </Button>
+                  {loading ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Grading…</span> : 'Get Feedback'}
+                </button>
               </div>
-            </Card>
+            </div>
           </div>
         )}
 
         {step === 'result' && feedback && (
-          <div className="max-w-2xl space-y-6">
-            <Card className={`p-6 border-l-4 ${
-              feedback.verdict === 'strong' ? 'border-l-success bg-success/5' :
-              feedback.verdict === 'partial' ? 'border-l-warning bg-warning/5' :
-              'border-l-danger bg-danger/5'
-            }`}>
+          <div className="max-w-xl space-y-4">
+            <div
+              className="rounded-xl border-l-4 p-6"
+              style={{ borderLeftColor: verdictColor, background: `${verdictColor}08`, borderTop: '1px solid var(--color-border)', borderRight: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}
+            >
               <div className="flex items-start gap-3 mb-4">
-                <CheckCircle2 className={`h-5 w-5 flex-shrink-0 ${
-                  feedback.verdict === 'strong' ? 'text-success' :
-                  feedback.verdict === 'partial' ? 'text-warning' :
-                  'text-danger'
-                }`} />
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: verdictColor }} />
                 <div>
-                  <h3 className="font-semibold text-foreground">
-                    {feedback.verdict === 'strong' && 'Excellent Teach Back!'}
-                    {feedback.verdict === 'partial' && 'Good Effort!'}
-                    {feedback.verdict === 'shaky' && 'Keep Learning!'}
+                  <h3 className="font-display font-semibold text-foreground">
+                    {feedback.verdict === 'strong' ? 'Excellent Teach Back!' : feedback.verdict === 'partial' ? 'Good Effort!' : 'Keep Learning!'}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Comprehension: {feedback.gapScore}%
-                  </p>
+                  <p className="text-xs text-muted-foreground">Comprehension: {feedback.gapScore}%</p>
                 </div>
               </div>
-              
-              <p className="text-sm text-foreground italic mb-4">
-                {feedback.encouragement}
-              </p>
+              <p className="font-display italic text-sm text-foreground mb-4">{feedback.encouragement}</p>
 
               {feedback.nailed.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-3">
                   <p className="text-xs font-semibold text-foreground mb-2">What you got right:</p>
-                  <ul className="space-y-1">
-                    {feedback.nailed.map((item, idx) => (
-                      <li key={idx} className="text-xs text-foreground flex gap-2">
-                        <span>✓</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <ul className="space-y-1">{feedback.nailed.map((item, i) => <li key={i} className="text-xs text-foreground flex gap-2"><span style={{ color: '#6f8a5a' }}>✓</span>{item}</li>)}</ul>
                 </div>
               )}
-
               {feedback.gaps.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-3">
                   <p className="text-xs font-semibold text-foreground mb-2">Areas to improve:</p>
-                  <ul className="space-y-1">
-                    {feedback.gaps.map((item, idx) => (
-                      <li key={idx} className="text-xs text-foreground flex gap-2">
-                        <span>•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <ul className="space-y-1">{feedback.gaps.map((item, i) => <li key={i} className="text-xs text-foreground flex gap-2"><span>•</span>{item}</li>)}</ul>
                 </div>
               )}
-
               {feedback.followUpQuestions.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-foreground mb-2">Next steps:</p>
-                  <ul className="space-y-1">
-                    {feedback.followUpQuestions.map((q, idx) => (
-                      <li key={idx} className="text-xs text-foreground flex gap-2">
-                        <span>Q:</span>
-                        <span>{q}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <ul className="space-y-1">{feedback.followUpQuestions.map((q, i) => <li key={i} className="text-xs text-foreground flex gap-2"><span>Q:</span>{q}</li>)}</ul>
                 </div>
               )}
-            </Card>
+            </div>
 
             <div className="flex gap-3">
-              <Button
-                variant="outline"
+              <button
                 onClick={() => router.push('/library')}
-                className="flex-1"
+                className="flex-1 rounded-lg border border-border py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
               >
                 View Library
-              </Button>
-              <Button onClick={() => router.push('/home')} className="flex-1">
+              </button>
+              <button
+                onClick={() => router.push('/home')}
+                className="flex-1 rounded-lg py-2.5 text-sm font-semibold text-white transition-all"
+                style={{ background: '#b5462f' }}
+              >
                 Back to Home
-              </Button>
+              </button>
             </div>
           </div>
         )}
