@@ -21,8 +21,9 @@ export interface AnalyzeResult {
   ok: boolean;
   error?: string;
   summary?: CaptureSummary;
-  /** Cleaned source text, passed back so save can generate review items. */
   resolvedContent?: string;
+  /** True when content was sourced via web search fallback (page was blocked). */
+  fromSearch?: boolean;
 }
 
 /**
@@ -52,11 +53,19 @@ export async function analyzeCapture(input: {
     if (!extracted || extracted.text.length < 80) {
       return {
         ok: false,
-        error:
-          "Couldn't read that page. Paste the text directly, or use the wizard instead.",
+        error: "Couldn't read that page and the web search fallback found nothing. Try pasting the text directly.",
       };
     }
     content = `${extracted.title ? `Page title: ${extracted.title}\n\n` : ''}${extracted.text}`;
+    // Carry fromSearch flag through so the caller can surface it.
+    if (extracted.fromSearch) {
+      try {
+        const summary = await summarizeCapture({ content, sourceRef, sourceType: input.sourceType });
+        return { ok: true, summary, resolvedContent: content, fromSearch: true };
+      } catch (err) {
+        return { ok: false, error: 'AI summary failed after web search. Please try again.' };
+      }
+    }
   }
 
   if (content.length < 10) {
