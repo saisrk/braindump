@@ -5,7 +5,8 @@ import { Sidebar } from '@/components/navigation/sidebar';
 import { BottomNav } from '@/components/navigation/bottom-nav';
 import { todayISO } from '@/lib/utils';
 import { getOptionalUserId } from '@/lib/session';
-import { redirect } from 'next/navigation';
+import { redirect, RedirectType } from 'next/navigation';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 
 export default async function AppLayout({
   children,
@@ -49,8 +50,10 @@ export default async function AppLayout({
         .where(eq(reviewItems.dueDate, today));
       dueCount = dueReviews.length;
     }
-  } catch {
-    // db may not be available in all environments
+  } catch (e) {
+    // Re-throw Next.js navigation signals (redirect/notFound) — never swallow these.
+    if (isRedirectError(e)) throw e;
+    // Suppress genuine db errors (e.g. missing env vars at build time).
   }
 
   return (

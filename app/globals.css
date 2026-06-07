@@ -127,7 +127,15 @@ main, [role="main"] {
   background-color: rgba(0, 240, 255, 0.5);
 }
 
-/* HUD corner brackets for cards */
+/* hud-frame-sm: border only, no corner brackets — for small/compact cards where corners crowd content */
+.hud-frame-sm {
+  position: relative;
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  background: rgba(6, 22, 28, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+/* HUD corner brackets for cards — top corners only via card pseudo-elements */
 .hud-frame {
   position: relative;
   border: 1px solid rgba(0, 240, 255, 0.18);
@@ -136,15 +144,14 @@ main, [role="main"] {
 }
 
 .hud-frame::before,
-.hud-frame::after,
-.hud-frame > *:first-child::before,
-.hud-frame > *:first-child::after {
+.hud-frame::after {
   content: '';
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #00f0ff;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(0, 240, 255, 0.5);
   z-index: 10;
+  pointer-events: none;
 }
 
 .hud-frame::before {

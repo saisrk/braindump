@@ -1,50 +1,46 @@
-import { redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { PageHeader } from '@/components/ui/page-header'
-import { Badge } from '@/components/ui/badge'
-import { getLearning } from '@/lib/data/learnings'
-import { LearningDetailClient } from './client'
+import { redirect } from 'next/navigation';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { getLearning } from '@/lib/data/learnings';
+import { requireUserId } from '@/lib/session';
+import { LearningDetailClient } from './client';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default async function LearningDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
 
   try {
-    const result = await getLearning('', id)
-    if (!result) {
-      redirect('/library')
-    }
+    const userId = await requireUserId();
+    const result = await getLearning(userId, id);
+    if (!result) redirect('/library');
 
-    const { learning, reviewItems, teachBacks } = result
-    const reviewCount = reviewItems?.length ?? 0
-    const teachBackCount = teachBacks?.length ?? 0
+    const { learning, reviewItems, teachBacks, confidence } = result;
 
     return (
-      <div className="flex flex-col">
-        <PageHeader
-          title={learning.title}
-          subtitle={learning.topic ? `Topic: ${learning.topic}` : 'Your learning'}
-        />
-
-        <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
-          <div className="max-w-2xl space-y-6">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+          <div className="max-w-2xl space-y-4">
+            <PageHeader
+              title={learning.title}
+              subtitle={learning.topic ?? 'Your learning'}
+              className="mb-2"
+            />
             <LearningDetailClient
               learning={learning}
-              reviewCount={reviewCount}
-              teachBackCount={teachBackCount}
+              reviewItems={reviewItems}
+              teachBacks={teachBacks}
+              confidence={confidence}
               learningId={id}
             />
           </div>
         </div>
       </div>
-    )
-  } catch (error) {
-    console.error('[v0] Failed to load learning:', error)
-    redirect('/library')
+    );
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    redirect('/library');
   }
 }

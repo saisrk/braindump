@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/login-form';
 
 export default function LoginPage() {
@@ -8,10 +9,12 @@ export default function LoginPage() {
           Braindump
         </h1>
         <p className="mt-2 text-sm text-text-secondary dark:text-text-dark-secondary">
-          Sign in to your account
+          Sign in or create an account
         </p>
       </div>
-      <LoginForm />
+      <Suspense fallback={<div className="w-full max-w-sm h-40 animate-pulse rounded-xl bg-muted" />}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }
