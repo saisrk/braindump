@@ -220,7 +220,6 @@ export default function TeachbackPage() {
           </div>
         )}
       </div>
-      </div>
     </div>
   )
 }
