@@ -61,13 +61,13 @@ export default function CapturePage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Capture"
-        subtitle="Paste a URL or write what you learned"
-      />
-
-      <div className="flex-1 overflow-auto px-4 py-8 md:px-8">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+        <PageHeader
+          title="Capture"
+          subtitle="Paste a URL or write what you learned"
+          className="mb-4"
+        />
         <div className="max-w-xl mx-auto space-y-4">
           <div className="relative">
             <div className="absolute left-4 top-4 text-muted-foreground">
