@@ -34,12 +34,12 @@ export default async function LibraryPage({
 
     return (
       <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
         <PageHeader
           title="Library"
           subtitle={`${data.length} learning${data.length === 1 ? '' : 's'}`}
+          className="mb-4"
         />
-
-        <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
           <LibraryFilters
             facets={facets}
             currentSearch={params.search ?? ''}

@@ -37,7 +37,7 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
       </Button>
 
       {/* Summary */}
-      <Card className="p-6 space-y-4">
+      <Card className="p-5 space-y-3">
         {/* Topic + tags */}
         <div className="flex flex-wrap gap-2">
           {learning.topic && <Badge variant="brand">{learning.topic}</Badge>}
@@ -70,7 +70,7 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
 
       {/* Knowledge meter */}
       {reviewItems.length > 0 && (
-        <Card className="p-4">
+        <Card className="p-4 space-y-2">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Knowledge</h3>
           <div className="flex items-center gap-4">
             <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">

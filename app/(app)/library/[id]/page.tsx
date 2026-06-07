@@ -20,13 +20,14 @@ export default async function LearningDetailPage({
     const { learning, reviewItems, teachBacks, confidence } = result;
 
     return (
-      <div className="flex flex-col">
-        <PageHeader
-          title={learning.title}
-          subtitle={learning.topic ?? 'Your learning'}
-        />
-        <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
-          <div className="max-w-2xl space-y-6">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+          <div className="max-w-2xl space-y-4">
+            <PageHeader
+              title={learning.title}
+              subtitle={learning.topic ?? 'Your learning'}
+              className="mb-2"
+            />
             <LearningDetailClient
               learning={learning}
               reviewItems={reviewItems}
