@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from '@/db';
-import { learnings, reviewItems, teachBacks } from '@/db/schema';
+import { learnings, reviewItems, teachBacks, quizAttempts } from '@/db/schema';
 import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { confidenceFromSr } from '@/lib/sr';
 
@@ -11,6 +11,7 @@ export interface LearningWithMeta extends Learning {
   teachBackCount: number;
   confidence: number;
   dueCount: number;
+  latestQuizScore: number | null;
 }
 
 /** All distinct topics + tags for a user (for filter chips). */
@@ -84,6 +85,11 @@ export async function listLearnings(
         where ${reviewItems.learningId} = ${learnings.id}
           and ${reviewItems.dueDate} <= current_date
       ), 0)`,
+      latestQuizScore: sql<number | null>`(
+        select score from ${quizAttempts}
+        where ${quizAttempts.learningId} = ${learnings.id}
+        order by created_at desc limit 1
+      )`,
     })
     .from(learnings)
     .where(and(...conditions))
@@ -111,6 +117,7 @@ export async function listLearnings(
     reviewCount: r.reviewCount,
     teachBackCount: r.teachBackCount,
     dueCount: r.dueCount,
+    latestQuizScore: r.latestQuizScore ?? null,
     confidence: r.reviewCount
       ? confidenceFromSr(Number(r.avgInterval), Number(r.avgEase))
       : 0,

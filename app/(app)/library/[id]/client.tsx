@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ExternalLink, ArrowLeft, Brain, RotateCcw } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Brain, RotateCcw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ interface Props {
   teachBacks: TeachBack[];
   confidence: number;
   learningId: string;
+  latestQuizScore: number | null;
 }
 
 function StatTile({ value, label }: { value: string | number; label: string }) {
@@ -30,7 +31,7 @@ function StatTile({ value, label }: { value: string | number; label: string }) {
   );
 }
 
-export function LearningDetailClient({ learning, reviewItems, teachBacks, confidence, learningId }: Props) {
+export function LearningDetailClient({ learning, reviewItems, teachBacks, confidence, learningId, latestQuizScore }: Props) {
   const router = useRouter();
   const label = confidenceLabel(confidence);
   const labelColor =
@@ -109,6 +110,17 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
 
           {/* CTAs */}
           <Button
+            onClick={() => router.push(`/library/${learningId}/quiz`)}
+            className="w-full gap-2"
+          >
+            <Zap className="h-4 w-4" />
+            Test Yourself
+            {latestQuizScore !== null && (
+              <span className="ml-auto text-xs opacity-75">Last: {latestQuizScore}%</span>
+            )}
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => router.push(`/teachback?learningId=${learningId}`)}
             className="w-full gap-2"
           >
@@ -126,8 +138,8 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-2 pt-1">
+            <StatTile value={latestQuizScore !== null ? `${latestQuizScore}%` : '—'} label="Quiz" />
             <StatTile value={reviewItems.length} label="Cards" />
-            <StatTile value={teachBacks.length} label="Teach-backs" />
             <StatTile value={learning.difficulty ?? '—'} label="Difficulty" />
           </div>
 

@@ -62,6 +62,17 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
                         {item.dueCount} due
                       </span>
                     )}
+                    {item.latestQuizScore !== null && !processing && (
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${
+                        item.latestQuizScore >= 80
+                          ? 'bg-green-500/15 text-green-500'
+                          : item.latestQuizScore >= 50
+                          ? 'bg-amber-500/15 text-amber-500'
+                          : 'bg-red-400/15 text-red-400'
+                      }`}>
+                        Quiz {item.latestQuizScore}%
+                      </span>
+                    )}
                     {failed && (
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/15 text-red-400 uppercase tracking-wide">
                         Failed
