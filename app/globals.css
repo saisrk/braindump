@@ -127,6 +127,14 @@ main, [role="main"] {
   background-color: rgba(0, 240, 255, 0.5);
 }
 
+/* hud-frame-sm: border only, no corner brackets — for small/compact cards where corners crowd content */
+.hud-frame-sm {
+  position: relative;
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  background: rgba(6, 22, 28, 0.62);
+  backdrop-filter: blur(8px);
+}
+
 /* HUD corner brackets for cards — top corners only via card pseudo-elements */
 .hud-frame {
   position: relative;
