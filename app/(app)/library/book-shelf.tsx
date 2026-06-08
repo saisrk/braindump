@@ -14,6 +14,54 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
 
   return (
     <div className="mb-0">
+      <style>{`
+        .book-tip {
+          position: relative;
+        }
+        .book-tip::after {
+          content: attr(data-tip);
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: #2a2620;
+          color: #f5f2ec;
+          font-family: 'Inter', system-ui, sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+          max-width: 180px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding: 5px 10px;
+          border-radius: 6px;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          transform: translateX(-50%) translateY(4px);
+          z-index: 50;
+          box-shadow: 0 4px 12px rgba(0,0,0,.2);
+        }
+        .book-tip::before {
+          content: '';
+          position: absolute;
+          bottom: calc(100% + 5px);
+          left: 50%;
+          transform: translateX(-50%) translateY(4px);
+          border: 5px solid transparent;
+          border-top-color: #2a2620;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          z-index: 50;
+        }
+        .book-tip:hover::after,
+        .book-tip:hover::before {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      `}</style>
+
       {/* Shelf header */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-display font-semibold text-foreground" style={{ fontSize: '16px' }}>
@@ -29,6 +77,7 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           background: 'linear-gradient(180deg, var(--color-background), var(--color-card))',
           borderColor: 'var(--color-border)',
           minHeight: '100px',
+          overflow: 'visible',
         }}
       >
         {learnings.map((learning, i) => {
@@ -38,8 +87,8 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
             <Link
               key={learning.id}
               href={`/library/${learning.id}`}
-              className="no-underline"
-              title={learning.title}
+              className="no-underline book-tip"
+              data-tip={learning.title}
             >
               <div
                 className="book"
@@ -53,7 +102,7 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
         })}
 
         {/* Empty "add" slot */}
-        <Link href="/capture" className="no-underline" title="Add to this shelf">
+        <Link href="/capture" className="no-underline book-tip" data-tip="Add a learning">
           <div
             className="flex items-center justify-center rounded"
             style={{
