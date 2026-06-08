@@ -1,8 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, ArrowLeft, RotateCcw, Zap, Brain } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ExternalLink, ArrowLeft, RotateCcw, Zap, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { topicGradient } from '@/lib/book-colors';
 import { HistoryPanel } from './history-panel';
@@ -42,156 +42,318 @@ export function LearningDetailClient({
   const router = useRouter();
   const topic = learning.topic ?? 'Uncategorised';
   const gradient = topicGradient(topic);
+  const [secondaryOpen, setSecondaryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const hasSource = !!(learning.sourceRef || learning.author || learning.domain);
+  const hasTags = (learning.tags ?? []).length > 0 || !!learning.topic;
+  const totalActivity = quizHistory.length + teachBackHistory.length +
+    reviewCardHistory.reduce((a, c) => a + c.reviewHistory.length, 0);
 
   return (
-    <div className="flex flex-col gap-6">
-      <Button variant="outline" onClick={() => router.push('/library')} size="sm" className="self-start">
-        <ArrowLeft className="mr-1.5 h-4 w-4" />
+    <div className="max-w-2xl mx-auto">
+
+      {/* Back */}
+      <button
+        onClick={() => router.push('/library')}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: '6px',
+          fontSize: '13px', fontWeight: 500, color: 'var(--color-muted-foreground)',
+          background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 20px 0',
+          fontFamily: "'Inter', system-ui, sans-serif",
+        }}
+      >
+        <ArrowLeft style={{ width: 14, height: 14 }} />
         Library
-      </Button>
+      </button>
 
-      {/* Two-column on desktop */}
-      <div className="flex flex-col md:flex-row gap-6 items-start">
+      {/* ── Identity strip ─────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+        {/* Mini book spine */}
+        <div style={{
+          width: '52px', height: '80px', flexShrink: 0,
+          background: gradient, borderRadius: '3px 6px 6px 3px',
+          boxShadow: 'inset 4px 0 0 rgba(255,255,255,.12), inset -6px 0 12px rgba(0,0,0,.2), 0 8px 20px -8px rgba(42,38,32,.4)',
+          position: 'relative',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, right: '6px',
+            width: '7px', height: '20px',
+            background: '#c79a3e', borderRadius: '0 0 3px 3px',
+          }} />
+        </div>
 
-        {/* LEFT — book cover + CTAs */}
-        <div className="w-full md:w-72 flex-shrink-0 space-y-3">
+        {/* Title + meta */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+            <span style={{
+              fontSize: '10px', fontWeight: 700, letterSpacing: '3px',
+              textTransform: 'uppercase', color: 'var(--color-primary, #b5462f)',
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}>
+              {topic}
+            </span>
+            {reviewItems.length > 0 && (
+              <span style={{
+                fontSize: '11px', color: 'var(--color-muted-foreground)',
+                fontFamily: "'Inter', system-ui, sans-serif",
+              }}>
+                · {reviewItems.length} cards
+              </span>
+            )}
+          </div>
+          <h1 style={{
+            fontFamily: "'Spectral', Georgia, serif",
+            fontWeight: 700, fontSize: '26px', lineHeight: 1.15,
+            color: 'var(--color-foreground)', margin: 0,
+          }}>
+            {learning.title}
+          </h1>
+          <p style={{
+            fontSize: '12px', color: 'var(--color-muted-foreground)',
+            marginTop: '6px', fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            Captured {new Date(learning.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
+      </div>
 
-          {/* Book cover */}
-          <div
-            className="relative flex flex-col justify-end p-6 rounded-xl"
+      {/* ── Summary ────────────────────────────────────────────────────── */}
+      {learning.summary && (
+        <div style={{
+          borderRadius: '12px', border: '1px solid var(--color-border)',
+          background: 'var(--color-card)', padding: '20px 24px', marginBottom: '16px',
+        }}>
+          <p style={{
+            fontSize: '10px', fontWeight: 700, letterSpacing: '3px',
+            textTransform: 'uppercase', color: 'var(--color-primary, #b5462f)',
+            marginBottom: '12px', fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            ✦ Summary
+          </p>
+          <p style={{
+            fontFamily: "'Spectral', Georgia, serif",
+            fontSize: '16px', lineHeight: 1.7,
+            color: 'var(--color-foreground)', margin: 0,
+          }}>
+            {learning.summary}
+          </p>
+        </div>
+      )}
+
+      {/* ── Key Points ─────────────────────────────────────────────────── */}
+      {(learning.keyPoints ?? []).length > 0 && (
+        <div style={{
+          borderRadius: '12px', border: '1px solid var(--color-border)',
+          background: 'var(--color-card)', padding: '20px 24px', marginBottom: '16px',
+        }}>
+          <p style={{
+            fontSize: '10px', fontWeight: 700, letterSpacing: '3px',
+            textTransform: 'uppercase', color: 'var(--color-primary, #b5462f)',
+            marginBottom: '12px', fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            ✎ Key Points
+          </p>
+          <div>
+            {(learning.keyPoints ?? []).map((kp, i) => (
+              <div key={i} style={{
+                display: 'flex', gap: '14px', paddingTop: '12px', paddingBottom: '12px',
+                borderBottom: i < (learning.keyPoints ?? []).length - 1 ? '1px solid var(--color-border)' : 'none',
+              }}>
+                <div style={{
+                  width: '3px', borderRadius: '2px', flexShrink: 0, marginTop: '2px',
+                  alignSelf: 'stretch', minHeight: '20px',
+                  background: HIGHLIGHT_COLORS[i % HIGHLIGHT_COLORS.length],
+                }} />
+                <p style={{
+                  fontSize: '14px', lineHeight: 1.65,
+                  color: 'var(--color-foreground)', margin: 0,
+                  fontFamily: "'Spectral', Georgia, serif",
+                }}>
+                  {kp}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Secondary details (collapsible) ────────────────────────────── */}
+      {(hasTags || hasSource) && (
+        <div style={{ marginBottom: '16px' }}>
+          <button
+            onClick={() => setSecondaryOpen((o) => !o)}
             style={{
-              background: gradient,
-              minHeight: '280px',
-              boxShadow: 'inset 6px 0 0 rgba(255,255,255,.12), inset -8px 0 16px rgba(0,0,0,.2), 0 24px 50px -24px rgba(42,38,32,.5)',
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', borderRadius: secondaryOpen ? '12px 12px 0 0' : '12px',
+              border: '1px solid var(--color-border)', borderBottom: secondaryOpen ? 'none' : '1px solid var(--color-border)',
+              background: 'var(--color-card)', cursor: 'pointer',
+              fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)',
+              fontFamily: "'Inter', system-ui, sans-serif",
             }}
           >
-            {/* Gold ribbon */}
-            <div
-              className="absolute top-0 right-8 w-3.5 h-12 rounded-b"
-              style={{ background: '#c79a3e', boxShadow: '0 3px 5px rgba(0,0,0,.25)' }}
-            />
-            <p className="text-xs uppercase tracking-widest text-white/70 mb-2">{topic}</p>
-            <h2 className="font-display font-bold text-white leading-tight" style={{ fontSize: '22px' }}>
-              {learning.title}
-            </h2>
-            <p className="text-xs text-white/60 mt-3">
-              Captured {new Date(learning.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              {reviewItems.length > 0 && ` · ${reviewItems.length} cards`}
-            </p>
-          </div>
+            <span>Tags &amp; Source</span>
+            {secondaryOpen
+              ? <ChevronUp style={{ width: 14, height: 14 }} />
+              : <ChevronDown style={{ width: 14, height: 14 }} />}
+          </button>
 
-          {/* CTAs */}
-          <Button onClick={() => router.push('/review')} className="w-full gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Review Queue →
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/library/${learningId}/quiz`)}
-            className="w-full gap-2"
-          >
-            <Zap className="h-4 w-4" />
-            Test Yourself
-            {latestQuizScore !== null && (
-              <span className="ml-auto text-xs text-muted-foreground">Last: {latestQuizScore}%</span>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/teachback?learningId=${learningId}`)}
-            className="w-full gap-2"
-          >
-            <Brain className="h-4 w-4" />
-            Teach Back
-            {teachBackHistory.length > 0 && (
-              <span className="ml-auto text-xs text-muted-foreground">{teachBackHistory.length}×</span>
-            )}
-          </Button>
-        </div>
-
-        {/* RIGHT — content blocks */}
-        <div className="flex-1 min-w-0 space-y-4">
-
-          {/* Summary */}
-          {learning.summary && (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h4 className="font-display font-semibold text-primary text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
-                ✦ AI Summary
-                <span className="text-muted-foreground font-sans text-xs normal-case tracking-normal">— the back cover</span>
-              </h4>
-              <p className="font-display text-foreground leading-relaxed" style={{ fontSize: '15px' }}>
-                {learning.summary}
-              </p>
-            </div>
-          )}
-
-          {/* Key Points as highlights */}
-          {(learning.keyPoints ?? []).length > 0 && (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h4 className="font-display font-semibold text-primary text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
-                ✎ Key Points
-                <span className="text-muted-foreground font-sans text-xs normal-case tracking-normal">— margin notes</span>
-              </h4>
-              <div className="space-y-0">
-                {(learning.keyPoints ?? []).map((kp, i) => (
-                  <div key={i} className="flex gap-3 py-3 border-b border-border last:border-0">
-                    <div
-                      className="w-1 rounded-full flex-shrink-0 mt-0.5"
-                      style={{ background: HIGHLIGHT_COLORS[i % HIGHLIGHT_COLORS.length] }}
-                    />
-                    <p className="text-sm text-foreground leading-relaxed">{kp}</p>
+          {secondaryOpen && (
+            <div style={{
+              border: '1px solid var(--color-border)', borderTop: 'none',
+              borderRadius: '0 0 12px 12px',
+              background: 'var(--color-card)', padding: '16px 20px',
+              display: 'flex', flexDirection: 'column', gap: '16px',
+            }}>
+              {hasTags && (
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-muted-foreground)', marginBottom: '8px', fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: '1px', textTransform: 'uppercase' }}>Tags</p>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {learning.topic && <Badge variant="brand">{learning.topic}</Badge>}
+                    {(learning.tags ?? []).map((t) => (
+                      <Badge key={t} variant="outline">#{t}</Badge>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tags */}
-          {((learning.tags ?? []).length > 0 || learning.topic) && (
-            <div className="rounded-xl border border-border bg-card p-5">
-              <h4 className="font-display font-semibold text-foreground text-sm mb-3">Tags</h4>
-              <div className="flex gap-2 flex-wrap">
-                {learning.topic && <Badge variant="brand">{learning.topic}</Badge>}
-                {(learning.tags ?? []).map((t) => (
-                  <Badge key={t} variant="outline">#{t}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Source */}
-          {(learning.sourceRef || learning.author || learning.domain) && (
-            <div className="rounded-xl border border-border bg-card p-5 space-y-1.5">
-              <h4 className="font-display font-semibold text-foreground text-sm mb-2">Source</h4>
-              {learning.author && (
-                <p className="text-sm text-foreground">By <span className="font-medium">{learning.author}</span></p>
+                </div>
               )}
-              {learning.publishDate && (
-                <p className="text-xs text-muted-foreground">
-                  {new Date(learning.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
-              )}
-              {learning.sourceRef && (
-                <a
-                  href={learning.sourceRef}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-primary hover:underline break-all"
-                >
-                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                  {learning.domain ?? (() => { try { return new URL(learning.sourceRef!).hostname; } catch { return learning.sourceRef; } })()}
-                </a>
+              {hasSource && (
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-muted-foreground)', marginBottom: '8px', fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: '1px', textTransform: 'uppercase' }}>Source</p>
+                  {learning.author && (
+                    <p style={{ fontSize: '13px', color: 'var(--color-foreground)', marginBottom: '4px', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                      By <strong>{learning.author}</strong>
+                    </p>
+                  )}
+                  {learning.publishDate && (
+                    <p style={{ fontSize: '12px', color: 'var(--color-muted-foreground)', marginBottom: '4px', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                      {new Date(learning.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                  )}
+                  {learning.sourceRef && (
+                    <a
+                      href={learning.sourceRef}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-primary, #b5462f)', fontFamily: "'Inter', system-ui, sans-serif", wordBreak: 'break-all' }}
+                    >
+                      <ExternalLink style={{ width: 11, height: 11, flexShrink: 0 }} />
+                      {learning.domain ?? (() => { try { return new URL(learning.sourceRef!).hostname; } catch { return learning.sourceRef; } })()}
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           )}
-
-          {/* Activity History */}
-          <HistoryPanel
-            teachBackHistory={teachBackHistory}
-            quizHistory={quizHistory}
-            reviewCardHistory={reviewCardHistory}
-          />
         </div>
+      )}
+
+      {/* ── Activity history (collapsible) ─────────────────────────────── */}
+      <div style={{ marginBottom: '16px' }}>
+        <button
+          onClick={() => setHistoryOpen((o) => !o)}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 16px', borderRadius: historyOpen ? '12px 12px 0 0' : '12px',
+            border: '1px solid var(--color-border)', borderBottom: historyOpen ? 'none' : '1px solid var(--color-border)',
+            background: 'var(--color-card)', cursor: 'pointer',
+            fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Activity History
+            {totalActivity > 0 && (
+              <span style={{
+                fontSize: '11px', fontWeight: 700, color: '#b5462f',
+                background: 'rgba(181,70,47,.1)', borderRadius: '20px',
+                padding: '1px 8px', fontFamily: "'Inter', system-ui, sans-serif",
+              }}>
+                {totalActivity}
+              </span>
+            )}
+          </span>
+          {historyOpen
+            ? <ChevronUp style={{ width: 14, height: 14 }} />
+            : <ChevronDown style={{ width: 14, height: 14 }} />}
+        </button>
+
+        {historyOpen && (
+          <div style={{
+            border: '1px solid var(--color-border)', borderTop: 'none',
+            borderRadius: '0 0 12px 12px', overflow: 'hidden',
+          }}>
+            <HistoryPanel
+              teachBackHistory={teachBackHistory}
+              quizHistory={quizHistory}
+              reviewCardHistory={reviewCardHistory}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── Sticky CTA bar ─────────────────────────────────────────────── */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: '192px', right: 0,
+        padding: '12px 24px 16px',
+        background: 'var(--color-background)',
+        borderTop: '1px solid var(--color-border)',
+        display: 'flex', gap: '10px', alignItems: 'center',
+        zIndex: 40,
+      }}>
+        {/* Review */}
+        <button
+          onClick={() => router.push('/review')}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            background: '#b5462f', color: '#fff', border: 'none', borderRadius: '9px',
+            padding: '11px 0', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            boxShadow: '0 4px 12px -4px rgba(181,70,47,.5)',
+          }}
+        >
+          <RotateCcw style={{ width: 14, height: 14 }} />
+          Review
+        </button>
+
+        {/* Test Yourself */}
+        <button
+          onClick={() => router.push(`/library/${learningId}/quiz`)}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            background: 'var(--color-card)', color: 'var(--color-foreground)',
+            border: '1px solid var(--color-border)', borderRadius: '9px',
+            padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          <Zap style={{ width: 14, height: 14 }} />
+          Test Yourself
+          {latestQuizScore !== null && (
+            <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)', marginLeft: '2px' }}>
+              {latestQuizScore}%
+            </span>
+          )}
+        </button>
+
+        {/* Teach Back */}
+        <button
+          onClick={() => router.push(`/teachback?learningId=${learningId}`)}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+            background: 'var(--color-card)', color: 'var(--color-foreground)',
+            border: '1px solid var(--color-border)', borderRadius: '9px',
+            padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          <Brain style={{ width: 14, height: 14 }} />
+          Teach Back
+          {teachBackHistory.length > 0 && (
+            <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)', marginLeft: '2px' }}>
+              {teachBackHistory.length}×
+            </span>
+          )}
+        </button>
       </div>
     </div>
   );
