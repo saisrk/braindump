@@ -18,7 +18,7 @@ export function Sidebar({ dueCount, userEmail, userName }: SidebarProps) {
 
   async function handleSignOut() {
     await signOut({ redirect: false });
-    router.push('/landing');
+    router.push('/');
   }
 
   const initial = (userName || userEmail || '?').charAt(0).toUpperCase();
