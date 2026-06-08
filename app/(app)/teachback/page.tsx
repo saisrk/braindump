@@ -2,35 +2,43 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { PageHeader } from '@/components/ui/page-header'
+import { BookLoader } from '@/components/ui/book-loader'
 import { submitTeachBack } from '@/lib/actions/teachback'
 import type { TeachBackFeedback } from '@/lib/ai/teachback'
 
-type TeachbackStep = 'intro' | 'input' | 'result'
+const MIN_LOADER_MS = 2500
+
+type TeachbackStep = 'intro' | 'input' | 'loading' | 'result'
 
 export default function TeachbackPage() {
   const router = useRouter()
   const [step, setStep] = useState<TeachbackStep>('intro')
   const [explanation, setExplanation] = useState('')
-  const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<TeachBackFeedback | null>(null)
   const mockLearningId = 'learning-1'
 
   const handleSubmit = async () => {
     if (!explanation.trim()) return
-    setLoading(true)
+    setStep('loading')
+    const start = Date.now()
     try {
       const result = await submitTeachBack({ learningId: mockLearningId, explanation })
-      if (result.ok && result.feedback) {
-        setFeedback(result.feedback)
-        setStep('result')
-      }
+      const elapsed = Date.now() - start
+      const delay = Math.max(0, MIN_LOADER_MS - elapsed)
+      setTimeout(() => {
+        if (result.ok && result.feedback) {
+          setFeedback(result.feedback)
+          setStep('result')
+        } else {
+          setStep('input')
+        }
+      }, delay)
     } catch (error) {
       console.error('[v0] Teachback failed:', error)
-    } finally {
-      setLoading(false)
+      setStep('input')
     }
   }
 
@@ -88,6 +96,8 @@ export default function TeachbackPage() {
           </div>
         )}
 
+        {step === 'loading' && <BookLoader variant="teachback" />}
+
         {step === 'input' && (
           <div className="max-w-xl">
             <div className="rounded-xl border border-border bg-card p-6 space-y-4">
@@ -107,11 +117,11 @@ export default function TeachbackPage() {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={loading || !explanation.trim()}
+                  disabled={!explanation.trim()}
                   className="flex-1 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-all"
                   style={{ background: '#b5462f' }}
                 >
-                  {loading ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Grading…</span> : 'Get Feedback'}
+                  Get Feedback
                 </button>
               </div>
             </div>

@@ -8,6 +8,7 @@ import { getOwnedReviewItem } from '@/lib/data/reviews';
 import { recordActivity } from '@/lib/data/activity';
 import { GRADE_MAP, schedule, type GradeLabel } from '@/lib/sr';
 import { revalidatePath } from 'next/cache';
+import type { ReviewHistoryEntry } from '@/db/schema/review-items';
 
 export interface GradeReviewResult {
   ok: boolean;
@@ -29,6 +30,14 @@ export async function gradeReviewItem(input: {
     GRADE_MAP[input.grade]
   );
 
+  const newEntry: ReviewHistoryEntry = {
+    grade: input.grade,
+    gradedAt: new Date().toISOString(),
+    intervalBefore: item.srInterval ?? 1,
+  };
+
+  const existing = (item.reviewHistory as ReviewHistoryEntry[] | null) ?? [];
+
   await db
     .update(reviewItems)
     .set({
@@ -36,6 +45,7 @@ export async function gradeReviewItem(input: {
       srEase: result.ease,
       dueDate: result.dueDate,
       lastReviewed: new Date(),
+      reviewHistory: [...existing, newEntry],
     })
     .where(eq(reviewItems.id, input.itemId));
 

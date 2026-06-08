@@ -50,6 +50,13 @@
       "when": 1780847223296,
       "tag": "0006_parched_shadow_king",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780928209302,
+      "tag": "0007_clean_shooting_star",
+      "breakpoints": true
     }
   ]
 }

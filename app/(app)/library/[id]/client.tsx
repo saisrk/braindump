@@ -5,8 +5,10 @@ import { ExternalLink, ArrowLeft, RotateCcw, Zap, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { topicGradient } from '@/lib/book-colors';
+import { HistoryPanel } from './history-panel';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { learnings, reviewItems, teachBacks } from '@/db/schema';
+import type { TeachBackRecord, QuizRecord, ReviewCardHistory } from '@/lib/data/history';
 
 type Learning = InferSelectModel<typeof learnings>;
 type ReviewItem = InferSelectModel<typeof reviewItems>;
@@ -21,9 +23,22 @@ interface Props {
   confidence: number;
   learningId: string;
   latestQuizScore: number | null;
+  teachBackHistory: TeachBackRecord[];
+  quizHistory: QuizRecord[];
+  reviewCardHistory: ReviewCardHistory[];
 }
 
-export function LearningDetailClient({ learning, reviewItems, teachBacks, confidence, learningId, latestQuizScore }: Props) {
+export function LearningDetailClient({
+  learning,
+  reviewItems,
+  teachBacks,
+  confidence,
+  learningId,
+  latestQuizScore,
+  teachBackHistory,
+  quizHistory,
+  reviewCardHistory,
+}: Props) {
   const router = useRouter();
   const topic = learning.topic ?? 'Uncategorised';
   const gradient = topicGradient(topic);
@@ -88,6 +103,9 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
           >
             <Brain className="h-4 w-4" />
             Teach Back
+            {teachBackHistory.length > 0 && (
+              <span className="ml-auto text-xs text-muted-foreground">{teachBackHistory.length}×</span>
+            )}
           </Button>
         </div>
 
@@ -166,6 +184,13 @@ export function LearningDetailClient({ learning, reviewItems, teachBacks, confid
               )}
             </div>
           )}
+
+          {/* Activity History */}
+          <HistoryPanel
+            teachBackHistory={teachBackHistory}
+            quizHistory={quizHistory}
+            reviewCardHistory={reviewCardHistory}
+          />
         </div>
       </div>
     </div>

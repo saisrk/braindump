@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { BookLoader } from '@/components/ui/book-loader'
 import { getReviewItems } from '@/lib/actions/insights'
 import { gradeReviewItem } from '@/lib/actions/review'
 import type { DueReviewItem } from '@/lib/data/reviews'
+
+const MIN_LOADER_MS = 2500
 
 export default function ReviewPage() {
   const router = useRouter()
@@ -18,16 +21,28 @@ export default function ReviewPage() {
   const [reviewing, setReviewing] = useState(false)
 
   useEffect(() => {
+    const start = Date.now()
     getReviewItems()
-      .then(setItems)
-      .catch(console.error)
-      .finally(() => setLoading(false))
+      .then((data) => {
+        const elapsed = Date.now() - start
+        const delay = Math.max(0, MIN_LOADER_MS - elapsed)
+        setTimeout(() => {
+          setItems(data)
+          setLoading(false)
+        }, delay)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
   }, [])
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground text-sm">Loading…</div>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+          <BookLoader variant="review" />
+        </div>
       </div>
     )
   }

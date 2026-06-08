@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Loader2, ArrowLeft, CheckCircle2, XCircle, RotateCcw, BookOpen } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
+import { BookLoader } from '@/components/ui/book-loader';
 import { getQuizQuestions, submitQuizAttempt } from '@/lib/actions/quiz';
 import type { QuizQuestion, QuizAnswer } from '@/db/schema';
 
 type Stage = 'loading' | 'cooldown' | 'quiz' | 'submitting' | 'results' | 'error';
+
+const MIN_LOADER_MS = 2500;
 
 export default function QuizPage() {
   const params = useParams();
@@ -28,19 +31,24 @@ export default function QuizPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
+    const start = Date.now();
     getQuizQuestions(learningId).then((res) => {
-      if (!res.ok) {
-        if (res.cooldownHours) {
-          setCooldownHours(res.cooldownHours);
-          setStage('cooldown');
-        } else {
-          setErrorMsg(res.error ?? 'Failed to load quiz.');
-          setStage('error');
+      const elapsed = Date.now() - start;
+      const delay = Math.max(0, MIN_LOADER_MS - elapsed);
+      setTimeout(() => {
+        if (!res.ok) {
+          if (res.cooldownHours) {
+            setCooldownHours(res.cooldownHours);
+            setStage('cooldown');
+          } else {
+            setErrorMsg(res.error ?? 'Failed to load quiz.');
+            setStage('error');
+          }
+          return;
         }
-        return;
-      }
-      setQuestions(res.questions ?? []);
-      setStage('quiz');
+        setQuestions(res.questions ?? []);
+        setStage('quiz');
+      }, delay);
     });
   }, [learningId]);
 
@@ -82,10 +90,9 @@ export default function QuizPage() {
   // ── Loading ──────────────────────────────────────────────────────────
   if (stage === 'loading' || stage === 'submitting') {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm">{stage === 'submitting' ? 'Grading your answers…' : 'Generating quiz…'}</p>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+          <BookLoader variant="quiz" />
         </div>
       </div>
     );
