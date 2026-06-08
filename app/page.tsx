@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { FeatureCards } from './feature-cards'
 
 export default function LandingPage() {
   return (
@@ -81,30 +82,11 @@ export default function LandingPage() {
       </div>
 
       {/* Features */}
-      <section style={{ padding: '64px 40px', maxWidth: '960px', margin: '0 auto', width: '100%' }}>
+      <section style={{ padding: '64px 40px', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
         <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', textAlign: 'center', marginBottom: '40px', color: '#2a2620' }}>
           Your complete learning system
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-          {[
-            { icon: '⚡', color: '#b5462f', title: 'Capture', desc: 'Paste URLs or write notes — AI summarizes and organizes everything into your shelves.' },
-            { icon: '🔁', color: '#46557a', title: 'Smart Review', desc: 'Spaced repetition flashcards surface at the perfect moment. Never forget what matters.' },
-            { icon: '🎯', color: '#c79a3e', title: 'Teach Back', desc: 'Explain in your own words. AI identifies gaps and guides you to deeper understanding.' },
-            { icon: '✨', color: '#6f8a5a', title: 'Express', desc: 'Turn your library into talking points, STAR stories, or a profile summary in seconds.' },
-          ].map((feat, i) => (
-            <div key={i} style={{ background: '#fff', border: '1px solid #e6e0d4', borderRadius: '12px', padding: '24px 20px', boxShadow: '0 8px 24px -16px rgba(42,38,32,.3)' }}>
-              <div style={{ width: '44px', height: '44px', background: feat.color, borderRadius: '10px', display: 'grid', placeItems: 'center', fontSize: '20px', marginBottom: '14px' }}>
-                {feat.icon}
-              </div>
-              <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 600, fontSize: '17px', color: '#2a2620', marginBottom: '8px' }}>
-                {feat.title}
-              </h3>
-              <p style={{ fontSize: '14px', color: '#7c7361', lineHeight: '1.55' }}>
-                {feat.desc}
-              </p>
-            </div>
-          ))}
-        </div>
+        <FeatureCards />
       </section>
 
       {/* How it works */}
