@@ -88,8 +88,8 @@ export default async function LibraryPage({
               )}
             </div>
           ) : (
-            /* Bookshelf view grouped by topic */
-            <div>
+            /* Bookshelf view grouped by topic — 2-column grid */
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', alignItems: 'start' }}>
               {Array.from(grouped.entries()).map(([topic, items]) => (
                 <BookShelf key={topic} topic={topic} learnings={items} />
               ))}
