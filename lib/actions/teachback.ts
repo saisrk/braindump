@@ -41,9 +41,15 @@ export async function submitTeachBack(input: {
 
     await db.insert(teachBacks).values({
       learningId: learning.id,
+      userId,
       userExplanation: input.explanation.trim(),
       aiFeedback: JSON.stringify(feedback),
       gapScore: feedback.gapScore,
+      verdict: feedback.verdict,
+      nailedPoints: feedback.nailed,
+      gapAreas: feedback.gaps,
+      followUpQuestions: feedback.followUpQuestions,
+      encouragement: feedback.encouragement,
     });
 
     revalidatePath(`/library/${learning.id}`);

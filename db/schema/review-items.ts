@@ -1,5 +1,11 @@
-import { pgTable, uuid, text, integer, real, date, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, real, date, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { learnings } from './learnings';
+
+export interface ReviewHistoryEntry {
+  grade: 'again' | 'hard' | 'good' | 'easy';
+  gradedAt: string; // ISO timestamp
+  intervalBefore: number;
+}
 
 export const reviewItems = pgTable('review_items', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -11,4 +17,5 @@ export const reviewItems = pgTable('review_items', {
   srEase: real('sr_ease').default(2.5),
   dueDate: date('due_date').notNull(),
   lastReviewed: timestamp('last_reviewed', { withTimezone: true }),
+  reviewHistory: jsonb('review_history').$type<ReviewHistoryEntry[]>().default([]),
 });

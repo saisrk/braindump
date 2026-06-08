@@ -3,6 +3,7 @@ import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getLearning } from '@/lib/data/learnings';
 import { requireUserId } from '@/lib/session';
 import { getLatestQuizAttempt } from '@/lib/data/quiz';
+import { getTeachBackHistory, getQuizHistory, getReviewCardHistory } from '@/lib/data/history';
 import { LearningDetailClient } from './client';
 import { PageHeader } from '@/components/ui/page-header';
 
@@ -19,7 +20,13 @@ export default async function LearningDetailPage({
     if (!result) redirect('/library');
 
     const { learning, reviewItems, teachBacks, confidence } = result;
-    const latestQuiz = await getLatestQuizAttempt(userId, id);
+
+    const [latestQuiz, teachBackHistory, quizHistory, reviewCardHistory] = await Promise.all([
+      getLatestQuizAttempt(userId, id),
+      getTeachBackHistory(userId, id),
+      getQuizHistory(userId, id),
+      getReviewCardHistory(userId, id),
+    ]);
 
     return (
       <div className="flex flex-col h-full">
@@ -37,6 +44,9 @@ export default async function LearningDetailPage({
               confidence={confidence}
               learningId={id}
               latestQuizScore={latestQuiz?.score ?? null}
+              teachBackHistory={teachBackHistory}
+              quizHistory={quizHistory}
+              reviewCardHistory={reviewCardHistory}
             />
           </div>
         </div>
