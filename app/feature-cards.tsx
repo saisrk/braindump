@@ -172,6 +172,7 @@ const FEATURES = [
 
 export function FeatureCards() {
   const [hovered, setHovered] = useState<number | null>(null)
+  const [tapped, setTapped] = useState<number | null>(null)
   const [previewKey, setPreviewKey] = useState(0)
 
   const handleEnter = (i: number) => {
@@ -192,6 +193,12 @@ export function FeatureCards() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+        /* Desktop: horizontal accordion */
+        .feat-row {
+          display: flex;
+          gap: 12px;
+          align-items: stretch;
+        }
         .feat-card {
           flex: 1;
           min-width: 0;
@@ -199,20 +206,17 @@ export function FeatureCards() {
           cursor: default;
           overflow: hidden;
         }
-        .feat-card.expanded {
-          flex: 2.6;
-        }
-        .feat-card.compressed {
-          flex: 0.7;
-        }
+        .feat-card.expanded { flex: 2.6; }
+        .feat-card.compressed { flex: 0.7; }
         .feat-preview {
           max-height: 0;
           overflow: hidden;
           opacity: 0;
           transition: max-height 0.4s ease, opacity 0.35s ease;
         }
-        .feat-card.expanded .feat-preview {
-          max-height: 240px;
+        .feat-card.expanded .feat-preview,
+        .feat-card.mobile-open .feat-preview {
+          max-height: 260px;
           opacity: 1;
         }
         .feat-detail {
@@ -221,44 +225,66 @@ export function FeatureCards() {
           opacity: 0;
           transition: max-height 0.35s ease, opacity 0.3s ease;
         }
-        .feat-card.expanded .feat-detail {
+        .feat-card.expanded .feat-detail,
+        .feat-card.mobile-open .feat-detail {
           max-height: 60px;
           opacity: 1;
         }
+        /* Mobile: vertical stack */
+        @media (max-width: 640px) {
+          .feat-row {
+            flex-direction: column;
+            gap: 10px;
+          }
+          .feat-card { flex: none !important; }
+          .feat-card.expanded { flex: none !important; }
+          .feat-card.compressed { flex: none !important; }
+        }
       `}</style>
 
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
+      <div className="feat-row">
         {FEATURES.map((feat, i) => {
           const state = hovered === null ? 'idle' : hovered === i ? 'expanded' : 'compressed'
+          const mobileOpen = tapped === i
           const { Preview } = feat
+          const isActive = state === 'expanded' || mobileOpen
           return (
             <div
               key={i}
-              className={`feat-card${state === 'expanded' ? ' expanded' : state === 'compressed' ? ' compressed' : ''}`}
+              className={[
+                'feat-card',
+                state === 'expanded' ? 'expanded' : state === 'compressed' ? 'compressed' : '',
+                mobileOpen ? 'mobile-open' : '',
+              ].join(' ').trim()}
               style={{
                 background: '#fff',
-                border: `1px solid ${state === 'expanded' ? feat.color : '#e6e0d4'}`,
+                border: `1px solid ${isActive ? feat.color : '#e6e0d4'}`,
                 borderRadius: '12px',
                 padding: '24px 20px',
-                boxShadow: state === 'expanded'
+                boxShadow: isActive
                   ? `0 16px 40px -12px rgba(42,38,32,.18), 0 0 0 1px ${feat.color}22`
                   : '0 8px 24px -16px rgba(42,38,32,.3)',
               }}
-              onMouseEnter={() => handleEnter(i)}
+              onMouseEnter={() => { handleEnter(i) }}
               onMouseLeave={() => setHovered(null)}
+              onClick={() => { setTapped(mobileOpen ? null : i); setPreviewKey((k) => k + 1) }}
             >
-              {/* Icon */}
-              <div style={{ width: '44px', height: '44px', background: feat.color, borderRadius: '10px', display: 'grid', placeItems: 'center', fontSize: '20px', marginBottom: '14px', flexShrink: 0 }}>
-                {feat.icon}
+              {/* Icon + title row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                <div style={{ width: '44px', height: '44px', background: feat.color, borderRadius: '10px', display: 'grid', placeItems: 'center', fontSize: '20px', flexShrink: 0 }}>
+                  {feat.icon}
+                </div>
+                <h3 style={{ fontFamily: S.serif, fontWeight: 600, fontSize: '17px', color: '#2a2620', margin: 0, whiteSpace: 'nowrap' }}>
+                  {feat.title}
+                </h3>
+                {/* Mobile tap indicator */}
+                <span style={{ marginLeft: 'auto', fontSize: '16px', color: feat.color, transition: 'transform 0.2s', transform: mobileOpen ? 'rotate(180deg)' : 'none', display: 'inline-block' }}>
+                  ›
+                </span>
               </div>
 
-              {/* Title */}
-              <h3 style={{ fontFamily: S.serif, fontWeight: 600, fontSize: '17px', color: '#2a2620', marginBottom: '8px', whiteSpace: 'nowrap' }}>
-                {feat.title}
-              </h3>
-
-              {/* Short desc — always visible */}
-              <p style={{ fontSize: '13px', color: '#7c7361', lineHeight: '1.55' }}>
+              {/* Short desc */}
+              <p style={{ fontSize: '13px', color: '#7c7361', lineHeight: '1.55', margin: 0 }}>
                 {feat.desc}
               </p>
 
@@ -271,7 +297,7 @@ export function FeatureCards() {
 
               {/* Live preview */}
               <div className="feat-preview">
-                {hovered === i && <Preview key={previewKey} />}
+                {(hovered === i || tapped === i) && <Preview key={previewKey} />}
               </div>
             </div>
           )

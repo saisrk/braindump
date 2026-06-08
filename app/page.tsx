@@ -13,10 +13,27 @@ export default function LandingPage() {
           transform: translateY(-18px);
           box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18);
         }
+        .landing-hero-title { font-size: 58px; }
+        .landing-hero-section { padding: 80px 40px 64px; }
+        .landing-nav { padding: 18px 40px; }
+        .landing-bookshelf { padding: 0 40px 64px; }
+        .landing-features-section { padding: 64px 40px; max-width: 1080px; }
+        .landing-how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+        .landing-how-section { padding: 48px 40px 80px; max-width: 860px; }
+        @media (max-width: 640px) {
+          .landing-nav { padding: 14px 20px; }
+          .landing-hero-title { font-size: 36px; }
+          .landing-hero-section { padding: 48px 20px 40px; }
+          .landing-bookshelf { padding: 0 20px 40px; }
+          .landing-bookshelf .book-row { gap: 3px; }
+          .landing-features-section { padding: 40px 20px; }
+          .landing-how-grid { grid-template-columns: 1fr; gap: 28px; }
+          .landing-how-section { padding: 32px 20px 60px; }
+        }
       `}</style>
 
       {/* Nav */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 40px', borderBottom: '1px solid #e6e0d4', background: '#f5f2ec' }}>
+      <nav className="landing-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6e0d4', background: '#f5f2ec' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ width: '34px', height: '34px', background: '#b5462f', borderRadius: '6px', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -36,11 +53,11 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ textAlign: 'center', padding: '80px 40px 64px', maxWidth: '760px', margin: '0 auto' }}>
+      <section className="landing-hero-section" style={{ textAlign: 'center', maxWidth: '760px', margin: '0 auto' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase', color: '#b5462f', marginBottom: '20px' }}>
           Knowledge Externalization Engine
         </p>
-        <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '58px', lineHeight: '1.08', color: '#2a2620', marginBottom: '24px', letterSpacing: '-0.5px' }}>
+        <h1 className="landing-hero-title" style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, lineHeight: '1.08', color: '#2a2620', marginBottom: '24px', letterSpacing: '-0.5px' }}>
           Build a{' '}
           <em style={{ color: '#b5462f', fontStyle: 'italic' }}>library</em>
           {' '}of everything you learn
@@ -56,8 +73,8 @@ export default function LandingPage() {
       </section>
 
       {/* Bookshelf illustration */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 40px 64px' }}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '0 16px' }}>
+      <div className="landing-bookshelf" style={{ display: 'flex', justifyContent: 'center' }}>
+        <div className="book-row" style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '0 16px' }}>
           {[
             { h: 130, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Deep Work' },
             { h: 158, grad: 'linear-gradient(160deg, #6f8a5a, #4a6040)', title: 'Psychology' },
@@ -82,7 +99,7 @@ export default function LandingPage() {
       </div>
 
       {/* Features */}
-      <section style={{ padding: '64px 40px', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+      <section className="landing-features-section" style={{ margin: '0 auto', width: '100%' }}>
         <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', textAlign: 'center', marginBottom: '40px', color: '#2a2620' }}>
           Your complete learning system
         </h2>
@@ -90,11 +107,11 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section style={{ padding: '48px 40px 80px', maxWidth: '860px', margin: '0 auto', width: '100%', textAlign: 'center' }}>
+      <section className="landing-how-section" style={{ margin: '0 auto', width: '100%', textAlign: 'center' }}>
         <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', marginBottom: '48px', color: '#2a2620' }}>
           How it works
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+        <div className="landing-how-grid">
           {[
             { n: '1', title: 'Capture the concept', desc: 'Paste a URL, article, or write a note. AI extracts and organises the key ideas.' },
             { n: '2', title: 'Review & reinforce', desc: 'Spaced repetition schedules the right moment to review — locking it into long-term memory.' },
