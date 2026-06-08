@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, ArrowLeft, RotateCcw, Zap, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { topicGradient } from '@/lib/book-colors';
 import { HistoryPanel } from './history-panel';
@@ -291,70 +291,6 @@ export function LearningDetailClient({
         )}
       </div>
 
-      {/* ── Sticky CTA bar ─────────────────────────────────────────────── */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: '192px', right: 0,
-        padding: '12px 24px 16px',
-        background: 'var(--color-background)',
-        borderTop: '1px solid var(--color-border)',
-        display: 'flex', gap: '10px', alignItems: 'center',
-        zIndex: 40,
-      }}>
-        {/* Review */}
-        <button
-          onClick={() => router.push('/review')}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-            background: '#b5462f', color: '#fff', border: 'none', borderRadius: '9px',
-            padding: '11px 0', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-            fontFamily: "'Inter', system-ui, sans-serif",
-            boxShadow: '0 4px 12px -4px rgba(181,70,47,.5)',
-          }}
-        >
-          <RotateCcw style={{ width: 14, height: 14 }} />
-          Review
-        </button>
-
-        {/* Test Yourself */}
-        <button
-          onClick={() => router.push(`/library/${learningId}/quiz`)}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-            background: 'var(--color-card)', color: 'var(--color-foreground)',
-            border: '1px solid var(--color-border)', borderRadius: '9px',
-            padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}
-        >
-          <Zap style={{ width: 14, height: 14 }} />
-          Test Yourself
-          {latestQuizScore !== null && (
-            <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)', marginLeft: '2px' }}>
-              {latestQuizScore}%
-            </span>
-          )}
-        </button>
-
-        {/* Teach Back */}
-        <button
-          onClick={() => router.push(`/teachback?learningId=${learningId}`)}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-            background: 'var(--color-card)', color: 'var(--color-foreground)',
-            border: '1px solid var(--color-border)', borderRadius: '9px',
-            padding: '11px 0', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}
-        >
-          <Brain style={{ width: 14, height: 14 }} />
-          Teach Back
-          {teachBackHistory.length > 0 && (
-            <span style={{ fontSize: '11px', color: 'var(--color-muted-foreground)', marginLeft: '2px' }}>
-              {teachBackHistory.length}×
-            </span>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
