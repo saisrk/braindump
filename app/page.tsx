@@ -3,6 +3,16 @@ import Link from 'next/link'
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: '#f5f2ec', color: '#2a2620', fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <style>{`
+        .landing-book {
+          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+          cursor: pointer;
+        }
+        .landing-book:hover {
+          transform: translateY(-18px);
+          box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18);
+        }
+      `}</style>
 
       {/* Nav */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 40px', borderBottom: '1px solid #e6e0d4', background: '#f5f2ec' }}>
@@ -56,7 +66,7 @@ export default function LandingPage() {
             { h: 152, grad: 'linear-gradient(160deg, #5a6a7a, #3e4e5e)', title: 'Philosophy' },
             { h: 124, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Science' },
           ].map((book, i) => (
-            <div key={i} style={{ position: 'relative', width: '42px', height: `${book.h}px`, background: book.grad, borderRadius: '3px 4px 4px 3px', boxShadow: 'inset -3px 0 6px rgba(0,0,0,.18), 2px 0 4px rgba(0,0,0,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'default' }}>
+            <div key={i} className="landing-book" style={{ position: 'relative', width: '42px', height: `${book.h}px`, background: book.grad, borderRadius: '3px 4px 4px 3px', boxShadow: 'inset -3px 0 6px rgba(0,0,0,.18), 2px 0 4px rgba(0,0,0,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {i === 3 && (
                 <div style={{ position: 'absolute', top: 0, right: '6px', width: '8px', height: '28px', background: '#c79a3e', borderRadius: '0 0 3px 3px', boxShadow: '0 2px 4px rgba(0,0,0,.2)' }} />
               )}
