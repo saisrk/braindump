@@ -22,49 +22,44 @@ export function Sidebar({ dueCount, userEmail, userName }: SidebarProps) {
   }
 
   const initial = (userName || userEmail || '?').charAt(0).toUpperCase();
+  const displayName = userName || userEmail?.split('@')[0] || 'Learner';
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-border bg-gradient-to-b from-primary/5 to-transparent md:flex" style={{ borderRightColor: 'rgba(0, 240, 255, 0.18)' }}>
-      {/* Logo/Branding */}
-      <div className="flex items-center gap-3 px-4 py-5">
-        <div 
-          className="h-8 w-8 flex-shrink-0 grid place-items-center border-2 border-primary"
-          style={{
-            transform: 'rotate(45deg)',
-            boxShadow: '0 0 16px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1)',
-          }}
+    <aside className="sticky top-0 hidden h-screen w-64 flex-col bg-background border-r border-border md:flex">
+      {/* Brand */}
+      <div className="flex items-center gap-3 px-5 py-6">
+        <div
+          className="h-9 w-9 flex-shrink-0 grid place-items-center rounded-lg"
+          style={{ background: '#b5462f', boxShadow: '0 5px 12px -5px rgba(181,70,47,.7)' }}
         >
-          <div 
-            className="w-2 h-2 bg-primary"
-            style={{
-              boxShadow: '0 0 8px rgba(0, 240, 255, 0.6)',
-              transform: 'rotate(-45deg)',
-            }}
-          />
+          {/* Journal mark icon */}
+          <svg width="18" height="20" viewBox="0 0 18 20" fill="none" aria-hidden="true">
+            <rect x="3" y="1" width="12" height="18" rx="1" stroke="white" strokeWidth="2" fill="none" />
+            <rect x="1" y="3" width="3" height="14" rx="0.5" fill="white" fillOpacity="0.9" />
+            <line x1="6" y1="7" x2="13" y2="7" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="6" y1="10" x2="13" y2="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="6" y1="13" x2="10" y2="13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
         </div>
-        <span className="text-sm font-bold tracking-widest text-foreground" style={{ fontFamily: 'Chakra Petch' }}>
-          BRAINDUMP
-        </span>
+        <span className="font-display font-bold text-lg text-foreground">Braindump</span>
       </div>
 
-      {/* Capture Button - Glowing */}
-      <div className="px-3 pb-4">
+      {/* Capture button */}
+      <div className="px-4 pb-5">
         <Link
           href="/capture"
-          className="flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:-translate-y-0.5"
+          className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #00f0ff, #6af0ff)',
-            boxShadow: '0 0 22px rgba(0, 240, 255, 0.4)',
-            letterSpacing: '2px',
-            fontFamily: 'Chakra Petch',
+            background: '#b5462f',
+            boxShadow: '0 6px 14px -6px rgba(181,70,47,.7)',
           }}
         >
-          ⊕ CAPTURE
+          ✎ Capture
         </Link>
       </div>
 
-      {/* Navigation Items */}
-      <nav className="flex-1 space-y-1 px-3 py-2">
+      {/* Nav */}
+      <nav className="flex-1 space-y-0.5 px-3">
         {navItems.map((item) => (
           <NavLink
             key={item.href}
@@ -76,35 +71,31 @@ export function Sidebar({ dueCount, userEmail, userName }: SidebarProps) {
         ))}
       </nav>
 
-      {/* User Footer */}
-      <div className="border-t border-border px-3 py-4" style={{ borderTopColor: 'rgba(0, 240, 255, 0.18)' }}>
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div 
-            className="h-8 w-8 flex-shrink-0 grid place-items-center rounded-full border-2 border-primary text-xs font-bold text-primary"
-            style={{ 
-              background: 'rgba(0, 240, 255, 0.08)',
-              boxShadow: '0 0 12px rgba(0, 240, 255, 0.2)',
-            }}
+      {/* User footer */}
+      <div className="border-t border-border px-4 py-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div
+            className="h-8 w-8 flex-shrink-0 grid place-items-center rounded-lg text-sm font-bold text-white"
+            style={{ background: '#46557a' }}
           >
             {initial}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-foreground" style={{ fontFamily: 'Chakra Petch' }}>
-              {userName || 'Learner'}
+            <p className="truncate text-sm font-semibold text-foreground font-display">
+              {displayName}
             </p>
-            <p className="truncate text-xs text-muted-foreground" style={{ fontFamily: 'Share Tech Mono' }}>
-              LVL 08 · 2480 XP
-            </p>
+            {userEmail && (
+              <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+            )}
           </div>
         </div>
         <button
           type="button"
           onClick={handleSignOut}
-          className="mt-3 flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-200 border border-danger text-danger hover:bg-danger/10 hover:shadow-md hover:shadow-danger/20"
-          style={{ letterSpacing: '1px', fontFamily: 'Chakra Petch' }}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-danger hover:text-danger"
         >
-          <LogOut className="h-3 w-3" />
-          LOGOUT
+          <LogOut className="h-3.5 w-3.5" />
+          Sign out
         </button>
       </div>
     </aside>

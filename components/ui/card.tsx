@@ -3,14 +3,13 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 const cardVariants = cva(
-  'relative border border-border bg-card backdrop-filter backdrop-blur-sm text-card-foreground rounded-none',
+  'relative border border-border bg-card text-card-foreground rounded-xl',
   {
     variants: {
       variant: {
-        default: 'hud-frame',
-        elevated: 'hud-frame shadow-lg shadow-primary/10',
-        interactive:
-          'hud-frame transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20',
+        default: 'shadow-sm',
+        elevated: 'shadow-md',
+        interactive: 'shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5',
       },
       padding: {
         none: '',
@@ -34,11 +33,7 @@ export interface CardProps
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, padding, children, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={cn(cardVariants({ variant, padding }), className)}
-        {...props}
-      >
+      <div ref={ref} className={cn(cardVariants({ variant, padding }), className)} {...props}>
         {children}
       </div>
     );

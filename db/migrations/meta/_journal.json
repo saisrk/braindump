@@ -43,6 +43,13 @@
       "when": 1780759049221,
       "tag": "0005_ambiguous_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780847223296,
+      "tag": "0006_parched_shadow_king",
+      "breakpoints": true
     }
   ]
 }

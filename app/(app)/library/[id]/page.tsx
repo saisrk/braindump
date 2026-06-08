@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getLearning } from '@/lib/data/learnings';
 import { requireUserId } from '@/lib/session';
+import { getLatestQuizAttempt } from '@/lib/data/quiz';
 import { LearningDetailClient } from './client';
 import { PageHeader } from '@/components/ui/page-header';
 
@@ -18,6 +19,7 @@ export default async function LearningDetailPage({
     if (!result) redirect('/library');
 
     const { learning, reviewItems, teachBacks, confidence } = result;
+    const latestQuiz = await getLatestQuizAttempt(userId, id);
 
     return (
       <div className="flex flex-col h-full">
@@ -34,6 +36,7 @@ export default async function LearningDetailPage({
               teachBacks={teachBacks}
               confidence={confidence}
               learningId={id}
+              latestQuizScore={latestQuiz?.score ?? null}
             />
           </div>
         </div>
