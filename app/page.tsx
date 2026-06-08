@@ -1,224 +1,143 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* HUD Navigation */}
-      <nav className="flex justify-between items-center px-7 py-4.5 border-b" style={{ borderBottomColor: 'rgba(0, 240, 255, 0.18)', position: 'relative', zIndex: 50 }}>
-        <div className="flex items-center gap-3.25">
-          {/* Diamond Logo */}
-          <div 
-            className="h-9 w-9 flex-shrink-0 border-2 relative flex items-center justify-center"
-            style={{
-              borderColor: '#00f0ff',
-              transform: 'rotate(45deg)',
-              boxShadow: '0 0 16px #00f0ff, inset 0 0 10px rgba(0, 240, 255, 0.3)',
-            }}
-          >
-            <div 
-              className="w-2 h-2"
-              style={{
-                background: '#00f0ff',
-                boxShadow: '0 0 8px #00f0ff',
-                transform: 'rotate(-45deg)',
-              }}
-            />
+    <div className="flex flex-col min-h-screen" style={{ background: '#f5f2ec', color: '#2a2620', fontFamily: "'Inter', system-ui, sans-serif" }}>
+
+      {/* Nav */}
+      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 40px', borderBottom: '1px solid #e6e0d4', background: '#f5f2ec' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '34px', height: '34px', background: '#b5462f', borderRadius: '6px', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
+              <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
+              <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
+              <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
+            </svg>
           </div>
-          <h1 className="text-xl font-bold tracking-widest text-foreground" style={{ fontFamily: 'Chakra Petch', fontWeight: 700, fontSize: '20px', letterSpacing: '5px' }}>
-            BRAINDUMP
-          </h1>
+          <span style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '20px', color: '#2a2620' }}>Braindump</span>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <Link href="/home">
-            <button 
-              className="px-5.5 py-2.75 text-xs font-semibold transition-all duration-200 hover:text-background group"
-              style={{
-                fontFamily: 'Chakra Petch',
-                fontWeight: 600,
-                fontSize: '13px',
-                letterSpacing: '2px',
-                border: '1px solid #00f0ff',
-                color: '#00f0ff',
-                background: 'rgba(0, 240, 255, 0.06)',
-                cursor: 'pointer',
-              }}
-            >
-              OPEN APP
-            </button>
-          </Link>
-        </div>
+        <Link href="/home">
+          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 22px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)', transition: 'opacity 0.15s' }}>
+            Open App
+          </button>
+        </Link>
       </nav>
 
-      {/* Hero Section */}
-      <section className="py-20 md:py-28 text-center relative">
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(900px 600px at 70% -5%, rgba(0, 240, 255, 0.08), transparent 60%)',
-          }}
-        />
-        
-        <div className="relative z-10 max-w-2xl mx-auto px-7">
-          <p className="text-xs tracking-widest text-success uppercase mb-6" style={{ fontFamily: 'Share Tech Mono', fontSize: '12px', letterSpacing: '5px', color: '#00ff9c' }}>
-            // COGNITION SYSTEM ONLINE
-          </p>
-          
-          <h2 className="text-5xl md:text-6xl font-bold text-foreground leading-tight tracking-tight mb-6" style={{ fontFamily: 'Chakra Petch', fontWeight: 700, fontSize: '62px', letterSpacing: '1px', lineHeight: '1.04', textShadow: '0 0 40px rgba(0, 240, 255, 0.3)' }}>
-            REMEMBER{' '}
-            <span className="text-primary" style={{ color: '#00f0ff', textShadow: '0 0 24px #00f0ff' }}>
-              EVERYTHING
-            </span>
-            {' '}YOU LEARN
-          </h2>
-          
-          <p className="text-lg text-muted-foreground mb-10 font-medium" style={{ fontSize: '21px', color: '#5e93a0', fontWeight: 500, maxWidth: '600px', margin: '0 auto 36px' }}>
-            Capture knowledge from anywhere, review with AI-powered spaced repetition, and express your learnings with confidence.
-          </p>
-          
-          <Link href="/home">
-            <button 
-              className="px-10 py-4 text-base font-bold tracking-wide text-background inline-flex items-center gap-3 transition-all duration-200 hover:-translate-y-1"
-              style={{
-                background: 'linear-gradient(135deg, #00f0ff, #7af6ff)',
-                boxShadow: '0 0 30px -4px #00f0ff',
-                fontFamily: 'Chakra Petch',
-                fontWeight: 700,
-                fontSize: '15px',
-                letterSpacing: '3px',
-                padding: '16px 38px',
-                color: '#021014',
-                cursor: 'pointer',
-              }}
-            >
-              START LEARNING
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </Link>
-          
-          <p className="text-xs tracking-widest text-muted-foreground mt-10" style={{ fontFamily: 'Share Tech Mono', fontSize: '11px', letterSpacing: '3px', color: '#274b54', marginTop: '40px' }}>
-            [ CAPTURE ] [ REVIEW ] [ TEACH BACK ] [ EXPRESS ]
-          </p>
-        </div>
+      {/* Hero */}
+      <section style={{ textAlign: 'center', padding: '80px 40px 64px', maxWidth: '760px', margin: '0 auto' }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase', color: '#b5462f', marginBottom: '20px' }}>
+          Knowledge Externalization Engine
+        </p>
+        <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '58px', lineHeight: '1.08', color: '#2a2620', marginBottom: '24px', letterSpacing: '-0.5px' }}>
+          Build a{' '}
+          <em style={{ color: '#b5462f', fontStyle: 'italic' }}>library</em>
+          {' '}of everything you learn
+        </h1>
+        <p style={{ fontSize: '19px', color: '#7c7361', lineHeight: '1.6', maxWidth: '540px', margin: '0 auto 36px', fontWeight: 400 }}>
+          Capture knowledge from anywhere. Review with spaced repetition. Teach back to solidify understanding.
+        </p>
+        <Link href="/home">
+          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '10px', padding: '15px 36px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 8px 20px -6px rgba(181,70,47,.6)', transition: 'transform 0.15s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            Start your library →
+          </button>
+        </Link>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 px-7">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-4xl font-bold mb-3" style={{ fontFamily: 'Chakra Petch', fontWeight: 700, fontSize: '34px', letterSpacing: '1px' }}>YOUR COMPLETE LEARNING SYSTEM</h3>
-            <p className="text-lg text-muted-foreground" style={{ color: '#5e93a0', fontSize: '17px' }}>Four powerful tools working together to help you learn, retain, and apply knowledge.</p>
-          </div>
-          
-          <div className="grid gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
-            {[
-              { icon: '⚡', title: 'QUICK CAPTURE', desc: 'Paste URLs, write notes, or upload files. AI instantly summarizes and organizes your learnings.' },
-              { icon: '💎', title: 'SMART REVIEW', desc: 'Spaced repetition flashcards adapt to your memory. Review at the perfect moment to never forget.' },
-              { icon: '🎯', title: 'TEACH BACK', desc: 'Explain concepts in your own words. AI evaluates your understanding and identifies gaps.' },
-              { icon: '✨', title: 'EXPRESS MODE', desc: 'Generate talking points, STAR stories, or profile summaries from your captured knowledge.' },
-            ].map((feat, i) => (
-              <div 
-                key={i}
-                style={{
-                  border: '1px solid rgba(0, 240, 255, 0.18)',
-                  background: 'rgba(4, 18, 24, 0.62)',
-                  backdropFilter: 'blur(8px)',
-                  padding: '24px 20px 26px',
-                  position: 'relative',
-                }}
-              >
-                {/* Corner brackets */}
-                <div style={{ position: 'absolute', top: '-1px', left: '-1px', width: '14px', height: '14px', border: '2px solid #00f0ff', borderRight: 'none', borderBottom: 'none' }} />
-                <div style={{ position: 'absolute', top: '-1px', right: '-1px', width: '14px', height: '14px', border: '2px solid #00f0ff', borderLeft: 'none', borderBottom: 'none' }} />
-                
-                <div style={{ fontSize: '22px', marginBottom: '18px', color: '#00f0ff', width: '46px', height: '46px', display: 'grid', placeItems: 'center', border: '1px solid rgba(0, 240, 255, 0.4)', background: 'rgba(0, 240, 255, 0.05)' }}>
-                  {feat.icon}
-                </div>
-                <h4 style={{ fontFamily: 'Chakra Petch', fontWeight: 600, fontSize: '18px', marginBottom: '8px', letterSpacing: '0.5px', color: '#cdf6ff' }}>
-                  {feat.title}
-                </h4>
-                <p style={{ fontSize: '15px', color: '#5e93a0', lineHeight: '1.5' }}>
-                  {feat.desc}
-                </p>
-                <div style={{ position: 'absolute', bottom: '-1px', left: '-1px', width: '14px', height: '14px', border: '2px solid #00f0ff', borderRight: 'none', borderTop: 'none' }} />
-                <div style={{ position: 'absolute', bottom: '-1px', right: '-1px', width: '14px', height: '14px', border: '2px solid #00f0ff', borderLeft: 'none', borderTop: 'none' }} />
+      {/* Bookshelf illustration */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 40px 64px' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '0 16px' }}>
+          {[
+            { h: 130, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Deep Work' },
+            { h: 158, grad: 'linear-gradient(160deg, #6f8a5a, #4a6040)', title: 'Psychology' },
+            { h: 142, grad: 'linear-gradient(160deg, #46557a, #2f3d5e)', title: 'Systems' },
+            { h: 168, grad: 'linear-gradient(160deg, #c79a3e, #a07828)', title: 'Leadership' },
+            { h: 136, grad: 'linear-gradient(160deg, #8a5072, #633858)', title: 'Design' },
+            { h: 152, grad: 'linear-gradient(160deg, #5a6a7a, #3e4e5e)', title: 'Philosophy' },
+            { h: 124, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Science' },
+          ].map((book, i) => (
+            <div key={i} style={{ position: 'relative', width: '42px', height: `${book.h}px`, background: book.grad, borderRadius: '3px 4px 4px 3px', boxShadow: 'inset -3px 0 6px rgba(0,0,0,.18), 2px 0 4px rgba(0,0,0,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'default' }}>
+              {i === 3 && (
+                <div style={{ position: 'absolute', top: 0, right: '6px', width: '8px', height: '28px', background: '#c79a3e', borderRadius: '0 0 3px 3px', boxShadow: '0 2px 4px rgba(0,0,0,.2)' }} />
+              )}
+              <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                {book.title}
+              </span>
+            </div>
+          ))}
+          {/* shelf board */}
+          <div style={{ position: 'absolute', bottom: '-12px', left: '-8px', right: '-8px', height: '12px', background: '#d8cdb8', borderRadius: '0 0 4px 4px', boxShadow: '0 4px 8px -2px rgba(42,38,32,.2)' }} />
+        </div>
+      </div>
+
+      {/* Features */}
+      <section style={{ padding: '64px 40px', maxWidth: '960px', margin: '0 auto', width: '100%' }}>
+        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', textAlign: 'center', marginBottom: '40px', color: '#2a2620' }}>
+          Your complete learning system
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          {[
+            { icon: '⚡', color: '#b5462f', title: 'Capture', desc: 'Paste URLs or write notes — AI summarizes and organizes everything into your shelves.' },
+            { icon: '🔁', color: '#46557a', title: 'Smart Review', desc: 'Spaced repetition flashcards surface at the perfect moment. Never forget what matters.' },
+            { icon: '🎯', color: '#c79a3e', title: 'Teach Back', desc: 'Explain in your own words. AI identifies gaps and guides you to deeper understanding.' },
+            { icon: '✨', color: '#6f8a5a', title: 'Express', desc: 'Turn your library into talking points, STAR stories, or a profile summary in seconds.' },
+          ].map((feat, i) => (
+            <div key={i} style={{ background: '#fff', border: '1px solid #e6e0d4', borderRadius: '12px', padding: '24px 20px', boxShadow: '0 8px 24px -16px rgba(42,38,32,.3)' }}>
+              <div style={{ width: '44px', height: '44px', background: feat.color, borderRadius: '10px', display: 'grid', placeItems: 'center', fontSize: '20px', marginBottom: '14px' }}>
+                {feat.icon}
               </div>
-            ))}
-          </div>
+              <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 600, fontSize: '17px', color: '#2a2620', marginBottom: '8px' }}>
+                {feat.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#7c7361', lineHeight: '1.55' }}>
+                {feat.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 px-7">
-        <div className="max-w-6xl mx-auto text-center">
-          <h3 className="text-4xl font-bold mb-10" style={{ fontFamily: 'Chakra Petch', fontWeight: 700, fontSize: '34px', letterSpacing: '1px' }}>HOW IT WORKS</h3>
-          
-          <div className="grid gap-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginTop: '44px' }}>
-            {[
-              { num: '1', title: 'CAPTURE', desc: 'Save articles, notes, or ideas. AI extracts the key concepts automatically.' },
-              { num: '2', title: 'REVIEW', desc: 'Practice with spaced repetition. The app schedules reviews at the optimal time.' },
-              { num: '3', title: 'APPLY', desc: 'Use Express mode to articulate your knowledge when it matters most.' },
-            ].map((step, i) => (
-              <div key={i} style={{ textAlign: 'center', position: 'relative' }}>
-                <div 
-                  style={{
-                    width: '58px',
-                    height: '58px',
-                    border: '2px solid #00f0ff',
-                    borderRadius: '50%',
-                    fontSize: '22px',
-                    fontFamily: 'Chakra Petch',
-                    fontWeight: 700,
-                    color: '#00f0ff',
-                    boxShadow: '0 0 22px -4px #00f0ff',
-                    background: 'rgba(0, 240, 255, 0.05)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    margin: '0 auto 16px',
-                  }}
-                >
-                  {step.num}
-                </div>
-                <h4 style={{ fontFamily: 'Chakra Petch', fontWeight: 600, fontSize: '19px', marginBottom: '8px', color: '#cdf6ff' }}>
-                  {step.title}
-                </h4>
-                <p style={{ color: '#5e93a0', fontSize: '15px', lineHeight: '1.5', maxWidth: '280px', margin: '0 auto' }}>
-                  {step.desc}
-                </p>
+      {/* How it works */}
+      <section style={{ padding: '48px 40px 80px', maxWidth: '860px', margin: '0 auto', width: '100%', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', marginBottom: '48px', color: '#2a2620' }}>
+          How it works
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+          {[
+            { n: '1', title: 'Capture the concept', desc: 'Paste a URL, article, or write a note. AI extracts and organises the key ideas.' },
+            { n: '2', title: 'Review & reinforce', desc: 'Spaced repetition schedules the right moment to review — locking it into long-term memory.' },
+            { n: '3', title: 'Apply your knowledge', desc: 'Use Express mode to articulate what you know, in interviews, conversations, or writing.' },
+          ].map((step) => (
+            <div key={step.n} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #b5462f', color: '#b5462f', fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '22px', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                {step.n}
               </div>
-            ))}
-          </div>
+              <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 600, fontSize: '17px', color: '#2a2620' }}>
+                {step.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#7c7361', lineHeight: '1.55', maxWidth: '240px' }}>
+                {step.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 text-center px-7 mb-16">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-widest text-success uppercase mb-4" style={{ fontFamily: 'Share Tech Mono', fontSize: '12px', letterSpacing: '5px', color: '#00ff9c' }}>
-            READY TO START?
-          </p>
-          <Link href="/home">
-            <button 
-              className="px-10 py-4 text-base font-bold tracking-wide text-background inline-flex items-center gap-3 transition-all duration-200 hover:-translate-y-1"
-              style={{
-                background: 'linear-gradient(135deg, #00f0ff, #7af6ff)',
-                boxShadow: '0 0 30px -4px #00f0ff',
-                fontFamily: 'Chakra Petch',
-                fontWeight: 700,
-                fontSize: '15px',
-                letterSpacing: '3px',
-                padding: '16px 38px',
-                color: '#021014',
-                cursor: 'pointer',
-              }}
-            >
-              GET STARTED
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </Link>
-        </div>
-      </section>
+      {/* Footer CTA */}
+      <div style={{ background: '#fff', borderTop: '1px solid #e6e0d4', padding: '48px 40px', textAlign: 'center' }}>
+        <p style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '22px', color: '#2a2620', marginBottom: '20px', fontStyle: 'italic' }}>
+          Ready to build your library?
+        </p>
+        <Link href="/home">
+          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 6px 16px -6px rgba(181,70,47,.6)' }}>
+            Start your library →
+          </button>
+        </Link>
+        <p style={{ fontSize: '12px', color: '#aaa190', marginTop: '32px' }}>
+          Braindump · Knowledge externalization engine
+        </p>
+      </div>
+
     </div>
-  );
+  )
 }
