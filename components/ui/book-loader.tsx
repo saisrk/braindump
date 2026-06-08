@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 interface BookLoaderProps {
-  variant: 'quiz' | 'teachback' | 'review'
+  variant: 'quiz' | 'teachback' | 'review' | 'express'
 }
 
 const CONFIGS = {
@@ -25,6 +25,16 @@ const CONFIGS = {
       { icon: '🎯', line: 'Preparing the teach-back session…' },
       { icon: '💬', line: 'Loading AI grader…' },
       { icon: '✦', line: 'Ready to hear your explanation…' },
+    ],
+  },
+  express: {
+    eyebrow: 'Express',
+    color: '#6f8a5a',
+    phases: [
+      { icon: '📚', line: 'Reading your library…' },
+      { icon: '✨', line: 'Distilling your knowledge…' },
+      { icon: '✍️', line: 'Crafting your content…' },
+      { icon: '✦', line: 'Polishing the final draft…' },
     ],
   },
   review: {

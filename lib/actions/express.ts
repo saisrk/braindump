@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { learnings } from '@/db/schema';
+import { learnings, expressResults } from '@/db/schema';
 import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import {
@@ -15,12 +15,12 @@ export interface RunExpressResult {
   error?: string;
   result?: ExpressResult;
   usedCount?: number;
+  savedId?: string;
 }
 
 export async function runExpress(input: {
   format: ExpressFormat;
   topic?: string;
-  /** ISO date lower bound, e.g. last 30 days. */
   since?: string;
   learningIds?: string[];
   audience?: string;
@@ -58,9 +58,23 @@ export async function runExpress(input: {
         tags: l.tags ?? [],
       })),
     });
-    return { ok: true, result, usedCount: rows.length };
+
+    const [saved] = await db
+      .insert(expressResults)
+      .values({
+        userId,
+        format: input.format,
+        audience: input.audience ?? null,
+        topicFilter: input.topic ?? null,
+        sinceFilter: input.since ?? null,
+        usedCount: rows.length,
+        output: result,
+      })
+      .returning({ id: expressResults.id });
+
+    return { ok: true, result, usedCount: rows.length, savedId: saved?.id };
   } catch (err) {
-    console.log('[v0] runExpress error:', (err as Error).message);
+    console.log('[express] runExpress error:', (err as Error).message);
     return { ok: false, error: 'Generation failed. Please try again.' };
   }
 }

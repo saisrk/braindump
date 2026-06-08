@@ -8,3 +8,4 @@ export { dailyLogs } from './daily-logs';
 export { streaks } from './streaks';
 export { quizAttempts } from './quiz-attempts';
 export type { QuizQuestion, QuizAnswer } from './quiz-attempts';
+export { expressResults } from './express-results';
