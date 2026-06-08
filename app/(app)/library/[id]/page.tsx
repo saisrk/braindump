@@ -5,7 +5,6 @@ import { requireUserId } from '@/lib/session';
 import { getLatestQuizAttempt } from '@/lib/data/quiz';
 import { getTeachBackHistory, getQuizHistory, getReviewCardHistory } from '@/lib/data/history';
 import { LearningDetailClient } from './client';
-import { PageHeader } from '@/components/ui/page-header';
 
 export default async function LearningDetailPage({
   params,
@@ -30,25 +29,18 @@ export default async function LearningDetailPage({
 
     return (
       <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
-          <div className="max-w-2xl space-y-4">
-            <PageHeader
-              title={learning.title}
-              subtitle={learning.topic ?? 'Your learning'}
-              className="mb-2"
-            />
-            <LearningDetailClient
-              learning={learning}
-              reviewItems={reviewItems}
-              teachBacks={teachBacks}
-              confidence={confidence}
-              learningId={id}
-              latestQuizScore={latestQuiz?.score ?? null}
-              teachBackHistory={teachBackHistory}
-              quizHistory={quizHistory}
-              reviewCardHistory={reviewCardHistory}
-            />
-          </div>
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-28 md:px-8">
+          <LearningDetailClient
+            learning={learning}
+            reviewItems={reviewItems}
+            teachBacks={teachBacks}
+            confidence={confidence}
+            learningId={id}
+            latestQuizScore={latestQuiz?.score ?? null}
+            teachBackHistory={teachBackHistory}
+            quizHistory={quizHistory}
+            reviewCardHistory={reviewCardHistory}
+          />
         </div>
       </div>
     );
