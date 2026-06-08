@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { PageHeader } from '@/components/ui/page-header'
@@ -15,17 +15,18 @@ type TeachbackStep = 'intro' | 'input' | 'loading' | 'result'
 
 export default function TeachbackPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const learningId = searchParams.get('learningId') ?? ''
   const [step, setStep] = useState<TeachbackStep>('intro')
   const [explanation, setExplanation] = useState('')
   const [feedback, setFeedback] = useState<TeachBackFeedback | null>(null)
-  const mockLearningId = 'learning-1'
 
   const handleSubmit = async () => {
     if (!explanation.trim()) return
     setStep('loading')
     const start = Date.now()
     try {
-      const result = await submitTeachBack({ learningId: mockLearningId, explanation })
+      const result = await submitTeachBack({ learningId, explanation })
       const elapsed = Date.now() - start
       const delay = Math.max(0, MIN_LOADER_MS - elapsed)
       setTimeout(() => {
