@@ -20,36 +20,29 @@ export default async function AppLayout({
   try {
     const userId = await getOptionalUserId();
 
-    if (userId) {
-      // Fetch auth record (email/name) and profile (onboarding status) in parallel.
-      const [[user], [profile]] = await Promise.all([
-        db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)),
-        db.select({ onboardedAt: userProfiles.onboardedAt }).from(userProfiles).where(eq(userProfiles.userId, userId)),
-      ]);
-
-      if (!profile?.onboardedAt) {
-        redirect('/onboarding');
-      }
-      userEmail = user?.email ?? undefined;
-      userName = user?.name ?? undefined;
-
-      const today = todayISO();
-      const dueReviews = await db
-        .select()
-        .from(reviewItems)
-        .innerJoin(learnings, eq(learnings.id, reviewItems.learningId))
-        .where(and(eq(learnings.userId, userId), lte(reviewItems.dueDate, today)));
-      dueCount = dueReviews.length;
-    } else {
-      // Fallback for environments without auth — count all due items.
-      const today = todayISO();
-      const dueReviews = await db
-        .select()
-        .from(reviewItems)
-        .innerJoin(learnings, eq(learnings.id, reviewItems.learningId))
-        .where(eq(reviewItems.dueDate, today));
-      dueCount = dueReviews.length;
+    if (!userId) {
+      redirect('/login', RedirectType.replace);
     }
+
+    // Fetch auth record (email/name) and profile (onboarding status) in parallel.
+    const [[user], [profile]] = await Promise.all([
+      db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)),
+      db.select({ onboardedAt: userProfiles.onboardedAt }).from(userProfiles).where(eq(userProfiles.userId, userId)),
+    ]);
+
+    if (!profile?.onboardedAt) {
+      redirect('/onboarding');
+    }
+    userEmail = user?.email ?? undefined;
+    userName = user?.name ?? undefined;
+
+    const today = todayISO();
+    const dueReviews = await db
+      .select({ id: reviewItems.id })
+      .from(reviewItems)
+      .innerJoin(learnings, eq(learnings.id, reviewItems.learningId))
+      .where(and(eq(learnings.userId, userId), lte(reviewItems.dueDate, today)));
+    dueCount = dueReviews.length;
   } catch (e) {
     // Re-throw Next.js navigation signals (redirect/notFound) — never swallow these.
     if (isRedirectError(e)) throw e;
