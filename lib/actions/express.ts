@@ -1,6 +1,7 @@
 'use server';
 
 import { db } from '@/db';
+import { sql } from 'drizzle-orm';
 import { learnings, expressResults } from '@/db/schema';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
@@ -9,6 +10,46 @@ import {
   type ExpressFormat,
   type ExpressResult,
 } from '@/lib/ai/express';
+import type { ExpressHistoryItem } from '@/lib/data/express';
+
+export async function getExpressHistoryAction(): Promise<ExpressHistoryItem[]> {
+  const userId = await requireUserId();
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "express_results" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+        "user_id" uuid NOT NULL REFERENCES "users"("id"),
+        "format" text NOT NULL,
+        "audience" text,
+        "scope_label" text,
+        "learning_ids" uuid[],
+        "topic_filters" text[],
+        "used_count" integer DEFAULT 0 NOT NULL,
+        "output" jsonb NOT NULL,
+        "created_at" timestamp with time zone DEFAULT now() NOT NULL
+      )
+    `);
+
+    const rows = await db
+      .select()
+      .from(expressResults)
+      .where(eq(expressResults.userId, userId))
+      .orderBy(desc(expressResults.createdAt))
+      .limit(20);
+    return rows.map((r: typeof expressResults.$inferSelect) => ({
+      id: r.id,
+      format: r.format,
+      audience: r.audience,
+      scopeLabel: r.scopeLabel,
+      usedCount: r.usedCount,
+      output: r.output as Record<string, unknown>,
+      createdAt: r.createdAt,
+    }));
+  } catch (err) {
+    console.error('[express] failed to fetch history:', (err as Error).message);
+    return [];
+  }
+}
 
 export interface RunExpressResult {
   ok: boolean;
@@ -63,6 +104,22 @@ export async function runExpress(input: {
 
     let savedId: string | undefined;
     try {
+      // Ensure table exists (migration may not have run in all envs)
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS "express_results" (
+          "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+          "user_id" uuid NOT NULL REFERENCES "users"("id"),
+          "format" text NOT NULL,
+          "audience" text,
+          "scope_label" text,
+          "learning_ids" uuid[],
+          "topic_filters" text[],
+          "used_count" integer DEFAULT 0 NOT NULL,
+          "output" jsonb NOT NULL,
+          "created_at" timestamp with time zone DEFAULT now() NOT NULL
+        )
+      `);
+
       const [saved] = await db
         .insert(expressResults)
         .values({
@@ -77,8 +134,8 @@ export async function runExpress(input: {
         })
         .returning({ id: expressResults.id });
       savedId = saved?.id;
-    } catch {
-      // Table may not exist yet (pending migration) — generation still succeeds
+    } catch (err) {
+      console.error('[express] failed to save result:', (err as Error).message);
     }
 
     return { ok: true, result, usedCount: rows.length, savedId };

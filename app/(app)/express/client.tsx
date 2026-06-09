@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Loader2, Check, ChevronRight, Copy, RotateCcw, Search } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
-import { runExpress } from '@/lib/actions/express';
+import { runExpress, getExpressHistoryAction } from '@/lib/actions/express';
 import { topicGradient } from '@/lib/book-colors';
 import type { ExpressResult, ExpressFormat } from '@/lib/ai/express';
 import type { ExpressHistoryItem } from '@/lib/data/express';
@@ -667,14 +667,28 @@ function HistoryTab({ history }: { history: ExpressHistoryItem[] }) {
 
 /* ── Main Client ─────────────────────────────────────────────────── */
 
-export function ExpressClient({ learnings, history }: { learnings: Learning[]; history: ExpressHistoryItem[] }) {
+export function ExpressClient({ learnings, history: initialHistory }: { learnings: Learning[]; history: ExpressHistoryItem[] }) {
   const [tab, setTab] = useState<'generate' | 'history'>('generate');
   const [step, setStep] = useState<Step>('format');
   const [selectedFormat, setSelectedFormat] = useState<ExpressFormat | null>(null);
   const [result, setResult] = useState<ExpressResult | null>(null);
   const [usedCount, setUsedCount] = useState(0);
+  const [history, setHistory] = useState<ExpressHistoryItem[]>(initialHistory);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const formatDef = FORMATS.find(f => f.id === selectedFormat) ?? FORMATS[0];
+
+  const refreshHistory = async () => {
+    setHistoryLoading(true);
+    const fresh = await getExpressHistoryAction();
+    setHistory(fresh);
+    setHistoryLoading(false);
+  };
+
+  const handleTabSwitch = (t: 'generate' | 'history') => {
+    setTab(t);
+    if (t === 'history') refreshHistory();
+  };
 
   const handleGenerate = async (ids: string[], scopeLabel: string, audience: string) => {
     if (!selectedFormat) return;
@@ -696,6 +710,8 @@ export function ExpressClient({ learnings, history }: { learnings: Learning[]; h
       setResult(res.result);
       setUsedCount(res.usedCount ?? 0);
       setStep('result');
+      // Refresh history in background so History tab is up to date
+      getExpressHistoryAction().then(setHistory);
     } else {
       setStep('scope');
     }
@@ -723,7 +739,7 @@ export function ExpressClient({ learnings, history }: { learnings: Learning[]; h
           {(['generate', 'history'] as const).map(t => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => handleTabSwitch(t)}
               className="relative px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
               style={{
                 fontFamily: 'Inter, system-ui, sans-serif',
@@ -808,7 +824,16 @@ export function ExpressClient({ learnings, history }: { learnings: Learning[]; h
         )}
 
         {/* History tab */}
-        {tab === 'history' && <HistoryTab history={history} />}
+        {tab === 'history' && (
+          historyLoading
+            ? (
+              <div className="max-w-2xl flex items-center justify-center py-16 gap-2 text-muted-foreground">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-sm" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Loading history…</span>
+              </div>
+            )
+            : <HistoryTab history={history} />
+        )}
       </div>
     </div>
   );
