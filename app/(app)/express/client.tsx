@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Loader2, Check, ChevronRight, Copy, RotateCcw, Search } from 'lucide-react';
+import { Loader2, Check, ChevronRight, Copy, RotateCcw, Search, Lock } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { runExpress, getExpressHistoryAction } from '@/lib/actions/express';
 import { topicGradient } from '@/lib/book-colors';
@@ -201,16 +201,65 @@ function FormatPicker({
   );
 }
 
+/* ── Upgrade Modal ────────────────────────────────────────────────── */
+
+function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_proven'; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(42,38,32,0.6)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative rounded-2xl p-8 max-w-sm w-full"
+        style={{ background: 'var(--color-card)', border: '1.5px solid var(--color-border)', boxShadow: '0 24px 48px -12px rgba(42,38,32,0.4)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {reason === 'pro_required' ? (
+          <>
+            <div className="w-12 h-12 rounded-xl grid place-items-center text-2xl mb-4" style={{ background: 'rgba(181,70,47,0.12)' }}>⚡</div>
+            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>Express is a Pro feature</h3>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              You've used your one free Express run. Upgrade to Pro for unlimited content generation from your library.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="w-12 h-12 rounded-xl grid place-items-center text-2xl mb-4" style={{ background: 'rgba(199,154,62,0.12)' }}>🔒</div>
+            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>Prove your learning first</h3>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Express works best when you've tested your understanding. Complete a quiz (score ≥ 70) or a teach-back (score ≥ 60) on at least one selected learning.
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1 mb-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              <li>→ Go to <strong>Review</strong> to test yourself</li>
+              <li>→ Or try <strong>Teach Back</strong> from a library card</li>
+            </ul>
+          </>
+        )}
+        <button
+          onClick={onClose}
+          className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+          style={{ background: '#b5462f', fontFamily: 'Inter, system-ui, sans-serif' }}
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Step 2: Scope Selector ─────────────────────────────────────── */
 
 function ScopeSelector({
   learnings,
   format,
+  provenIds,
   onBack,
   onGenerate,
 }: {
   learnings: Learning[];
   format: FormatDef;
+  provenIds: Set<string>;
   onBack: () => void;
   onGenerate: (ids: string[], scopeLabel: string, audience: string) => void;
 }) {
@@ -345,15 +394,19 @@ function ScopeSelector({
           {Array.from(topicGroups.entries()).map(([topic, items]) => {
             const grad = topicGradient(topic);
             const active = selectedTopics.has(topic);
+            const provenCount = items.filter((l) => provenIds.has(l.id)).length;
+            const hasProven = provenCount > 0;
             return (
               <div
                 key={topic}
-                onClick={() => toggleTopic(topic)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all"
+                onClick={() => hasProven && toggleTopic(topic)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
                 style={{
                   border: `1.5px solid ${active ? format.color : 'var(--color-border)'}`,
-                  background: active ? format.tint : 'var(--color-card)',
+                  background: active ? format.tint : hasProven ? 'var(--color-card)' : 'var(--color-muted)',
                   boxShadow: active ? `0 0 0 2px ${format.color}22` : 'none',
+                  cursor: hasProven ? 'pointer' : 'not-allowed',
+                  opacity: hasProven ? 1 : 0.6,
                 }}
               >
                 {/* Mini book spines */}
@@ -369,11 +422,21 @@ function ScopeSelector({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate" style={{ fontFamily: 'Spectral, Georgia, serif' }}>{topic}</p>
-                  <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{items.length} vol{items.length !== 1 ? 's' : ''}</p>
+                  <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {items.length} vol{items.length !== 1 ? 's' : ''}
+                    {hasProven
+                      ? <span style={{ color: '#6f8a5a' }}> · {provenCount} proven</span>
+                      : <span style={{ color: '#c79a3e' }}> · no proven learnings</span>
+                    }
+                  </p>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 grid place-items-center flex-shrink-0 transition-all`} style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'transparent' }}>
-                  {active && <Check size={11} strokeWidth={3} color="#fff" />}
-                </div>
+                {hasProven ? (
+                  <div className={`w-5 h-5 rounded-full border-2 grid place-items-center flex-shrink-0 transition-all`} style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'transparent' }}>
+                    {active && <Check size={11} strokeWidth={3} color="#fff" />}
+                  </div>
+                ) : (
+                  <Lock size={14} className="flex-shrink-0" style={{ color: 'var(--color-muted-foreground)' }} />
+                )}
               </div>
             );
           })}
@@ -667,7 +730,19 @@ function HistoryTab({ history }: { history: ExpressHistoryItem[] }) {
 
 /* ── Main Client ─────────────────────────────────────────────────── */
 
-export function ExpressClient({ learnings, history: initialHistory }: { learnings: Learning[]; history: ExpressHistoryItem[] }) {
+export function ExpressClient({
+  learnings,
+  history: initialHistory,
+  isPro,
+  trialUsed,
+  provenIds: provenIdsArray,
+}: {
+  learnings: Learning[];
+  history: ExpressHistoryItem[];
+  isPro: boolean;
+  trialUsed: boolean;
+  provenIds: string[];
+}) {
   const [tab, setTab] = useState<'generate' | 'history'>('generate');
   const [step, setStep] = useState<Step>('format');
   const [selectedFormat, setSelectedFormat] = useState<ExpressFormat | null>(null);
@@ -675,7 +750,10 @@ export function ExpressClient({ learnings, history: initialHistory }: { learning
   const [usedCount, setUsedCount] = useState(0);
   const [history, setHistory] = useState<ExpressHistoryItem[]>(initialHistory);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [upgradeModal, setUpgradeModal] = useState<'pro_required' | 'not_proven' | null>(null);
+  const [localTrialUsed, setLocalTrialUsed] = useState(trialUsed);
 
+  const provenIds = useMemo(() => new Set(provenIdsArray), [provenIdsArray]);
   const formatDef = FORMATS.find(f => f.id === selectedFormat) ?? FORMATS[0];
 
   const refreshHistory = async () => {
@@ -710,8 +788,12 @@ export function ExpressClient({ learnings, history: initialHistory }: { learning
       setResult(res.result);
       setUsedCount(res.usedCount ?? 0);
       setStep('result');
+      if (!isPro) setLocalTrialUsed(true);
       // Refresh history in background so History tab is up to date
       getExpressHistoryAction().then(setHistory);
+    } else if (res.errorCode === 'pro_required' || res.errorCode === 'not_proven') {
+      setStep('scope');
+      setUpgradeModal(res.errorCode as 'pro_required' | 'not_proven');
     } else {
       setStep('scope');
     }
@@ -726,6 +808,9 @@ export function ExpressClient({ learnings, history: initialHistory }: { learning
 
   return (
     <div className="flex flex-col h-full">
+      {upgradeModal && (
+        <UpgradeModal reason={upgradeModal} onClose={() => setUpgradeModal(null)} />
+      )}
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
         <PageHeader
           eyebrow="Express"
@@ -733,6 +818,16 @@ export function ExpressClient({ learnings, history: initialHistory }: { learning
           subtitle="Choose a format, pick your source, and get a polished output in seconds."
           className="mb-4"
         />
+
+        {/* Trial / Pro status callout */}
+        {!isPro && !localTrialUsed && (
+          <div className="max-w-2xl mb-4 px-4 py-3 rounded-xl flex items-center gap-3" style={{ background: 'rgba(199,154,62,0.12)', border: '1px solid rgba(199,154,62,0.35)' }}>
+            <span className="text-base">⚡</span>
+            <p className="text-sm" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: '#c79a3e' }}>
+              <strong>First Express is free.</strong> You have one complimentary run — make it count.
+            </p>
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="flex gap-1 mb-6 max-w-2xl p-1 rounded-xl" style={{ background: 'var(--color-muted)', width: 'fit-content' }}>
@@ -805,6 +900,7 @@ export function ExpressClient({ learnings, history: initialHistory }: { learning
               <ScopeSelector
                 learnings={learnings}
                 format={formatDef}
+                provenIds={provenIds}
                 onBack={() => setStep('format')}
                 onGenerate={handleGenerate}
               />

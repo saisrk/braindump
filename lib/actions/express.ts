@@ -2,9 +2,10 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { learnings, expressResults } from '@/db/schema';
+import { learnings, expressResults, userProfiles } from '@/db/schema';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
+import { getProvenLearningIds } from '@/lib/data/learnings';
 import {
   generateExpress,
   type ExpressFormat,
@@ -68,9 +69,24 @@ export async function getExpressHistoryAction(): Promise<ExpressHistoryItem[]> {
 export interface RunExpressResult {
   ok: boolean;
   error?: string;
+  /** 'pro_required' | 'not_proven' */
+  errorCode?: string;
   result?: ExpressResult;
   usedCount?: number;
   savedId?: string;
+  /** IDs of learnings that are not yet proven (for UI hints) */
+  unprovenIds?: string[];
+}
+
+export async function getExpressEligibility(learningIds: string[]): Promise<{
+  provenIds: string[];
+  unprovenIds: string[];
+}> {
+  const userId = await requireUserId();
+  const proven = await getProvenLearningIds(userId, learningIds);
+  const provenIds = learningIds.filter((id) => proven.has(id));
+  const unprovenIds = learningIds.filter((id) => !proven.has(id));
+  return { provenIds, unprovenIds };
 }
 
 export async function runExpress(input: {
@@ -81,6 +97,23 @@ export async function runExpress(input: {
   scopeLabel?: string;
 }): Promise<RunExpressResult> {
   const userId = await requireUserId();
+
+  // ── Trial / Pro gate ─────────────────────────────────────────────
+  const [profile] = await db
+    .select({ isPro: userProfiles.isPro, expressTrialUsed: userProfiles.expressTrialUsed })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId));
+
+  const isPro = profile?.isPro ?? false;
+  const trialUsed = profile?.expressTrialUsed ?? false;
+
+  if (!isPro && trialUsed) {
+    return {
+      ok: false,
+      errorCode: 'pro_required',
+      error: 'Express is a Pro feature. Your free trial has been used. Upgrade to keep generating.',
+    };
+  }
 
   const conditions = [eq(learnings.userId, userId)];
 
@@ -99,6 +132,19 @@ export async function runExpress(input: {
 
   if (rows.length === 0) {
     return { ok: false, error: 'No learnings found for the selected scope. Try a different selection.' };
+  }
+
+  // ── Proof gate ───────────────────────────────────────────────────
+  const rowIds = rows.map((r: typeof learnings.$inferSelect) => r.id);
+  const proven = await getProvenLearningIds(userId, rowIds);
+  if (proven.size === 0) {
+    const unprovenIds = rowIds;
+    return {
+      ok: false,
+      errorCode: 'not_proven',
+      error: 'Complete at least one quiz (score ≥ 70) or teach-back (score ≥ 60) on a learning before using Express.',
+      unprovenIds,
+    };
   }
 
   try {
@@ -133,6 +179,14 @@ export async function runExpress(input: {
       savedId = saved?.id;
     } catch (err) {
       console.error('[express] failed to save result:', (err as Error).message);
+    }
+
+    // Mark trial as used (no-op if already true or isPro)
+    if (!isPro && !trialUsed) {
+      await db
+        .update(userProfiles)
+        .set({ expressTrialUsed: true })
+        .where(eq(userProfiles.userId, userId));
     }
 
     return { ok: true, result, usedCount: rows.length, savedId };

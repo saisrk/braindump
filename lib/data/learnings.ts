@@ -154,6 +154,68 @@ export async function getLearning(userId: string, id: string) {
   return { learning, reviewItems: items, teachBacks: teaches, confidence };
 }
 
+/**
+ * Returns the set of learning IDs (from the provided list) that are "proven":
+ * latest quiz score ≥ 70 OR latest teach-back gap_score ≥ 60.
+ */
+export async function getProvenLearningIds(
+  userId: string,
+  learningIds: string[]
+): Promise<Set<string>> {
+  if (learningIds.length === 0) return new Set();
+
+  const [quizRows, teachRows] = await Promise.all([
+    db
+      .select({ learningId: quizAttempts.learningId, score: quizAttempts.score })
+      .from(quizAttempts)
+      .where(
+        and(
+          eq(quizAttempts.userId, userId),
+          sql`${quizAttempts.learningId} = ANY(ARRAY[${sql.join(
+            learningIds.map((id) => sql`${id}::uuid`),
+            sql`, `
+          )}])`
+        )
+      )
+      .orderBy(desc(quizAttempts.createdAt)),
+    db
+      .select({ learningId: teachBacks.learningId, gapScore: teachBacks.gapScore })
+      .from(teachBacks)
+      .where(
+        and(
+          eq(teachBacks.userId, userId),
+          sql`${teachBacks.learningId} = ANY(ARRAY[${sql.join(
+            learningIds.map((id) => sql`${id}::uuid`),
+            sql`, `
+          )}])`
+        )
+      )
+      .orderBy(desc(teachBacks.createdAt)),
+  ]);
+
+  const proven = new Set<string>();
+
+  // Latest quiz score per learning
+  const latestQuiz = new Map<string, number>();
+  for (const r of quizRows) {
+    if (!latestQuiz.has(r.learningId)) latestQuiz.set(r.learningId, r.score);
+  }
+  for (const [id, score] of latestQuiz) {
+    if (score >= 70) proven.add(id);
+  }
+
+  // Latest teach-back score per learning
+  const latestTeach = new Map<string, number | null>();
+  for (const r of teachRows) {
+    if (!latestTeach.has(r.learningId)) latestTeach.set(r.learningId, r.gapScore ?? null);
+  }
+  for (const [id, score] of latestTeach) {
+    if (score !== null && score >= 60) proven.add(id);
+  }
+
+  return proven;
+}
+
 export async function getRecentTopics(
   userId: string,
   limit = 12
