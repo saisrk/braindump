@@ -13,10 +13,19 @@ interface BookShelfProps {
 
 const BOOK_HEIGHTS = [158, 138, 170, 146, 162, 132, 152];
 
+type OverlayPhase = 'standing' | 'opening';
+
 interface OverlayState {
   gradient: string;
-  clipStart: string;
-  active: boolean;
+  /** clip-path when the book is still just a rect on the shelf */
+  clipBook: string;
+  /** clip-path after vertical expansion — full-height strip at book position */
+  clipStanding: string;
+  phase: OverlayPhase;
+  /** book's left edge in px — spine stays here */
+  spineLeft: number;
+  /** book's width in px — spine width at the start */
+  bookWidth: number;
 }
 
 export function BookShelf({ topic, learnings }: BookShelfProps) {
@@ -31,21 +40,28 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // clip-path inset: distances from each viewport edge
-    const clipStart = `inset(${rect.top}px ${vw - rect.right}px ${vh - rect.bottom}px ${rect.left}px round 3px)`;
+    // Phase 1 target: full-height strip at the book's horizontal position
+    const clipStanding = `inset(0px ${vw - rect.right}px 0px ${rect.left}px)`;
+    // Starting clip: exact book rect
+    const clipBook = `inset(${rect.top}px ${vw - rect.right}px ${vh - rect.bottom}px ${rect.left}px round 3px)`;
 
-    setOverlay({ gradient, clipStart, active: false });
-
-    // Two rAFs to ensure the start state is painted before the transition fires
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setOverlay((prev) => (prev ? { ...prev, active: true } : null));
-      });
+    setOverlay({
+      gradient,
+      clipBook,
+      clipStanding,
+      phase: 'standing',
+      spineLeft: rect.left,
+      bookWidth: rect.width,
     });
+
+    // Phase 2: expand to full screen after vertical expansion completes
+    setTimeout(() => {
+      setOverlay((prev) => (prev ? { ...prev, phase: 'opening' } : null));
+    }, 230);
 
     setTimeout(() => {
       router.push(`/library/${learningId}`);
-    }, 560);
+    }, 620);
   };
 
   return (
@@ -97,12 +113,12 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           transform: translateX(-50%) translateY(0);
         }
         .book-opening {
-          animation: book-pop 0.18s cubic-bezier(0.34,1.56,0.64,1) forwards;
+          animation: book-pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         @keyframes book-pop {
           0%   { transform: translateY(0) scale(1); }
-          60%  { transform: translateY(-14px) scale(1.06); }
-          100% { transform: translateY(-10px) scale(1.04); }
+          55%  { transform: translateY(-18px) scale(1.08); }
+          100% { transform: translateY(-12px) scale(1.05); }
         }
       `}</style>
 
@@ -165,22 +181,10 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
       {/* Shelf board */}
       <div className="shelf-board" />
 
-      {/* Full-screen transition overlay — portal to document.body */}
+      {/* Book-opening transition overlay */}
       {overlay && typeof document !== 'undefined' &&
         createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: overlay.gradient,
-              zIndex: 9999,
-              pointerEvents: 'none',
-              clipPath: overlay.active ? 'inset(0px round 0px)' : overlay.clipStart,
-              transition: overlay.active
-                ? 'clip-path 0.52s cubic-bezier(0.4, 0, 0.2, 1)'
-                : 'none',
-            }}
-          />,
+          <BookOpenOverlay overlay={overlay} />,
           document.body
         )
       }
@@ -188,7 +192,96 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
   );
 }
 
-// ── Separate child so we can get a stable ref per book ────────────────────────
+/* ── Overlay rendered as a separate component for clean state ──────────────── */
+
+function BookOpenOverlay({ overlay }: { overlay: OverlayState }) {
+  const { gradient, clipBook, clipStanding, phase, spineLeft, bookWidth } = overlay;
+  const isOpening = phase === 'opening';
+
+  // Spine width: starts as the full book width, shrinks to a narrow strip as pages open
+  const spineWidth = isOpening ? 52 : bookWidth;
+  // Pages (cream area) start at 0 width and expand to fill the rest of the viewport
+  // Left cream (back cover area) appears simultaneously
+  const pagesBg = '#f5f2ec';
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        pointerEvents: 'none',
+        // Phase 1: expand vertically to full-height strip at book position
+        // Phase 2: expand horizontally to full viewport
+        clipPath: isOpening ? 'inset(0px round 0px)' : clipStanding,
+        transition: isOpening
+          ? 'clip-path 0.36s cubic-bezier(0.4, 0, 0.2, 1)'
+          : `clip-path 0.2s cubic-bezier(0.4, 0, 0.2, 1)`,
+        // On mount: start at book rect, immediately transition to clipStanding
+        // We use a CSS animation trick: the element mounts with clipBook, then
+        // the browser paints it, and the transition to clipStanding fires.
+        animation: 'book-stand 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+      }}
+    >
+      <style>{`
+        @keyframes book-stand {
+          from { clip-path: ${clipBook}; }
+          to   { clip-path: ${clipStanding}; }
+        }
+      `}</style>
+
+      {/* Cream back-cover — fills left of spine */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: `calc(100% - ${spineLeft}px)`,
+          background: pagesBg,
+          opacity: isOpening ? 1 : 0,
+          transition: isOpening ? 'opacity 0.1s ease' : 'none',
+        }}
+      />
+
+      {/* Spine — gradient strip, stays at book's original left edge */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: spineLeft,
+          width: spineWidth,
+          background: gradient,
+          boxShadow: isOpening ? '6px 0 24px rgba(0,0,0,0.22), -2px 0 8px rgba(0,0,0,0.08)' : 'none',
+          transition: isOpening ? 'width 0.32s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease' : 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Pages — cream area to the right of spine */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: spineLeft + spineWidth,
+          right: 0,
+          background: pagesBg,
+          // Subtle ruled-paper texture
+          backgroundImage:
+            'repeating-linear-gradient(transparent, transparent 27px, rgba(42,38,32,0.045) 27px, rgba(42,38,32,0.045) 28px)',
+          backgroundPosition: '0 44px',
+          opacity: isOpening ? 1 : 0,
+          transition: isOpening ? 'opacity 0.15s ease 0.05s, left 0.32s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+          zIndex: 0,
+        }}
+      />
+    </div>
+  );
+}
+
+/* ── Separate child so we can get a stable ref per book ────────────────────── */
 
 interface BookItemProps {
   learning: LearningWithMeta;
