@@ -1,4 +1,8 @@
-import Link from 'next/link';
+'use client';
+
+import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { topicGradient } from '@/lib/book-colors';
 import type { LearningWithMeta } from '@/lib/data/learnings';
 
@@ -9,8 +13,40 @@ interface BookShelfProps {
 
 const BOOK_HEIGHTS = [158, 138, 170, 146, 162, 132, 152];
 
+interface OverlayState {
+  gradient: string;
+  clipStart: string;
+  active: boolean;
+}
+
 export function BookShelf({ topic, learnings }: BookShelfProps) {
   const gradient = topicGradient(topic);
+  const router = useRouter();
+  const [overlay, setOverlay] = useState<OverlayState | null>(null);
+
+  const handleBookClick = (e: React.MouseEvent, learningId: string, bookEl: HTMLElement) => {
+    e.preventDefault();
+
+    const rect = bookEl.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // clip-path inset: distances from each viewport edge
+    const clipStart = `inset(${rect.top}px ${vw - rect.right}px ${vh - rect.bottom}px ${rect.left}px round 3px)`;
+
+    setOverlay({ gradient, clipStart, active: false });
+
+    // Two rAFs to ensure the start state is painted before the transition fires
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setOverlay((prev) => (prev ? { ...prev, active: true } : null));
+      });
+    });
+
+    setTimeout(() => {
+      router.push(`/library/${learningId}`);
+    }, 560);
+  };
 
   return (
     <div className="mb-0">
@@ -60,6 +96,14 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           opacity: 1;
           transform: translateX(-50%) translateY(0);
         }
+        .book-opening {
+          animation: book-pop 0.18s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes book-pop {
+          0%   { transform: translateY(0) scale(1); }
+          60%  { transform: translateY(-14px) scale(1.06); }
+          100% { transform: translateY(-10px) scale(1.04); }
+        }
       `}</style>
 
       {/* Shelf header */}
@@ -70,7 +114,7 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
         <span className="text-xs text-muted-foreground">{learnings.length} vol{learnings.length !== 1 ? 's' : ''}</span>
       </div>
 
-      {/* Books row — wraps if many books */}
+      {/* Books row */}
       <div
         className="flex flex-wrap items-end gap-2 px-4 pt-4 pb-0 rounded-t-xl border border-b-0"
         style={{
@@ -84,25 +128,24 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           const height = BOOK_HEIGHTS[i % BOOK_HEIGHTS.length];
           const hasDue = learning.dueCount > 0;
           return (
-            <Link
+            <BookItem
               key={learning.id}
-              href={`/library/${learning.id}`}
-              className="no-underline book-tip"
-              data-tip={learning.title}
-            >
-              <div
-                className="book"
-                style={{ width: '44px', height: `${height}px`, background: gradient }}
-              >
-                {hasDue && <div className="book-ribbon" />}
-                <span>{learning.title}</span>
-              </div>
-            </Link>
+              learning={learning}
+              height={height}
+              gradient={gradient}
+              hasDue={hasDue}
+              onOpen={handleBookClick}
+            />
           );
         })}
 
         {/* Empty "add" slot */}
-        <Link href="/capture" className="no-underline book-tip" data-tip="Add a learning">
+        <a
+          href="/capture"
+          className="no-underline book-tip"
+          data-tip="Add a learning"
+          style={{ display: 'block' }}
+        >
           <div
             className="flex items-center justify-center rounded"
             style={{
@@ -116,11 +159,70 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           >
             +
           </div>
-        </Link>
+        </a>
       </div>
 
       {/* Shelf board */}
       <div className="shelf-board" />
+
+      {/* Full-screen transition overlay — portal to document.body */}
+      {overlay && typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: overlay.gradient,
+              zIndex: 9999,
+              pointerEvents: 'none',
+              clipPath: overlay.active ? 'inset(0px round 0px)' : overlay.clipStart,
+              transition: overlay.active
+                ? 'clip-path 0.52s cubic-bezier(0.4, 0, 0.2, 1)'
+                : 'none',
+            }}
+          />,
+          document.body
+        )
+      }
+    </div>
+  );
+}
+
+// ── Separate child so we can get a stable ref per book ────────────────────────
+
+interface BookItemProps {
+  learning: LearningWithMeta;
+  height: number;
+  gradient: string;
+  hasDue: boolean;
+  onOpen: (e: React.MouseEvent, id: string, el: HTMLElement) => void;
+}
+
+function BookItem({ learning, height, gradient, hasDue, onOpen }: BookItemProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [popping, setPopping] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    setPopping(true);
+    onOpen(e, learning.id, ref.current);
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`no-underline book-tip${popping ? ' book-opening' : ''}`}
+      data-tip={learning.title}
+      onClick={handleClick}
+      style={{ cursor: 'pointer', display: 'block' }}
+    >
+      <div
+        className="book"
+        style={{ width: '44px', height: `${height}px`, background: gradient }}
+      >
+        {hasDue && <div className="book-ribbon" />}
+        <span>{learning.title}</span>
+      </div>
     </div>
   );
 }
