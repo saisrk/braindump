@@ -2,16 +2,14 @@ import 'server-only';
 import { db } from '@/db';
 import { expressResults } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
-import type { ExpressResult } from '@/lib/ai/express';
 
 export interface ExpressHistoryItem {
   id: string;
   format: string;
   audience: string | null;
-  topicFilter: string | null;
-  sinceFilter: string | null;
+  scopeLabel: string | null;
   usedCount: number;
-  output: ExpressResult;
+  output: Record<string, unknown>;
   createdAt: Date;
 }
 
@@ -27,10 +25,9 @@ export async function getExpressHistory(userId: string, limit = 20): Promise<Exp
     id: r.id,
     format: r.format,
     audience: r.audience,
-    topicFilter: r.topicFilter,
-    sinceFilter: r.sinceFilter,
+    scopeLabel: r.scopeLabel,
     usedCount: r.usedCount,
-    output: r.output as ExpressResult,
+    output: r.output as Record<string, unknown>,
     createdAt: r.createdAt,
   }));
 }

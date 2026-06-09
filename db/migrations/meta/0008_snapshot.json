@@ -1,5 +1,5 @@
 {
-  "id": "e19cd8e5-81ce-4c33-8e19-f8c2acde4b78",
+  "id": "2fd97222-761f-4d11-981a-7637a8528a8c",
   "prevId": "0ef9f1cc-90f6-4ece-9d1e-8570106d64b6",
   "version": "7",
   "dialect": "postgresql",
@@ -209,15 +209,21 @@
           "primaryKey": false,
           "notNull": false
         },
-        "topic_filter": {
-          "name": "topic_filter",
+        "scope_label": {
+          "name": "scope_label",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "since_filter": {
-          "name": "since_filter",
-          "type": "text",
+        "learning_ids": {
+          "name": "learning_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "topic_filters": {
+          "name": "topic_filters",
+          "type": "text[]",
           "primaryKey": false,
           "notNull": false
         },

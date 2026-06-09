@@ -31,7 +31,7 @@ const CONFIGS = {
     eyebrow: 'Express',
     color: '#6f8a5a',
     phases: [
-      { icon: '📚', line: 'Reading your library…' },
+      { icon: '📚', line: 'Reading your selected learnings…' },
       { icon: '✨', line: 'Distilling your knowledge…' },
       { icon: '✍️', line: 'Crafting your content…' },
       { icon: '✦', line: 'Polishing the final draft…' },
