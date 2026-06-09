@@ -40,7 +40,7 @@ export default async function LibraryPage({
     if (!isFiltered) {
       const rawTopics = [...new Set(data.map((item) => item.topic?.trim() || 'Uncategorised'))];
       const topicMap = rawTopics.length > 1
-        ? await groupSimilarTopics(rawTopics).catch(() => new Map(rawTopics.map((t) => [t, t])))
+        ? await groupSimilarTopics(userId, rawTopics).catch(() => new Map(rawTopics.map((t) => [t, t])))
         : new Map(rawTopics.map((t) => [t, t]));
 
       for (const item of data) {

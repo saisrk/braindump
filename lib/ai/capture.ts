@@ -145,7 +145,7 @@ export async function suggestWhatsNext(args: {
   if (args.recentTopics.length === 0 && args.goals.length === 0) return [];
 
   const { experimental_output } = await generateText({
-    model: SMART_MODEL,
+    model: FAST_MODEL,
     system:
       'You are a thoughtful learning coach. Suggest logical next topics that build ' +
       'on what the learner already covered and move them toward their goals. ' +

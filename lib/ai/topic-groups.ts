@@ -2,31 +2,63 @@ import 'server-only';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import { FAST_MODEL } from './models';
+import { db } from '@/db';
+import { userProfiles } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
- * Given a list of topic names, returns a map from every input topic to its
- * canonical (merged) name. Topics that are clearly about the same subject get
- * the same canonical name; unique topics map to themselves.
- *
- * e.g. ["Leadership", "Leadership & Executive Strategy", "AI", "AI Tools & Productivity"]
- *   → { "Leadership": "Leadership", "Leadership & Executive Strategy": "Leadership",
- *       "AI": "AI", "AI Tools & Productivity": "AI" }
+ * Returns a map from every raw topic name to its canonical (merged) name.
+ * Result is cached in user_profiles.topic_aliases and only regenerated when
+ * new topics appear that aren't covered by the existing cache.
  */
 export async function groupSimilarTopics(
+  userId: string,
   topics: string[]
 ): Promise<Map<string, string>> {
-  // Nothing to group
   if (topics.length <= 1) {
     return new Map(topics.map((t) => [t, t]));
   }
 
+  // Check cache
+  const [profile] = await db
+    .select({ topicAliases: userProfiles.topicAliases, topicAliasesKnownTopics: userProfiles.topicAliasesKnownTopics })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId));
+
+  const knownTopics = new Set(profile?.topicAliasesKnownTopics ?? []);
+  const newTopics = topics.filter((t) => !knownTopics.has(t));
+  const existingAliases = (profile?.topicAliases ?? {}) as Record<string, string>;
+
+  // Cache hit: all topics already mapped
+  if (newTopics.length === 0 && Object.keys(existingAliases).length > 0) {
+    const map = new Map<string, string>();
+    for (const t of topics) map.set(t, existingAliases[t] ?? t);
+    return map;
+  }
+
+  // Cache miss or new topics — run AI on full topic list (re-grouping is cheap with Haiku)
+  const freshMap = await callGroupingAI(topics);
+
+  // Persist updated cache
+  const aliasesRecord: Record<string, string> = {};
+  for (const [k, v] of freshMap) aliasesRecord[k] = v;
+
+  await db.update(userProfiles).set({
+    topicAliases: aliasesRecord,
+    topicAliasesKnownTopics: topics,
+  }).where(eq(userProfiles.userId, userId));
+
+  return freshMap;
+}
+
+async function callGroupingAI(topics: string[]): Promise<Map<string, string>> {
   const { object } = await generateObject({
     model: FAST_MODEL,
     schema: z.object({
       groups: z.array(
         z.object({
           canonical: z.string().describe('The shortest, clearest name for this topic group.'),
-          members: z.array(z.string()).describe('All input topic names that belong to this group, including the canonical if it was an input.'),
+          members: z.array(z.string()).describe('All input topic names that belong to this group.'),
         })
       ),
     }),
@@ -45,15 +77,11 @@ Rules:
 
   const map = new Map<string, string>();
   for (const group of object.groups) {
-    for (const member of group.members) {
-      map.set(member, group.canonical);
-    }
+    for (const member of group.members) map.set(member, group.canonical);
   }
-
-  // Safety: ensure every input topic is mapped (LLM may miss some)
+  // Safety: ensure every input topic is mapped
   for (const t of topics) {
     if (!map.has(t)) map.set(t, t);
   }
-
   return map;
 }

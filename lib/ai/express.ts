@@ -1,7 +1,7 @@
 import 'server-only';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
-import { SMART_MODEL } from './models';
+import { SMART_MODEL, FAST_MODEL } from './models';
 
 export type ExpressFormat = 'talking-points' | 'star' | 'profile' | 'summary';
 
@@ -140,7 +140,7 @@ export async function generateDailySummary(args: {
   }
 
   const { text } = await generateText({
-    model: SMART_MODEL,
+    model: FAST_MODEL,
     system:
       'Write a single warm, encouraging sentence summarizing the learner\'s day. ' +
       'Mention concrete topics. No emojis. No preamble.',
