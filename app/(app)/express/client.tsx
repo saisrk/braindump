@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { runExpress } from '@/lib/actions/express';
 import { topicGradient } from '@/lib/book-colors';
 import type { ExpressResult, ExpressFormat } from '@/lib/ai/express';
+import type { ExpressHistoryItem } from '@/lib/data/express';
 
 /* ── Types ───────────────────────────────────────────────────────── */
 
@@ -553,9 +554,121 @@ function ResultView({
   );
 }
 
+/* ── History Tab ─────────────────────────────────────────────────── */
+
+function fmtDate(d: Date | string) {
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function HistoryTab({ history }: { history: ExpressHistoryItem[] }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  if (history.length === 0) {
+    return (
+      <div className="max-w-2xl flex flex-col items-center justify-center py-16 gap-3">
+        <p className="text-3xl">📜</p>
+        <p className="text-sm font-semibold text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>No history yet</p>
+        <p className="text-sm text-muted-foreground text-center" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+          Your generated outputs will appear here after you run Express for the first time.
+        </p>
+      </div>
+    );
+  }
+
+  const handleCopy = (item: ExpressHistoryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const output = formatOutput(item.output as unknown as ExpressResult);
+    navigator.clipboard.writeText(output);
+    setCopiedId(item.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  return (
+    <div className="max-w-2xl space-y-2">
+      {history.map((item) => {
+        const fmt = FORMATS.find(f => f.id === item.format) ?? FORMATS[0];
+        const isExpanded = expandedId === item.id;
+        const output = formatOutput(item.output as unknown as ExpressResult);
+
+        return (
+          <div
+            key={item.id}
+            style={{
+              border: '1.5px solid var(--color-border)',
+              borderRadius: '14px',
+              background: 'var(--color-card)',
+              overflow: 'hidden',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            {/* Row header */}
+            <div
+              className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-muted/40 transition-colors"
+              onClick={() => setExpandedId(isExpanded ? null : item.id)}
+            >
+              <div className="w-8 h-8 rounded-lg grid place-items-center text-white text-sm flex-shrink-0" style={{ background: fmt.color }}>
+                {fmt.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>{fmt.name}</span>
+                  {item.audience && (
+                    <span className="text-xs text-muted-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      for {item.audience}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {fmtDate(item.createdAt)}
+                  </span>
+                  {item.scopeLabel && (
+                    <>
+                      <span className="text-xs text-muted-foreground">·</span>
+                      <span className="text-xs truncate" style={{ color: fmt.color, fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 600 }}>
+                        {item.scopeLabel}
+                      </span>
+                    </>
+                  )}
+                  <span className="text-xs text-muted-foreground">·</span>
+                  <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {item.usedCount} learning{item.usedCount !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={(e) => handleCopy(item, e)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded"
+                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                >
+                  <Copy size={12} />
+                  {copiedId === item.id ? 'Copied!' : 'Copy'}
+                </button>
+                <span className="text-muted-foreground text-xs">{isExpanded ? '▲' : '▼'}</span>
+              </div>
+            </div>
+
+            {/* Expanded output */}
+            {isExpanded && (
+              <div style={{ borderTop: '1px solid var(--color-border)', background: 'var(--color-background)', padding: '16px 20px' }}>
+                <pre className="text-sm text-foreground leading-relaxed whitespace-pre-wrap" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  {output}
+                </pre>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Main Client ─────────────────────────────────────────────────── */
 
-export function ExpressClient({ learnings }: { learnings: Learning[] }) {
+export function ExpressClient({ learnings, history }: { learnings: Learning[]; history: ExpressHistoryItem[] }) {
+  const [tab, setTab] = useState<'generate' | 'history'>('generate');
   const [step, setStep] = useState<Step>('format');
   const [selectedFormat, setSelectedFormat] = useState<ExpressFormat | null>(null);
   const [result, setResult] = useState<ExpressResult | null>(null);
@@ -572,6 +685,7 @@ export function ExpressClient({ learnings }: { learnings: Learning[] }) {
       format: selectedFormat,
       learningIds: ids.length > 0 ? ids : undefined,
       audience: audience || undefined,
+      scopeLabel,
     });
 
     const elapsed = Date.now() - start;
@@ -601,64 +715,100 @@ export function ExpressClient({ learnings }: { learnings: Learning[] }) {
           eyebrow="Express"
           title="Turn your shelves into content"
           subtitle="Choose a format, pick your source, and get a polished output in seconds."
-          className="mb-6"
+          className="mb-4"
         />
 
-        {/* Step indicator */}
-        {(step === 'format' || step === 'scope') && (
-          <div className="flex items-center gap-2 mb-6 max-w-2xl">
-            {steps.map((s, i) => {
-              const done = i < currentStepIdx;
-              const active = i === currentStepIdx;
-              return (
-                <div key={s.key} className="flex items-center gap-2">
-                  <div
-                    className="flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1"
-                    style={{
-                      fontFamily: 'Inter, system-ui, sans-serif',
-                      background: active ? formatDef.color : done ? formatDef.tint : 'var(--color-muted)',
-                      color: active ? '#fff' : done ? formatDef.color : 'var(--color-muted-foreground)',
-                    }}
-                  >
-                    <span>{i + 1}</span>
-                    <span>{s.label}</span>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div className="w-4 h-px bg-border" />
+        {/* Tab bar */}
+        <div className="flex gap-1 mb-6 max-w-2xl p-1 rounded-xl" style={{ background: 'var(--color-muted)', width: 'fit-content' }}>
+          {(['generate', 'history'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="relative px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+              style={{
+                fontFamily: 'Inter, system-ui, sans-serif',
+                background: tab === t ? 'var(--color-card)' : 'transparent',
+                color: tab === t ? 'var(--color-foreground)' : 'var(--color-muted-foreground)',
+                boxShadow: tab === t ? '0 1px 4px rgba(42,38,32,0.10)' : 'none',
+              }}
+            >
+              {t === 'generate' ? 'Generate' : (
+                <span className="flex items-center gap-1.5">
+                  History
+                  {history.length > 0 && (
+                    <span className="text-xs rounded-full px-1.5 py-0.5" style={{ background: 'var(--color-border)', color: 'var(--color-muted-foreground)', fontSize: '10px', fontWeight: 700 }}>
+                      {history.length}
+                    </span>
                   )}
-                </div>
-              );
-            })}
-          </div>
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Generate tab */}
+        {tab === 'generate' && (
+          <>
+            {/* Step indicator */}
+            {(step === 'format' || step === 'scope') && (
+              <div className="flex items-center gap-2 mb-6 max-w-2xl">
+                {steps.map((s, i) => {
+                  const done = i < currentStepIdx;
+                  const active = i === currentStepIdx;
+                  return (
+                    <div key={s.key} className="flex items-center gap-2">
+                      <div
+                        className="flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1"
+                        style={{
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                          background: active ? formatDef.color : done ? formatDef.tint : 'var(--color-muted)',
+                          color: active ? '#fff' : done ? formatDef.color : 'var(--color-muted-foreground)',
+                        }}
+                      >
+                        <span>{i + 1}</span>
+                        <span>{s.label}</span>
+                      </div>
+                      {i < steps.length - 1 && (
+                        <div className="w-4 h-px bg-border" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {step === 'format' && (
+              <FormatPicker
+                selected={selectedFormat}
+                onSelect={setSelectedFormat}
+                onContinue={() => setStep('scope')}
+              />
+            )}
+
+            {step === 'scope' && selectedFormat && (
+              <ScopeSelector
+                learnings={learnings}
+                format={formatDef}
+                onBack={() => setStep('format')}
+                onGenerate={handleGenerate}
+              />
+            )}
+
+            {step === 'loading' && <LoadingView format={formatDef} />}
+
+            {step === 'result' && result && (
+              <ResultView
+                result={result}
+                format={formatDef}
+                usedCount={usedCount}
+                onReset={() => { setStep('format'); setSelectedFormat(null); setResult(null); }}
+              />
+            )}
+          </>
         )}
 
-        {step === 'format' && (
-          <FormatPicker
-            selected={selectedFormat}
-            onSelect={setSelectedFormat}
-            onContinue={() => setStep('scope')}
-          />
-        )}
-
-        {step === 'scope' && selectedFormat && (
-          <ScopeSelector
-            learnings={learnings}
-            format={formatDef}
-            onBack={() => setStep('format')}
-            onGenerate={handleGenerate}
-          />
-        )}
-
-        {step === 'loading' && <LoadingView format={formatDef} />}
-
-        {step === 'result' && result && (
-          <ResultView
-            result={result}
-            format={formatDef}
-            usedCount={usedCount}
-            onReset={() => { setStep('format'); setSelectedFormat(null); setResult(null); }}
-          />
-        )}
+        {/* History tab */}
+        {tab === 'history' && <HistoryTab history={history} />}
       </div>
     </div>
   );
