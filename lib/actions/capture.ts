@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { learnings, reviewItems } from '@/db/schema';
+import { learnings, reviewItems, userProfiles } from '@/db/schema';
 import { requireUserId, getOptionalUserId } from '@/lib/session';
 import {
   summarizeCapture,
@@ -14,6 +14,9 @@ import { detectVideoUrl } from '@/lib/video-detection';
 import { recordActivity } from '@/lib/data/activity';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
+import { and, eq, gte, count } from 'drizzle-orm';
+
+const FREE_DAILY_CAPTURE_LIMIT = 5;
 
 export type SourceType = 'url' | 'text' | 'file' | 'wizard';
 
@@ -116,6 +119,8 @@ export interface SaveCaptureInput {
 export interface SaveCaptureResult {
   ok: boolean;
   error?: string;
+  /** 'daily_limit' when free user has hit 5 captures today */
+  errorCode?: 'daily_limit';
   learningId?: string;
   reviewCount?: number;
 }
@@ -131,6 +136,29 @@ export async function saveCapture(
 
   if (!input.title?.trim()) {
     return { ok: false, error: 'A title is required.' };
+  }
+
+  // Daily quota check for free users
+  const [profile] = await db
+    .select({ isPro: userProfiles.isPro })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId));
+
+  if (!profile?.isPro) {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const [{ todayCount }] = await db
+      .select({ todayCount: count() })
+      .from(learnings)
+      .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+
+    if (todayCount >= FREE_DAILY_CAPTURE_LIMIT) {
+      return {
+        ok: false,
+        errorCode: 'daily_limit',
+        error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
+      };
+    }
   }
 
   try {
@@ -248,6 +276,29 @@ export async function saveSkeleton(input: {
   rawContent?: string; // original text/URL the user entered
 }): Promise<SaveSkeletonResult> {
   const userId = await requireUserId();
+
+  // Daily quota check (same limit as saveCapture)
+  const [profile] = await db
+    .select({ isPro: userProfiles.isPro })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId));
+
+  if (!profile?.isPro) {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const [{ todayCount }] = await db
+      .select({ todayCount: count() })
+      .from(learnings)
+      .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+
+    if (todayCount >= FREE_DAILY_CAPTURE_LIMIT) {
+      return {
+        ok: false,
+        error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
+      };
+    }
+  }
+
   try {
     // Derive a placeholder title from the URL domain or raw content preview.
     let placeholderTitle = 'Analyzing…';
