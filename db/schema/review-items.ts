@@ -1,5 +1,6 @@
 import { pgTable, uuid, text, integer, real, date, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { learnings } from './learnings';
+import { users } from './users';
 
 export interface ReviewHistoryEntry {
   grade: 'again' | 'hard' | 'good' | 'easy';
@@ -9,6 +10,7 @@ export interface ReviewHistoryEntry {
 
 export const reviewItems = pgTable('review_items', {
   id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
   learningId: uuid('learning_id').notNull().references(() => learnings.id),
   type: text('type').notNull(),
   question: text('question').notNull(),

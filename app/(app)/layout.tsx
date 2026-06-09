@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { reviewItems, learnings, users, userProfiles } from '@/db/schema';
+import { reviewItems, users, userProfiles } from '@/db/schema';
 import { eq, and, lte } from 'drizzle-orm';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { BottomNav } from '@/components/navigation/bottom-nav';
@@ -40,8 +40,7 @@ export default async function AppLayout({
     const dueReviews = await db
       .select({ id: reviewItems.id })
       .from(reviewItems)
-      .innerJoin(learnings, eq(learnings.id, reviewItems.learningId))
-      .where(and(eq(learnings.userId, userId), lte(reviewItems.dueDate, today)));
+      .where(and(eq(reviewItems.userId, userId), lte(reviewItems.dueDate, today)));
     dueCount = dueReviews.length;
   } catch (e) {
     // Re-throw Next.js navigation signals (redirect/notFound) — never swallow these.

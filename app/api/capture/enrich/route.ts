@@ -64,17 +64,22 @@ export async function POST(request: Request) {
         sourceContent: result.resolvedContent,
       });
       if (items.length) {
-        await db.insert(reviewItems).values(
-          items.map((it) => ({
-            learningId: learningId!,
-            type: it.type,
-            question: it.question,
-            answer: it.answer,
-            dueDate: todayISO(),
-            srInterval: 1,
-            srEase: 2.5,
-          }))
-        );
+        // Fetch userId from the learning row (enrich route has no session context)
+        const [lr] = await db.select({ userId: learnings.userId }).from(learnings).where(eq(learnings.id, learningId!));
+        if (lr?.userId) {
+          await db.insert(reviewItems).values(
+            items.map((it) => ({
+              userId: lr.userId,
+              learningId: learningId!,
+              type: it.type,
+              question: it.question,
+              answer: it.answer,
+              dueDate: todayISO(),
+              srInterval: 1,
+              srEase: 2.5,
+            }))
+          );
+        }
       }
     } catch (err) {
       console.error('[enrich] generateReviewItems failed:', (err as Error).message);
