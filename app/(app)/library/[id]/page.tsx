@@ -5,7 +5,6 @@ import { requireUserId } from '@/lib/session';
 import { getLatestQuizAttempt } from '@/lib/data/quiz';
 import { getTeachBackHistory, getQuizHistory, getReviewCardHistory } from '@/lib/data/history';
 import { LearningDetailClient } from './client';
-import { CTABar } from './cta-bar';
 
 export default async function LearningDetailPage({
   params,
@@ -30,8 +29,7 @@ export default async function LearningDetailPage({
 
     return (
       <div className="flex flex-col h-full">
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-4 md:px-8">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
           <LearningDetailClient
             learning={learning}
             reviewItems={reviewItems}
@@ -44,13 +42,6 @@ export default async function LearningDetailPage({
             reviewCardHistory={reviewCardHistory}
           />
         </div>
-
-        {/* CTA bar — sibling to scroll area, contained within content column */}
-        <CTABar
-          learningId={id}
-          latestQuizScore={latestQuiz?.score ?? null}
-          teachBackCount={teachBackHistory.length}
-        />
       </div>
     );
   } catch (e) {
