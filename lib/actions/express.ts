@@ -12,23 +12,36 @@ import {
 } from '@/lib/ai/express';
 import type { ExpressHistoryItem } from '@/lib/data/express';
 
+/**
+ * Ensures express_results table exists and has all expected columns.
+ * Handles the case where the table was created by an older version of this
+ * code with fewer columns (scope_label / learning_ids / topic_filters added later).
+ */
+async function ensureExpressResultsTable() {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS "express_results" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "user_id" uuid NOT NULL REFERENCES "users"("id"),
+      "format" text NOT NULL,
+      "audience" text,
+      "scope_label" text,
+      "learning_ids" uuid[],
+      "topic_filters" text[],
+      "used_count" integer DEFAULT 0 NOT NULL,
+      "output" jsonb NOT NULL,
+      "created_at" timestamp with time zone DEFAULT now() NOT NULL
+    )
+  `);
+  // Backfill columns that may be missing if the table was created by older code
+  await db.execute(sql`ALTER TABLE "express_results" ADD COLUMN IF NOT EXISTS "scope_label" text`);
+  await db.execute(sql`ALTER TABLE "express_results" ADD COLUMN IF NOT EXISTS "learning_ids" uuid[]`);
+  await db.execute(sql`ALTER TABLE "express_results" ADD COLUMN IF NOT EXISTS "topic_filters" text[]`);
+}
+
 export async function getExpressHistoryAction(): Promise<ExpressHistoryItem[]> {
   const userId = await requireUserId();
   try {
-    await db.execute(sql`
-      CREATE TABLE IF NOT EXISTS "express_results" (
-        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-        "user_id" uuid NOT NULL REFERENCES "users"("id"),
-        "format" text NOT NULL,
-        "audience" text,
-        "scope_label" text,
-        "learning_ids" uuid[],
-        "topic_filters" text[],
-        "used_count" integer DEFAULT 0 NOT NULL,
-        "output" jsonb NOT NULL,
-        "created_at" timestamp with time zone DEFAULT now() NOT NULL
-      )
-    `);
+    await ensureExpressResultsTable();
 
     const rows = await db
       .select()
@@ -36,6 +49,7 @@ export async function getExpressHistoryAction(): Promise<ExpressHistoryItem[]> {
       .where(eq(expressResults.userId, userId))
       .orderBy(desc(expressResults.createdAt))
       .limit(20);
+
     return rows.map((r: typeof expressResults.$inferSelect) => ({
       id: r.id,
       format: r.format,
@@ -61,12 +75,9 @@ export interface RunExpressResult {
 
 export async function runExpress(input: {
   format: ExpressFormat;
-  /** Specific learning IDs to include (mutually exclusive with topicFilters). */
   learningIds?: string[];
-  /** Topic names to include (all learnings under these topics). */
   topicFilters?: string[];
   audience?: string;
-  /** Human-readable scope label for history display. */
   scopeLabel?: string;
 }): Promise<RunExpressResult> {
   const userId = await requireUserId();
@@ -104,21 +115,7 @@ export async function runExpress(input: {
 
     let savedId: string | undefined;
     try {
-      // Ensure table exists (migration may not have run in all envs)
-      await db.execute(sql`
-        CREATE TABLE IF NOT EXISTS "express_results" (
-          "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-          "user_id" uuid NOT NULL REFERENCES "users"("id"),
-          "format" text NOT NULL,
-          "audience" text,
-          "scope_label" text,
-          "learning_ids" uuid[],
-          "topic_filters" text[],
-          "used_count" integer DEFAULT 0 NOT NULL,
-          "output" jsonb NOT NULL,
-          "created_at" timestamp with time zone DEFAULT now() NOT NULL
-        )
-      `);
+      await ensureExpressResultsTable();
 
       const [saved] = await db
         .insert(expressResults)
@@ -140,7 +137,7 @@ export async function runExpress(input: {
 
     return { ok: true, result, usedCount: rows.length, savedId };
   } catch (err) {
-    console.log('[express] error:', (err as Error).message);
+    console.error('[express] generation error:', (err as Error).message);
     return { ok: false, error: 'Generation failed. Please try again.' };
   }
 }
