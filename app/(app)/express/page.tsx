@@ -1,14 +1,20 @@
 import { PageHeader } from '@/components/ui/page-header';
 import { requireUserId } from '@/lib/session';
-import { getUserFacets } from '@/lib/data/learnings';
+import { db } from '@/db';
+import { learnings } from '@/db/schema';
+import { eq, desc } from 'drizzle-orm';
 import { getExpressHistory } from '@/lib/data/express';
 import { ExpressClient } from './client';
 
 export default async function ExpressPage() {
   const userId = await requireUserId();
 
-  const [facets, history] = await Promise.all([
-    getUserFacets(userId),
+  const [rows, history] = await Promise.all([
+    db
+      .select({ id: learnings.id, title: learnings.title, topic: learnings.topic })
+      .from(learnings)
+      .where(eq(learnings.userId, userId))
+      .orderBy(desc(learnings.createdAt)),
     getExpressHistory(userId),
   ]);
 
@@ -18,10 +24,10 @@ export default async function ExpressPage() {
         <PageHeader
           eyebrow="Express"
           title="Turn your shelves into content"
-          subtitle="Pull your learnings back out, articulated and ready"
+          subtitle="Choose what to express, then pick a format"
           className="mb-6"
         />
-        <ExpressClient topics={facets.topics} history={history} />
+        <ExpressClient learnings={rows} history={history} />
       </div>
     </div>
   );
