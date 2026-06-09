@@ -108,6 +108,7 @@ export async function submitQuizAttempt(input: {
     const toInsert = failedQuestions
       .filter((q) => !existingQuestions.has(q.question))
       .map((q) => ({
+        userId,
         learningId: input.learningId,
         type: q.type === 'mcq' ? 'quiz' : 'flashcard',
         question: q.question,

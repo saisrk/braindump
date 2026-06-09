@@ -24,7 +24,7 @@ export async function getDueReviewItems(
     })
     .from(reviewItems)
     .innerJoin(learnings, eq(reviewItems.learningId, learnings.id))
-    .where(and(eq(learnings.userId, userId), lte(reviewItems.dueDate, today)))
+    .where(and(eq(reviewItems.userId, userId), lte(reviewItems.dueDate, today)))
     .orderBy(asc(reviewItems.dueDate))
     .limit(limit);
 
@@ -40,17 +40,15 @@ export async function getDueCount(userId: string): Promise<number> {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(reviewItems)
-    .innerJoin(learnings, eq(reviewItems.learningId, learnings.id))
-    .where(and(eq(learnings.userId, userId), lte(reviewItems.dueDate, today)));
+    .where(and(eq(reviewItems.userId, userId), lte(reviewItems.dueDate, today)));
   return row?.count ?? 0;
 }
 
 /** Verify an item belongs to the user before mutating it. */
 export async function getOwnedReviewItem(userId: string, itemId: string) {
   const [row] = await db
-    .select({ item: reviewItems })
+    .select()
     .from(reviewItems)
-    .innerJoin(learnings, eq(reviewItems.learningId, learnings.id))
-    .where(and(eq(reviewItems.id, itemId), eq(learnings.userId, userId)));
-  return row?.item ?? null;
+    .where(and(eq(reviewItems.id, itemId), eq(reviewItems.userId, userId)));
+  return row ?? null;
 }

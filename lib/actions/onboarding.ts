@@ -154,6 +154,7 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
     // Create two review items per seed learning.
     await db.insert(reviewItems).values([
       {
+        userId,
         learningId: learning.id,
         type: 'recall',
         question: `What is the core idea behind: "${seed.title}"?`,
@@ -163,6 +164,7 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
         srEase: 2.5,
       },
       {
+        userId,
         learningId: learning.id,
         type: 'recall',
         question: `Name one key point from "${seed.title}".`,

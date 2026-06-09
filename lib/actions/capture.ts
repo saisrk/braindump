@@ -171,6 +171,7 @@ export async function saveCapture(
         if (items.length) {
           await db.insert(reviewItems).values(
             items.map((it) => ({
+              userId,
               learningId: learning.id,
               type: it.type,
               question: it.question,
