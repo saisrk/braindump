@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { BookShelf } from './book-shelf';
 import { LibraryCardList } from './library-card-list';
+import { groupSimilarTopics } from '@/lib/ai/topic-groups';
 import type { LearningWithMeta } from '@/lib/data/learnings';
 
 export default async function LibraryPage({
@@ -22,10 +23,17 @@ export default async function LibraryPage({
     const userId = await requireUserId();
     const data = await listLearnings(userId, { search, sort: 'recent' });
 
-    // Group by topic for bookshelf view
+    // Collect raw topic names, then ask AI to merge similar ones
+    const rawTopics = [...new Set(data.map((item) => item.topic?.trim() || 'Uncategorised'))];
+    const topicMap = rawTopics.length > 1
+      ? await groupSimilarTopics(rawTopics).catch(() => new Map(rawTopics.map((t) => [t, t])))
+      : new Map(rawTopics.map((t) => [t, t]));
+
+    // Group learnings under canonical topic names
     const grouped = new Map<string, LearningWithMeta[]>();
     for (const item of data) {
-      const key = item.topic?.trim() || 'Uncategorised';
+      const raw = item.topic?.trim() || 'Uncategorised';
+      const key = topicMap.get(raw) ?? raw;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key)!.push(item);
     }
