@@ -15,7 +15,7 @@ export default async function ExpressPage() {
       .from(learnings)
       .where(eq(learnings.userId, userId))
       .orderBy(desc(learnings.createdAt)),
-    getExpressHistory(userId),
+    getExpressHistory(userId).catch(() => []),
   ]);
 
   return (

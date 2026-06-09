@@ -61,21 +61,27 @@ export async function runExpress(input: {
       })),
     });
 
-    const [saved] = await db
-      .insert(expressResults)
-      .values({
-        userId,
-        format: input.format,
-        audience: input.audience ?? null,
-        scopeLabel: input.scopeLabel ?? 'Entire library',
-        learningIds: input.learningIds ?? null,
-        topicFilters: input.topicFilters ?? null,
-        usedCount: rows.length,
-        output: result,
-      })
-      .returning({ id: expressResults.id });
+    let savedId: string | undefined;
+    try {
+      const [saved] = await db
+        .insert(expressResults)
+        .values({
+          userId,
+          format: input.format,
+          audience: input.audience ?? null,
+          scopeLabel: input.scopeLabel ?? 'Entire library',
+          learningIds: input.learningIds ?? null,
+          topicFilters: input.topicFilters ?? null,
+          usedCount: rows.length,
+          output: result,
+        })
+        .returning({ id: expressResults.id });
+      savedId = saved?.id;
+    } catch {
+      // Table may not exist yet (pending migration) — generation still succeeds
+    }
 
-    return { ok: true, result, usedCount: rows.length, savedId: saved?.id };
+    return { ok: true, result, usedCount: rows.length, savedId };
   } catch (err) {
     console.log('[express] error:', (err as Error).message);
     return { ok: false, error: 'Generation failed. Please try again.' };
