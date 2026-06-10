@@ -107,7 +107,7 @@ interface BookCoverProps {
 }
 
 function BookCover({ learning, reviewItems, confidence, gradient }: BookCoverProps) {
-  const mastery = Math.round(confidence * 100);
+  const mastery = Math.round(confidence);
   const topic = learning.topic ?? 'Uncategorised';
   const capturedDate = new Date(learning.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const sourceDisplay = learning.domain ?? (learning.sourceRef ? (() => { try { return new URL(learning.sourceRef!).hostname; } catch { return learning.sourceRef; } })() : null);
@@ -257,7 +257,7 @@ function AnalyticsPanel({
   learningId, dueCount,
 }: AnalyticsPanelProps) {
   const router = useRouter();
-  const mastery = Math.round(confidence * 100);
+  const mastery = Math.round(confidence);
   const reviewCount = reviewCardHistory.reduce((a, c) => a + (c.reviewHistory as ReviewHistoryEntry[]).length, 0);
   const timeline = buildTimeline(teachBackHistory, quizHistory, reviewCardHistory);
 
@@ -290,7 +290,7 @@ function AnalyticsPanel({
           <strong style={{ fontFamily: S.serif }}>{mastery}%</strong>
         </div>
         <div style={{ height: '10px', borderRadius: '99px', background: 'var(--color-border)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${mastery}%`, background: 'linear-gradient(90deg, #6f8a5a, #46557a)', borderRadius: '99px', transition: 'width 0.6s ease' }} />
+          <div style={{ height: '100%', width: `${Math.min(100, mastery)}%`, background: 'linear-gradient(90deg, #6f8a5a, #46557a)', borderRadius: '99px', transition: 'width 0.6s ease' }} />
         </div>
       </div>
 
