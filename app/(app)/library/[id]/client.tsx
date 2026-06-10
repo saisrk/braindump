@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
 import { topicGradient } from '@/lib/book-colors';
+import { useBookTransition } from '@/context/book-transition';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { learnings, reviewItems, teachBacks } from '@/db/schema';
 import type { TeachBackRecord, QuizRecord, ReviewCardHistory } from '@/lib/data/history';
@@ -349,6 +350,33 @@ export function LearningDetailClient({
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ContentTab>('summary');
+  const [coverTransform, setCoverTransform] = useState<string | null>(null);
+  const [panelVisible, setPanelVisible] = useState(false);
+  const coverRef = useRef<HTMLDivElement>(null);
+  const { getOrigin } = useBookTransition();
+
+  useEffect(() => {
+    const origin = getOrigin();
+    if (!origin || !coverRef.current) {
+      setPanelVisible(true);
+      return;
+    }
+    const coverEl = coverRef.current;
+    const coverRect = coverEl.getBoundingClientRect();
+    const sx = origin.rect.width / coverRect.width;
+    const sy = origin.rect.height / coverRect.height;
+    const dx = origin.rect.left + origin.rect.width / 2 - (coverRect.left + coverRect.width / 2);
+    const dy = origin.rect.top + origin.rect.height / 2 - (coverRect.top + coverRect.height / 2);
+    const initial = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    setCoverTransform(initial);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setCoverTransform(null);
+        setTimeout(() => setPanelVisible(true), 200);
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const topic = learning.topic ?? 'Uncategorised';
   const gradient = topicGradient(topic);
@@ -373,6 +401,7 @@ export function LearningDetailClient({
   return (
     <>
       <style>{`
+        .book-cover-animated { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: center center; }
         .tab-btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .tab-btn:hover { transform: translateX(6px); }
         .tab-btn.tab-active { transform: translateX(10px) !important; box-shadow: 5px 5px 12px -3px rgba(42,38,32,.55) !important; }
@@ -414,7 +443,14 @@ export function LearningDetailClient({
       >
         {/* Left: book stage + tabs */}
         <div className="book-stage" style={{ perspective: '1800px', padding: '10px 0 10px 6px' }}>
-          <div style={{ position: 'relative', width: '296px', height: '430px' }}>
+          <div
+            ref={coverRef}
+            className="book-cover-animated"
+            style={{
+              position: 'relative', width: '296px', height: '430px',
+              transform: coverTransform ?? undefined,
+            }}
+          >
             <BookCover
               learning={learning}
               reviewItems={reviewItems}
@@ -477,7 +513,15 @@ export function LearningDetailClient({
         </div>
 
         {/* Right: content panel */}
-        <div className="panel-col" style={{ paddingLeft: '8px', paddingTop: '10px' }}>
+        <div
+          className="panel-col"
+          style={{
+            paddingLeft: '8px', paddingTop: '10px',
+            opacity: panelVisible ? 1 : 0,
+            transform: panelVisible ? 'translateX(0)' : 'translateX(14px)',
+            transition: 'opacity 0.3s ease, transform 0.3s ease',
+          }}
+        >
           {activeTab === 'summary' && <SummaryPanel learning={learning} />}
           {activeTab === 'keypoints' && <KeyPointsPanel learning={learning} />}
           {activeTab === 'analytics' && (
