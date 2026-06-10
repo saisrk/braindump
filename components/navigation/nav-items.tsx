@@ -14,6 +14,8 @@ export interface NavItemConfig {
   icon: ReactNode;
   /** key into a counts map for an optional badge */
   badgeKey?: 'due';
+  /** tour step identifier — matches data-tour attribute */
+  tourKey?: string;
 }
 
 export const navItems: NavItemConfig[] = [
@@ -22,22 +24,26 @@ export const navItems: NavItemConfig[] = [
     href: '/capture',
     label: 'Capture',
     icon: <PlusCircle className="h-full w-full" />,
+    tourKey: 'capture',
   },
   {
     href: '/library',
     label: 'Library',
     icon: <Library className="h-full w-full" />,
+    tourKey: 'library',
   },
   {
     href: '/review',
     label: 'Review',
     icon: <Brain className="h-full w-full" />,
     badgeKey: 'due',
+    tourKey: 'review',
   },
   {
     href: '/express',
     label: 'Express',
     icon: <Sparkles className="h-full w-full" />,
+    tourKey: 'express',
   },
   {
     href: '/settings',

@@ -24,21 +24,36 @@ export interface DashboardData {
   todayLearnings: number;
   due: number;
   total: number;
+  tourSeen: boolean;
 }
 
 export async function getDashboardStats(): Promise<DashboardData> {
   const userId = await requireUserId();
-  const streak = await getStreak(userId);
-  const today = await getTodaysCaptures(userId);
-  const due = await getDueReviewItems(userId);
-  const stats = await getStats(userId);
+  const [streak, today, due, stats, profileRows] = await Promise.all([
+    getStreak(userId),
+    getTodaysCaptures(userId),
+    getDueReviewItems(userId),
+    getStats(userId),
+    db.select({ dashboardTourSeenAt: userProfiles.dashboardTourSeenAt })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId)),
+  ]);
 
   return {
     streak: streak.currentCount ?? 0,
     todayLearnings: today.length,
     due: due.length,
     total: stats.totalLearnings,
+    tourSeen: !!profileRows[0]?.dashboardTourSeenAt,
   };
+}
+
+export async function markTourSeen(): Promise<void> {
+  const userId = await requireUserId();
+  await db
+    .update(userProfiles)
+    .set({ dashboardTourSeenAt: new Date() })
+    .where(eq(userProfiles.userId, userId));
 }
 
 export interface LibraryOptions {
