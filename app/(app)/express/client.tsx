@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, Check, ChevronRight, Copy, RotateCcw, Search, Lock } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { runExpress, getExpressHistoryAction } from '@/lib/actions/express';
@@ -204,6 +205,7 @@ function FormatPicker({
 /* ── Upgrade Modal ────────────────────────────────────────────────── */
 
 function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_proven'; onClose: () => void }) {
+  const router = useRouter();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -236,13 +238,23 @@ function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_prove
             </ul>
           </>
         )}
-        <button
-          onClick={onClose}
-          className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
-          style={{ background: '#b5462f', fontFamily: 'Inter, system-ui, sans-serif' }}
-        >
-          Got it
-        </button>
+        {reason === 'pro_required' ? (
+          <button
+            onClick={() => router.push('/pricing')}
+            className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+            style={{ background: '#b5462f', fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Upgrade to Pro →
+          </button>
+        ) : (
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+            style={{ background: '#b5462f', fontFamily: 'Inter, system-ui, sans-serif' }}
+          >
+            Got it
+          </button>
+        )}
       </div>
     </div>
   );
