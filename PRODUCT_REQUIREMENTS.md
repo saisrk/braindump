@@ -1,8 +1,8 @@
 # Braindump — Product Requirements Document
 
-**Version:** 0.1 (Pre-Release)  
+**Version:** 2.0  
 **Last updated:** June 2026  
-**Status:** MVP functional · preparing for public launch
+**Status:** Beta — feature-complete core loop · pre-monetisation
 
 ---
 
@@ -15,566 +15,543 @@ Braindump is a personal knowledge retention engine. The core loop:
 3. **Teach Back** — prove you understand it by explaining it in your own words
 4. **Express** — turn retained knowledge into professional output (talking points, STAR stories, LinkedIn bullets)
 
-The differentiator: most read-later apps are graveyards. Braindump closes the loop between consuming and actually knowing.
+The differentiator: most read-later apps are graveyards. Braindump closes the loop between consuming and actually knowing. The library metaphor (book spines, shelves, topic grouping) makes the knowledge feel owned, not just stored.
 
 ---
 
-## 2. Current State — What's Built
+## 2. What Changed Since v0.1
 
-### 2.1 Infrastructure & Auth
+### Major additions since the last PRD
+
+| Change | Impact |
+|--------|--------|
+| Full visual redesign — warm editorial palette (Spectral serif, terracotta `#b5462f`, cream `#f5f2ec`) | Product identity; bookshelf metaphor established |
+| Library bookshelf view — learnings rendered as book spines grouped by topic | Core UX differentiator |
+| AI topic merging — similar topic names collapsed intelligently (DB-cached) | Cleaner library organisation |
+| Book-opening transition — two-phase CSS animation when opening a book | Delight / polish |
+| Library filters restored — search, topic, tag, sort dropdowns | Search usability |
+| Express rebuilt — format-first flow with verbose copy, shelf picker, history tab | Express is now a full feature |
+| Express history saved to `express_results` and surfaced in UI | Continuity |
+| Express proof gate — requires quiz ≥ 70 or teach-back ≥ 60 on at least one selected learning | Integrity / quality signal |
+| Express one-time free trial — first run always free; subsequent runs require Pro | Monetisation hook |
+| Capture daily quota — free users limited to 5 captures/day | Monetisation hook |
+| Review user-scoping fixed — `userId` column added directly to `review_items` | Correctness (was fragile join) |
+| AI cost optimisation — `getWhatsNext`, `groupSimilarTopics`, `generateDailySummary` all DB-cached | Cost control |
+| Model downgrades — `suggestWhatsNext` and `generateDailySummary` moved from Sonnet → Haiku | Cost control |
+
+---
+
+## 3. Current State — Feature Status
+
+### 3.1 Infrastructure
+
 | Item | Status | Notes |
 |------|--------|-------|
-| PostgreSQL + Drizzle ORM | ✅ Complete | 7 tables, 4 migrations applied |
-| NextAuth.js v5 (email/password) | ✅ Complete | JWT sessions, Drizzle adapter |
-| Vercel deployment | ✅ Complete | Cron jobs configured via vercel.json |
-| AI integration (Anthropic) | ✅ Complete | Haiku 4.5 (fast), Sonnet 4.6 (smart) |
-| Dark/light theme system | ✅ Complete | CSS variables, next-themes |
-| Responsive layout (sidebar + bottom nav) | ✅ Complete | Mobile-first |
+| PostgreSQL + Drizzle ORM | ✅ | 11 migrations applied |
+| NextAuth.js v5 (email/password) | ✅ | JWT sessions |
+| Vercel deployment + cron | ✅ | `vercel.json` configured |
+| AI — Anthropic Haiku 4.5 (fast) | ✅ | Capture, review gen, topic grouping, whats-next, daily summary |
+| AI — Anthropic Sonnet 4.6 (smart) | ✅ | Express generation, teach-back grading |
+| Dark/light theme | ✅ | CSS variables, next-themes |
+| Warm editorial design system | ✅ | Spectral + Inter, 7-color book palette |
+| Responsive layout (sidebar + mobile nav) | ✅ | Mobile-first |
 
-### 2.2 Feature Status Summary
+### 3.2 Feature Status
 
 | Feature | Status | Release-Ready? |
 |---------|--------|----------------|
-| Landing page | ✅ Built | Needs copy review |
-| Sign up / Login | ✅ Built | Functional |
-| Onboarding flow | ✅ Built | Needs testing |
-| Dashboard / Home | ✅ Built | Functional |
-| Capture (URL + text) | ✅ Built | Core flow solid |
-| Library browsing + search | ✅ Built | Basic, needs filters |
-| Learning detail page | ✅ Built | Functional |
-| Review (spaced repetition) | ✅ Built | SM-2 working |
-| Teach Back | ✅ Built | Bug: hardcoded learningId |
-| Express mode | ✅ Built | 4 formats working |
-| Settings | 🟡 Partial | Only theme works |
-| Email digest (cron) | 🟡 Partial | Route exists, no UI config |
-| Video capture | 🔴 Stub | Upgrade prompt shown, not enforced |
-| Streak freeze tokens | 🟡 Partial | Logic built, no UI |
-| Pro / paid tier | 🔴 Stub | Schema exists, no payment |
-| Knowledge insights dashboard | 🔴 Not built | Planned Sprint 2 |
-| Browser extension | 🔴 Not built | Planned Sprint 3 |
-| AI connections ("related learnings") | 🔴 Not built | Planned |
-| OAuth (Google/GitHub) | 🔴 Not built | Post-launch |
-| Advanced search (date/difficulty) | 🔴 Not built | Post-launch |
-| Admin / analytics panel | 🔴 Not built | Post-launch |
-| Mobile app (native / PWA) | 🔴 Not built | Future |
+| Landing page | ✅ Built | Needs social proof + OG image |
+| Sign up / Login | ✅ Built | Missing: forgot password, email verify |
+| Onboarding (3-step wizard) | ✅ Built | Needs end-to-end test |
+| Dashboard / Home | ✅ Built | Needs freeze token UI |
+| Capture (URL + text, instant pipeline) | ✅ Built | Solid; 5/day free quota enforced |
+| Library — bookshelf view | ✅ Built | Core differentiator; working |
+| Library — search + filters | ✅ Built | Dynamic facets, topic/tag/sort |
+| Library — AI topic merging | ✅ Built | DB-cached, low cost |
+| Book-opening transition | ✅ Built | Two-phase animation |
+| Learning detail page | ✅ Built | Needs delete/edit options |
+| Review (SM-2, 4 buttons) | ✅ Built | Again/Hard/Good/Easy; user-scoped |
+| Teach Back (AI grading) | ✅ Built | Verify learningId from URL param works |
+| Express (4 formats, history, proof gate) | ✅ Built | Trial gate live; Pro gate live |
+| Settings | 🟡 Partial | Most prefs are stubs; delete account missing |
+| Email digest (cron) | 🟡 Partial | Route built; no opt-in UI; untested with real Resend key |
+| Streak + freeze tokens | 🟡 Partial | Backend done; no freeze token UI |
+| Pro / paid tier | 🔴 Stub | Schema + gates exist; no Stripe integration |
+| Knowledge insights dashboard | 🔴 Not built | Sprint 2 priority |
+| Browser extension | 🔴 Not built | Sprint 3 |
+| AI connections (related learnings) | 🔴 Not built | Post-launch |
+| OAuth (Google / GitHub) | 🔴 Not built | Post-launch |
+| Forgot password | 🔴 Not built | Needed before public launch |
+| Delete account | 🔴 Not built | GDPR required before launch |
+| Video capture (Pro) | 🔴 Stub | Gate shown; not enforced end-to-end |
+| PWA / native app | 🔴 Not built | Future |
 
 ---
 
-## 3. Feature Requirements — One by One
+## 4. Feature Requirements
 
-Each section below covers: what it does, what's built, what needs fixing, and what the acceptance criteria are for release.
+Each section covers: current state, gaps, and release acceptance criteria.
 
 ---
 
 ### Feature 1: Landing Page
 
-**What it does:** Marketing page for unauthenticated visitors. Explains the product and drives signup.
+**Current state:** Built. Hero, 4 feature cards with Express showcase section, "How It Works", CTAs. Warm editorial styling matches app.
 
-**Current state:** Built. Cyberpunk/HUD aesthetic with hero, 4 feature cards, "How It Works" section, CTAs.
-
-**Gaps for release:**
-- [ ] Copy review — ensure it clearly explains the core loop (capture → review → teach-back → express)
-- [ ] Add social proof section (testimonials or "N learnings captured" counter)
-- [ ] Meta tags / OG image for link previews when shared
-- [ ] Verify CTAs go to `/signup` (not `/home` which requires auth)
+**Gaps:**
+- [ ] Social proof — "N learnings captured" counter or testimonials
+- [ ] OG image for social sharing (link previews when posted to Slack/Twitter)
+- [ ] Meta tags: `<title>`, `<description>`, `og:image`, `og:title`
+- [ ] Copy review — explain the core loop in under 10 seconds above the fold
+- [ ] "Get Started" CTA must go to `/signup`, not `/home`
+- [ ] Pricing section (even a simple free vs pro table) before launch
 
 **Acceptance criteria:**
-- Visitor can understand what the product does in under 10 seconds
-- "Get Started" CTA leads to signup
-- Page renders correctly on mobile
-- OG image present for social sharing
+- Visitor understands the product in < 10 seconds
+- "Get Started" leads to `/signup`
+- Renders correctly on mobile (375px viewport)
+- OG image present so social shares look good
+- Pricing is communicated (even if Stripe isn't wired yet)
 
 ---
 
 ### Feature 2: Sign Up / Login
 
-**What it does:** Email/password authentication via NextAuth.js.
+**Current state:** Email/password via NextAuth.js. Signup creates user + hashed password. Login returns JWT session.
 
-**Current state:** Built. Signup creates user + password hash. Login creates JWT session.
-
-**Gaps for release:**
-- [ ] After signup, user should land on `/onboarding` (verify this redirect is wired)
+**Gaps:**
+- [ ] **Forgot password flow** — not built; critical for public launch
+- [ ] **Email verification** — column exists, flow does not; should verify before allowing login
 - [ ] Password strength indicator on signup form
-- [ ] "Forgot password" flow — not built; needed before public launch
-- [ ] Rate limiting on auth endpoints to prevent brute force
-- [ ] Email verification (emailVerified column exists but flow not built)
-- [ ] Error messages are user-friendly (not raw DB errors)
+- [ ] Rate limiting on `/api/auth/signup` and `/api/auth/login` (brute force prevention)
+- [ ] User-friendly error messages — no raw DB errors shown to user
+- [ ] After signup → verify redirect to `/onboarding` is reliable
 
 **Acceptance criteria:**
-- Signup → onboarding redirect works
-- Login with wrong password shows clear error
-- Session persists across browser refresh
-- Rate limiting prevents brute-force (or behind Vercel WAF)
-- "Forgot password" either built or explicitly blocked with clear message
+- Forgot password sends reset email and allows password change
+- Login with wrong password shows clear, friendly error
+- Session persists across browser refresh and tab close
+- Rate limiting or WAF prevents brute force
+- Signup → onboarding redirect always fires for new users
 
 ---
 
 ### Feature 3: Onboarding Flow
 
-**What it does:** First-time setup wizard. Collects name + learning topics. Seeds 2 starter learnings so the app isn't empty.
+**Current state:** 3-step wizard at `/onboarding`. Collects name + learning goals, seeds 2 starter learnings, sets `onboardedAt`. Layout redirects if `onboardedAt` is null.
 
-**Current state:** 3-step wizard built (`/onboarding`). Layout redirects to it if `onboardedAt` is null.
-
-**Gaps for release:**
-- [ ] Verify seeded learnings actually appear in the library after completion
-- [ ] Verify review items are created for seeded learnings (due today)
-- [ ] Verify `onboardedAt` is set and repeat visits skip onboarding
-- [ ] "Skip for now" option — some users may want to skip topic selection
-- [ ] Handle edge case: user exits mid-onboarding (partial state)
-- [ ] Test on mobile — topic chips should wrap properly
-- [ ] Loading state on "Start learning →" button while server action runs
+**Gaps:**
+- [ ] Verify seeded learnings appear in library after completion with review items due today
+- [ ] Verify `onboardedAt` is set so returning users skip onboarding reliably
+- [ ] "Skip for now" option — some users want to jump straight in
+- [ ] Loading state on "Start learning →" while server action runs (currently may feel frozen)
+- [ ] Handle mid-onboarding browser close gracefully (partial state recovery)
+- [ ] Mobile test — topic chip selection on 375px viewport
 
 **Acceptance criteria:**
-- New user after signup always sees onboarding
-- Completing onboarding saves name, goals, sets onboardedAt
-- Library contains 2 seeded learnings with review items due today
-- Returning user never sees onboarding again
-- Works on mobile viewport
+- New user after signup always sees onboarding once and only once
+- Completing onboarding saves name, goals, seeds 2 learnings, redirects to `/home`
+- Skipping saves `onboardedAt` but leaves goals empty
+- Library has seeded learnings with review items after onboarding
 
 ---
 
 ### Feature 4: Dashboard / Home
 
-**What it does:** Overview of learning activity. Shows streak, items learned today, items due for review, total learnings count. Quick links to capture and review.
+**Current state:** Shows streak, today's captures, items due for review, total learnings. Quick-capture CTA. "What's Next" AI suggestions (cached 24h). Daily summary sentence.
 
-**Current state:** Fully functional. Pulls from `getDashboardStats()`, streaks, due count.
-
-**Gaps for release:**
-- [ ] Empty state — what does a brand-new user with no learnings see? Should prompt them to capture
-- [ ] "Due for Review" badge should link directly to `/review`
-- [ ] Streak display needs to handle day 0 gracefully (no streak yet)
-- [ ] "Consistency score" formula (`streak/30`) is arbitrary — needs product decision on better metric
-- [ ] Verify stats update in real-time after actions (cache invalidation with `revalidatePath`)
+**Gaps:**
+- [ ] Empty state for brand-new users — prompt to capture their first learning
+- [ ] "Due for Review" badge should link to `/review`
+- [ ] Streak display on day 0 — "Start your streak today" instead of "0 days"
+- [ ] Freeze token count display — "2 freeze tokens remaining" visible somewhere
+- [ ] Freeze token prompt when streak is about to break (missed yesterday, tokens available)
+- [ ] Streak milestone toasts — 7 / 30 / 100 days
 
 **Acceptance criteria:**
-- All 4 stats display correct values
-- Empty state guides new users to their first action
-- Streak correctly resets if user misses 2+ days (without freeze token)
-- Stats refresh after capturing or reviewing
+- All 4 stats display correct values and update after actions
+- Empty state shown with CTA to `/capture`
+- Streak handles day 0 gracefully
+- Freeze tokens visible
+- Stats revalidate after capture or review (no stale cache)
 
 ---
 
 ### Feature 5: Capture (URL + Text)
 
-**What it does:** The primary input mechanism. Paste a URL or text; AI extracts title, summary, topic, tags, difficulty, key points. User reviews and confirms. Saved as a Learning with auto-generated review items.
+**Current state:** Full pipeline. Skeleton-first instant save → `/api/capture/enrich` fills AI fields async. Daily quota: 5 captures/day for free users enforced in `saveCapture` and `saveSkeleton`.
 
-**Current state:** Full pipeline working. 4-step wizard: Quick → (metadata enrichment) → Organize → Result.
+**Pipeline:**
+- URL → `extractFromUrl()` → `analyzeBlogContent()` → `summarizeCapture()` → `generateReviewItems()`
+- Text → `summarizeCapture()` → `generateReviewItems()`
+- Video URL → `detectVideoUrl()` → `analyzeVideoMetadata()` → (Pro gate, currently prompt-only)
 
-**AI pipeline:**
-- URL: `extractFromUrl()` → `analyzeBlogContent()` → `summarizeCapture()` → `generateReviewItems()`
-- Text: `summarizeCapture()` → `generateReviewItems()`
-- Video URL: `detectVideoUrl()` → `analyzeVideoMetadata()` → (pro gate)
-
-**Gaps for release:**
-- [ ] Error handling UX when URL is unreachable or returns 403 — show clear message, not a crash
-- [ ] Character limit for text input — very long pastes may cause LLM timeouts
-- [ ] Loading states between each analysis step (currently may feel frozen)
-- [ ] User should be able to edit AI-generated tags and difficulty before saving
-- [ ] Duplicate detection — warn if same URL has already been captured
-- [ ] Review items quality check — generated items should be meaningful, not generic
-- [ ] Verify all 4-6 review items are created and linked correctly
-- [ ] Source URL is preserved and displayed on the learning detail page
+**Gaps:**
+- [ ] Daily quota UI — when user hits the 5/day limit, show an in-app upgrade prompt (currently just an error string)
+- [ ] Duplicate URL detection — warn if this URL has been captured before
+- [ ] Character limit for text input — very long pastes risk LLM timeouts; enforce ~20k chars with visible counter
+- [ ] Friendly error when URL is unreachable (403 / paywalled) — not a crash
+- [ ] User should be able to edit AI-generated tags + difficulty before saving
+- [ ] Video capture gate — properly enforce Pro requirement (currently shows prompt but may not block)
+- [ ] Source URL displayed on learning detail as a clickable link in new tab
 
 **Acceptance criteria:**
-- Paste a URL → AI summary appears within 10s
-- Paste raw text → AI summary appears within 8s
-- User can edit title, tags before saving
+- URL capture → AI summary within 12s
+- Text capture → AI summary within 8s
+- Free user hitting 5/day sees upgrade prompt, not a raw error
+- Duplicate URL shows a non-blocking warning
 - Saving creates learning + minimum 4 review items due today
-- Error states are friendly (not JSON blobs)
-- Duplicate URL warning shown
+- Error states are friendly (no stack traces or JSON blobs)
 
 ---
 
-### Feature 6: Library — Browse & Search
+### Feature 6: Library — Bookshelf View
 
-**What it does:** Grid/list view of all captured learnings. Search by text. Filter by category/topic.
+**Current state:** Learnings grouped by topic and rendered as book spines. AI merges similar topic names (e.g. "Leadership" + "Leadership & Executive Strategy" → "Leadership") using a DB-cached map. Two-column grid layout. Book-opening transition: phase 1 expands the spine, phase 2 opens to a pages overlay before navigating to detail.
 
-**Current state:** Built. Text search on title/summary/topic. Category filter pills.
+**Gaps:**
+- [ ] Performance: `groupSimilarTopics()` fires an AI call on first visit per user (cold start). Consider eagerly warming on onboarding.
+- [ ] Book height variation — currently deterministic by index; could use `difficulty` field for more meaningful variation
+- [ ] Empty shelf state — if a topic has only 1-2 learnings, shelf looks sparse; consider minimum height
+- [ ] Pagination or infinite scroll once users have > 100 learnings (library could get slow)
+- [ ] "Uncategorised" shelf — learnings with no topic land here; add a nudge to categorise them
 
-**Gaps for release:**
-- [ ] Category filter pills are hardcoded; should be dynamic from user's actual topics
-- [ ] Search is case-sensitive — should be case-insensitive (likely a DB query issue)
-- [ ] Empty state when no learnings match search — "No results for X"
-- [ ] Sort order — currently unclear; should default to newest first with option to sort by "most due"
-- [ ] Card preview — summary text is truncated but may cut awkwardly; test with long titles
-- [ ] Loading skeleton while data fetches
-- [ ] Library should show teach-back score badge if user has done a teach-back for that item
+**Acceptance criteria:**
+- Books render for all learnings grouped by canonical topic
+- AI grouping fires once then uses cache on repeat visits
+- Book-opening transition plays on click before navigating to detail
+- Search or filter active → falls back to flat card list automatically
+
+---
+
+### Feature 7: Library — Search & Filters
+
+**Current state:** Search (title/summary/topic), topic dropdown, tag dropdown, sort (recent/due/confidence). `getUserFacets()` builds dropdown options dynamically from user's actual topics/tags.
+
+**Gaps:**
+- [ ] Search is `ilike` (case-insensitive) — verify this works correctly for non-ASCII characters
+- [ ] Search across key points and tags — currently only searches title/summary/topic
+- [ ] Empty search result state — "No results for X · Clear search"
+- [ ] Filter state persists in URL (already done via searchParams) — verify browser back/forward works
+- [ ] Sort by "most due" should be the default when user has overdue items
 
 **Acceptance criteria:**
 - Search returns results within 500ms
-- Filter by topic works (dynamic, not hardcoded)
-- Empty state shown with clear CTA
-- Default sort is newest-first
-- Each card shows title, topic, tags, and when it was captured
+- Filter dropdowns populated from actual user data (not hardcoded)
+- Empty result state with clear reset CTA
+- URL reflects current filters (shareable, back-button friendly)
 
 ---
 
-### Feature 7: Learning Detail Page
+### Feature 8: Learning Detail Page
 
-**What it does:** Full view of a single learning — summary, key points, tags, source URL, related review items, teach-back history.
+**Current state:** Server-rendered. Shows summary, key points, tags, review items count, teach-back history count, confidence score. Two-column layout (book cover left, content right).
 
-**Current state:** Built. Server-rendered with client interactions.
-
-**Gaps for release:**
-- [ ] "Teach Back" button should pre-populate the teach-back page with this specific learningId (currently teach-back page has hardcoded `learning-1`)
-- [ ] Source URL should be a clickable link that opens in new tab
-- [ ] Review items count and next due date displayed
-- [ ] Teach-back history — show previous scores (not just count)
-- [ ] Delete learning option (with confirmation) — not present
-- [ ] Edit learning option (title, tags, summary) — not present but valuable
+**Gaps:**
+- [ ] Source URL as a clickable link that opens in a new tab
+- [ ] "Delete learning" option with confirmation — not present
+- [ ] "Edit" option (title, summary, tags) — valuable for correcting AI errors
+- [ ] Teach-back score history — show previous scores, not just count
+- [ ] Next review date visible
+- [ ] "Review this item now" shortcut (bypasses the full queue and reviews just this card)
 
 **Acceptance criteria:**
-- All learning fields display correctly
-- "Teach Back" button routes to teach-back page pre-loaded with this learning
-- Source URL is clickable and opens in new tab
-- Review items section shows count and next due date
+- Source URL clickable, opens in new tab
+- Delete button present with confirmation modal; deletion cascades to review_items, teach_backs
+- Latest teach-back score displayed if available
+- Next review date shown
 
 ---
 
-### Feature 8: Review (Spaced Repetition)
+### Feature 9: Review (Spaced Repetition)
 
-**What it does:** Flashcard session showing due items. User reveals answer, rates confidence (Hard / Good / Easy). SM-2 algorithm calculates next review date.
+**Current state:** SM-2 algorithm. 4 rating buttons: Again / Hard / Good / Easy. User-scoped via `userId` column on `review_items`. Activity recorded for streak.
 
-**Current state:** Fully functional. SM-2 implemented correctly. Records activity for streak tracking.
-
-**Gaps for release:**
-- [ ] Session summary screen at end — "You reviewed 8 items. Next session: 3 items due tomorrow."
-- [ ] Show which learning a review item belongs to (link back to detail page)
-- [ ] Progress indicator during session ("3 of 8")
-- [ ] "Skip this item" option for users who want to come back to it
-- [ ] If no items due, show an encouraging empty state ("You're all caught up! Nothing due today.")
-- [ ] Keyboard shortcuts (Space = show answer, 1/2/3 = Hard/Good/Easy) for power users
-- [ ] Review streaks — "You've reviewed X days in a row"
+**Gaps:**
+- [ ] Session summary screen — "You reviewed 8 items. 2 due again tomorrow, 6 pushed to next week."
+- [ ] Progress indicator — "3 of 8" visible during session
+- [ ] Show which learning an item belongs to (link to detail page)
+- [ ] "Skip this item" — remove from current session without rating
+- [ ] Empty state — "All caught up! Nothing due today." with suggestion to capture
+- [ ] Keyboard shortcuts — Space = reveal, 1/2/3/4 = Again/Hard/Good/Easy
+- [ ] Session streak display — "Reviewed X days in a row"
 
 **Acceptance criteria:**
-- All items with dueDate ≤ today appear in session
-- Rating Hard/Good/Easy updates the correct interval via SM-2
-- Activity recorded (streak bump)
-- Session ends with summary screen
-- Empty state when nothing is due
-- Progress shown during session
+- All items with `dueDate ≤ today` appear in session
+- Rating updates SM-2 interval correctly (Again → 1 day, Easy → larger multiplier)
+- Activity recorded for streak on session start (not per-card)
+- Session ends with summary screen showing what was reviewed and what's next
+- Empty state shown when nothing due
+- Progress indicator visible throughout session
 
 ---
 
-### Feature 9: Teach Back
+### Feature 10: Teach Back
 
-**What it does:** User explains a concept in their own words. AI grades the explanation (score 0-100, verdict strong/partial/shaky, nailed points, gaps, follow-up questions).
+**Current state:** 3-step wizard. AI grades explanation (score 0–100, verdict strong/partial/shaky, nailed points, gaps, follow-up questions). `gapScore` saved to `teach_backs` table. Results feed back into Express proof gate.
 
-**Current state:** 3-step wizard built. AI grading works. Results saved to DB.
-
-**Known bug:** `learningId` is hardcoded to `'learning-1'` in the page — doesn't load the correct learning.
-
-**Gaps for release:**
-- [ ] **Critical bug fix:** Extract `learningId` from URL query params (`?learningId=xxx`) and load the correct learning as reference material
-- [ ] Show the learning summary as a "reference card" while user types their explanation
-- [ ] Minimum explanation length enforced (15 chars) with clear feedback
-- [ ] Show score history — if user has done this before, show previous best score
-- [ ] After completing teach-back, offer to return to library or do another
-- [ ] Follow-up questions in results should be interactive (let user answer them)
-- [ ] Save teach-back result correctly — verify `learningId` FK is written to DB
+**Gaps:**
+- [ ] Verify `learningId` is loaded from URL query param and correct learning displays as reference card
+- [ ] Reference card always visible while user types (not hidden behind a toggle on mobile)
+- [ ] Minimum explanation length (15 chars) enforced before submit button activates
+- [ ] Show previous best score if user has done this before
+- [ ] After completion: offer "Back to library" or "Teach another"
+- [ ] Follow-up questions presented in an interactive way (not just static text)
 
 **Acceptance criteria:**
-- Teach-back page loads the correct learning when navigated from library or detail page
-- Reference card visible while user types
-- AI grades explanation within 15s
+- Teach-back page loads the correct learning via `?learningId=xxx`
+- Reference card (title + summary) visible while typing
+- AI grades within 15s
 - Results show score, verdict, nailed points, gaps, follow-up questions
-- Result saved to `teach_backs` table with correct learningId
+- Result saved to DB with correct `learningId` and `userId`
+- `gapScore` written so Express proof gate can read it
 
 ---
 
-### Feature 10: Express Mode
+### Feature 11: Express Mode
 
-**What it does:** Takes all captured learnings and generates professional output in 4 formats — talking points, STAR stories, LinkedIn/resume bullets, or a narrative summary.
+**Current state:** Format-first flow (Talking Points / STAR Stories / Profile Summary / Learning Summary). Shelf picker groups by topic with mini book spines. History tab shows past generations. **Proof gate**: at least one selected learning must have quiz ≥ 70 or teach-back ≥ 60. **Trial gate**: one free run; subsequent runs require Pro. Trial callout banner shown before first use. Lock icons on shelves with no proven learnings.
 
-**Current state:** All 4 formats working. Copy-to-clipboard. Regenerate button.
-
-**Gaps for release:**
-- [ ] Topic filter — currently uses last 40 learnings regardless of topic; let user filter by topic/tag before generating
-- [ ] Generated output length control — some outputs may be too long or too short
-- [ ] Format-specific prompts for different contexts (e.g. job interview vs LinkedIn)
-- [ ] Save output — let user bookmark/copy a generated express output for later
-- [ ] Loading state is minimal — show which learnings are being processed
-- [ ] If user has < 3 learnings, output quality will be poor — show a "Capture more to improve results" nudge
+**Gaps:**
+- [ ] UI for daily/weekly limit display if added (currently trial gate blocks entirely; could show "X free runs remaining")
+- [ ] Generated output length control — some outputs run very long; max word count option
+- [ ] Export as PDF or Markdown file (not just clipboard)
+- [ ] Format-specific context prompts — e.g. for STAR: "What role are you applying for?"
+- [ ] "Improve" action — regenerate with a user note ("make it more concise")
+- [ ] If user has < 3 learnings, output will be poor — show "Capture more to improve results"
+- [ ] Upgrade modal for `pro_required` — needs a real upgrade path (Stripe link or waitlist)
 
 **Acceptance criteria:**
-- All 4 formats generate coherent output
-- Topic filter works to narrow which learnings are used
-- Copy-to-clipboard works on all major browsers
-- Empty-state nudge when too few learnings exist
+- All 4 formats generate coherent, grounded output
+- Proof gate blocks generation and shows clear guidance (go review / teach back first)
+- Trial gate blocks on second+ run for non-Pro users with upgrade prompt
+- Lock icons on shelves with zero proven learnings; selectable shelves have ≥ 1 proven
+- Copy to clipboard works on all major browsers
+- History tab shows last 20 generations with expandable output and copy button
 - Output generates within 20s
 
 ---
 
-### Feature 11: Settings
+### Feature 12: Settings
 
-**What it does:** User preferences — theme, learning preferences, account management.
+**Current state:** Theme toggle works. Logout works. All other preferences (review difficulty, email digest, streak target) are non-interactive stubs.
 
-**Current state:** Theme toggle works. "Review Difficulty" and "Daily Reminder" are non-interactive placeholders. Logout works.
-
-**Gaps for release:**
-- [ ] **Review difficulty preference:** Let user choose how challenging the AI makes review items (Easy / Medium / Hard)
-- [ ] **Email digest toggle:** On/off for daily review digest email (currently no UI to opt in/out)
-- [ ] **Email digest time:** Preferred send time (morning / afternoon / evening)
-- [ ] **Streak target:** Let user set their goal (currently hardcoded to 1 day/week)
-- [ ] **Account settings:** Change name, change email, change password
-- [ ] **Danger zone:** Delete account + all data (GDPR requirement before public launch)
-- [ ] Persist all settings to DB, not just theme (theme is localStorage-only)
-
-**Acceptance criteria:**
-- All displayed settings are interactive (nothing is a stub)
-- Email digest preference is saved and respected by cron job
-- Change name saves to DB and updates sidebar display
-- Delete account removes all user data from all tables
-- Theme persists across sessions
-
----
-
-### Feature 12: Daily Review Digest Email
-
-**What it does:** Vercel Cron at 8am UTC sends each user an email: how many items are due, streak count, direct link to review session.
-
-**Current state:** `/api/cron/daily-digest` route built. `lib/email.ts` built with Resend. `vercel.json` configured. No UI to opt in/out.
-
-**Gaps for release:**
-- [ ] Email opt-in UI in Settings (currently no way to enable/disable)
-- [ ] Send time preference (8am UTC is hardcoded)
-- [ ] Skip users who have already reviewed today (digest is only useful for re-engagement)
-- [ ] Test email send works with a real Resend API key in staging
-- [ ] Unsubscribe link in email footer must work (GDPR / CAN-SPAM compliance)
-- [ ] Rate-limit sending to avoid hitting Resend's hourly limits on large user bases
-- [ ] `RESEND_API_KEY` and `CRON_SECRET` must be added to Vercel environment
+**Gaps:**
+- [ ] **Review difficulty preference** — Easy / Medium / Hard, saved to `userProfiles.preferences`; used when generating review items
+- [ ] **Email digest toggle** — opt-in/out for daily email; saved to DB and respected by cron
+- [ ] **Email digest send time** — morning / afternoon / evening preference
+- [ ] **Change name** — editable, saves to DB, reflects in sidebar
+- [ ] **Change password** — current + new password fields
+- [ ] **Delete account** — with "type DELETE to confirm" modal; cascades all user data (GDPR required)
+- [ ] **Streak target** — let user set their goal (daily, 3×/week, weekdays only)
+- [ ] Pro status and billing section (even if Stripe not wired, show "Pro: Inactive · Upgrade" link)
 
 **Acceptance criteria:**
-- User can enable/disable digest in Settings
-- Opted-in users receive email at their preferred time
-- Email contains: streak, due count, CTA button linking to /review
-- Unsubscribe link works (sets preference to off in DB)
-- Cron returns `{sent: N, failed: M}` and logs per-user errors without crashing
+- All visible settings are interactive (no stubs)
+- Email digest preference saved and respected by cron job
+- Delete account removes user data from all tables (learnings, review_items, teach_backs, express_results, streaks, daily_logs, user_profiles)
+- Theme persists across sessions (already works)
+- Name change reflects in sidebar without page reload
 
 ---
 
-### Feature 13: Streak & Freeze Tokens
+### Feature 13: Daily Review Digest Email
 
-**What it does:** Day-count streak of consecutive learning activity. 2 freeze tokens per user to bridge a missed day without breaking streak.
+**Current state:** `/api/cron/daily-digest` route exists. `lib/email.ts` uses Resend. `vercel.json` schedules at 8am UTC. No opt-in UI. Never tested with a real Resend key.
 
-**Current state:** Backend fully built. No UI for freeze tokens.
-
-**Gaps for release:**
-- [ ] Freeze token display in dashboard — show "2 freeze tokens remaining"
-- [ ] Freeze token prompt — when streak is about to break, offer to use a freeze token
-- [ ] Freeze token consumption logic — verify it correctly prevents streak reset
-- [ ] Streak milestone notifications — "🔥 7 day streak!" celebration
-- [ ] Freeze token replenishment logic — does it refill weekly? Monthly? Define the rule.
+**Gaps:**
+- [ ] **Opt-in UI** in Settings — without this, sending is unsolicited (legal risk)
+- [ ] `RESEND_API_KEY` + `CRON_SECRET` must be set in Vercel environment variables
+- [ ] Skip users who have already completed a review session today (digest is only for re-engagement)
+- [ ] Unsubscribe link in email footer must actually update the DB preference
+- [ ] Send time personalisation (currently hardcoded 8am UTC)
+- [ ] Test email delivery end-to-end in a staging environment
+- [ ] Cron should return `{ sent: N, skipped: M, failed: K }` and log per-user failures without crashing
 
 **Acceptance criteria:**
-- Freeze token count displayed on dashboard or streak badge
-- When user skips a day and has tokens, streak doesn't reset
-- UI notifies user when a freeze token was consumed
-- Streak milestone shown as toast/banner at 7, 30, 100 days
+- User can enable/disable digest in Settings → `emailDigestEnabled` column respected
+- Opted-in users receive email with streak, due count, and CTA button to `/review`
+- Unsubscribe link in footer works and opts user out
+- Cron completes without crashing even if individual sends fail
+- `RESEND_API_KEY` confirmed working before launch
 
 ---
 
-## 4. Planned Future Features
+### Feature 14: Streak & Freeze Tokens
 
-These are not yet built and are not required for initial launch.
+**Current state:** Backend fully built. Streak tracked in `streaks` table. 2 freeze tokens per user. No UI for freeze tokens.
 
-### Sprint 2: Knowledge Insights Dashboard
+**Gaps:**
+- [ ] **Freeze token count** visible on dashboard or streak badge
+- [ ] **Freeze token prompt** — when user logs in the day after missing a day and has tokens remaining, offer to spend one
+- [ ] **Freeze token replenishment rule** — define when tokens refill (monthly? earning through milestones?)
+- [ ] **Streak milestone celebrations** — toast/banner at 7, 30, 100 days
+- [ ] Verify freeze consumption correctly prevents streak reset (integration test)
 
-**Priority:** High — the "wow" shareable moment.
-
-**What it does:**
-- Topic breakdown: bar chart of learnings by category
-- Mastery heatmap: which topics have the most review + teach-back activity
-- Learning velocity: week-over-week captures
-- "Strongest topics" vs "Needs review" split
-- Shareable card (OG-image via `@vercel/og`)
-
-**Requirements:**
-- New `/insights` route
-- Aggregate queries on `learnings`, `review_items`, `teach_backs`
-- Chart library (recharts or similar)
-- Shareable snapshot with static OG image generation
-- Accessible without needing real-time data (can be cached daily)
+**Acceptance criteria:**
+- Freeze token count visible to user
+- Prompt appears when token can save a streak (missed yesterday, tokens > 0)
+- Consuming a token prevents streak reset
+- Streak milestones (7 / 30 / 100) shown as a celebratory moment
 
 ---
 
-### Sprint 3: Browser Extension
+## 5. Monetisation — Pro Tier
 
-**Priority:** High — distribution moat.
+**Current state:** Schema has `isPro`, `proTrialEndsAt`, `proSubscriptionEndsAt`. Feature gates are wired:
+- Capture: 5/day free, unlimited Pro
+- Express: 1 free trial run, unlimited Pro  
+- Express proof gate: all users must prove learning (not a Pro feature)
 
-**What it does:**
-- Chrome/Edge extension
-- Highlight text on any page → right-click → "Save to Braindump"
-- Extension popup: paste URL or type a note
-- Authenticates via stored JWT token
+**What's missing:**
 
-**Requirements:**
-- Separate Chrome Extension project (Manifest V3)
-- New `/api/capture/quick` endpoint accepting token + content
-- Extension UI: popup with text area + submit
-- Token storage in `chrome.storage.local`
-- Badge showing unreviewed item count (stretch goal)
+| Item | Priority |
+|------|----------|
+| Stripe integration (subscription + webhooks) | 🔴 Required to monetise |
+| Billing page at `/settings/billing` | 🔴 Required |
+| Webhook handler `/api/webhooks/stripe` to flip `isPro` | 🔴 Required |
+| Trial period flow — 14-day free Pro trial on signup | 🟡 High value |
+| Video capture enforced as Pro (currently shows prompt, not blocked) | 🟡 Medium |
+| Upgrade modal on Express trial exhaustion links to billing | 🟡 Medium |
+| Upgrade CTA on daily quota error links to billing | 🟡 Medium |
+| Pro badge in sidebar | 🟡 Low |
 
----
+**Suggested free vs Pro split:**
 
-### Future: AI Connections
-
-**Priority:** Medium — retention through discovery.
-
-**What it does:**
-- After saving a new learning: "This connects to [X] you captured 2 weeks ago"
-- "Related learnings" section on each detail page
-- Cosine similarity search using embeddings
-
-**Requirements:**
-- Add `embedding vector(1536)` column to `learnings` table
-- Compute embedding via Anthropic API at capture time
-- Enable pgvector extension on PostgreSQL
-- Query top-3 similar learnings by cosine distance at read time
+| Feature | Free | Pro |
+|---------|------|-----|
+| Captures per day | 5 | Unlimited |
+| Express runs | 1 lifetime trial | Unlimited |
+| Video capture | ❌ | ✅ |
+| AI connections (future) | ❌ | ✅ |
+| Email digest | ✅ | ✅ |
+| Library + Review + Teach Back | ✅ | ✅ |
 
 ---
 
-### Future: OAuth / Social Login
+## 6. What to Build for a Good Release — Prioritised
 
-**Priority:** Medium — reduces signup friction.
+### Must-Have Before Launch (Blockers)
 
-**What it does:** "Sign in with Google" and/or "Sign in with GitHub" buttons.
+| Item | Why it blocks launch |
+|------|---------------------|
+| Forgot password flow | Users will lock themselves out |
+| Delete account | GDPR legal requirement |
+| Email digest opt-in UI | Can't send unsolicited email |
+| Settings stubs made interactive (at least name + password) | Stubs destroy trust |
+| Upgrade modal → real billing path (Stripe or waitlist) | Trial/quota gates need a destination |
+| Test Resend API key in staging | Email digest may be broken end-to-end |
+| Review session summary screen | Session ends with no feedback — jarring |
+| Teach-back `learningId` from URL param verified | Core loop correctness |
 
-**Requirements:**
-- Add Google OAuth provider to NextAuth config
-- Add GitHub OAuth provider
-- Handle account linking (user signs up with email, later uses Google with same email)
-- `accounts` table already exists via Drizzle adapter — just needs provider config
+### High Value for Retention (Do Before Growth Push)
 
----
+| Item | Why it matters |
+|------|----------------|
+| Freeze token UI | Users discover streak broke with no recourse; churn trigger |
+| Streak milestone celebrations | Positive reinforcement loop |
+| Review progress indicator ("3 of 8") | Session feels blind without it |
+| Empty state on review ("all caught up") | Confusion without it |
+| Capture duplicate URL detection | Repeated capture of same source is noisy |
+| Book detail: delete + edit options | No escape hatch for bad AI summaries |
+| Pricing section on landing page | Sets expectation before trial-gate hits |
 
-### Future: Pro Tier / Payments
+### High Value for Growth (Sprint 2)
 
-**Priority:** Medium — monetization.
+| Item | Why it matters |
+|------|----------------|
+| Knowledge Insights Dashboard | The shareable "wow" screenshot moment; drives word of mouth |
+| OAuth (Google) | Reduces signup friction significantly |
+| Email verification on signup | Trust signal; prevents fake accounts |
+| OG image for landing page | Social shares look professional |
 
-**Schema already has:** `isPro`, `proTrialEndsAt`, `proSubscriptionEndsAt` on users table.
+### Strategic (Sprint 3+)
 
-**What it does:**
-- Free tier: basic capture/review/teach-back
-- Pro tier: video capture, AI connections, unlimited history, export features
-
-**Requirements:**
-- Stripe integration (subscription + webhooks)
-- Billing page at `/settings/billing`
-- Webhook handler at `/api/webhooks/stripe` to update `isPro`
-- Feature gating in server actions based on `isPro` flag
-- Trial period flow (14 days free)
-- Video capture pro feature actually enforced (currently just a prompt)
-
----
-
-### Future: Advanced Search & Filters
-
-**Priority:** Low — quality-of-life.
-
-**What it does:**
-- Filter by date range, difficulty level
-- Sort by: newest, oldest, least reviewed, most reviewed, lowest teach-back score
-- Saved search/filter presets
-- Full-text search across key points and tags (not just title/summary)
-
----
-
-### Future: Collaborative Features
-
-**Priority:** Low — requires critical mass.
-
-**What it does:**
-- Share a learning publicly (view-only link)
-- Team library — shared collection within an organization
-- Group review sessions
-
-**Note:** Not planned until individual value is proven.
+| Item | Notes |
+|------|-------|
+| Browser extension | Distribution moat; largest organic growth lever |
+| AI connections (related learnings) | The "aha" moment for power users; requires pgvector |
+| PWA / push notifications | Mobile re-engagement; complements email digest |
+| Collaborative features | Only after individual value is proven |
 
 ---
 
-### Future: Mobile App / PWA
+## 7. Known Bugs
 
-**Priority:** Low.
-
-**Requirements (if PWA):**
-- `manifest.json` + service worker
-- Push notification support for review reminders
-- Offline review queue with background sync
+| Bug | Severity | Location |
+|-----|----------|----------|
+| Teach-back `learningId` from URL param — verify this works correctly after recent refactor | 🔴 Critical | `app/(app)/teachback/page.tsx` |
+| Email digest has no opt-in UI — unsolicited email on launch is a legal risk | 🔴 Critical | `app/(app)/settings` |
+| Delete account missing | 🔴 Critical (GDPR) | Missing |
+| Forgot password missing | 🔴 Critical | Missing |
+| Stripe not integrated — upgrade modals have no destination | 🔴 Critical for monetisation | Missing |
+| Settings preferences (review difficulty, reminder time) are non-interactive stubs | 🟡 Medium | `app/(app)/settings/page.tsx` |
+| No session summary screen after completing review | 🟡 Medium | `app/(app)/review/page.tsx` |
+| Freeze tokens have no UI to display or consume | 🟡 Medium | Dashboard |
+| Capture daily limit shows raw error string, not a designed upgrade prompt | 🟡 Medium | `app/(app)/capture` |
+| Video capture Pro gate exists as prompt but may not fully block save | 🟡 Medium | `lib/actions/capture.ts` |
+| Review session has no progress indicator | 🟡 Low | `app/(app)/review/page.tsx` |
+| No session empty state when nothing is due | 🟡 Low | `app/(app)/review/page.tsx` |
+| Book detail has no delete / edit options | 🟡 Low | `app/(app)/library/[id]` |
+| Source URL not rendered as clickable link on detail page | 🟡 Low | `app/(app)/library/[id]` |
 
 ---
 
-## 5. Pre-Release Checklist
+## 8. Pre-Release Checklist
 
 ### Security
 - [ ] Rate limiting on `/api/auth/signup` and `/api/auth/login`
-- [ ] CSRF protection (NextAuth provides this, verify it's not bypassed)
+- [ ] CSRF protection verified (NextAuth provides; confirm not bypassed)
 - [ ] All server actions call `requireUserId()` before touching user data
 - [ ] `CRON_SECRET` header checked on all cron routes
-- [ ] No user data leaks in error messages or API responses
+- [ ] No stack traces or internal errors exposed to users
 - [ ] SQL injection not possible (Drizzle ORM parameterises all queries)
-- [ ] Environment variables not committed to git (`.env.example` only)
+- [ ] `.env.example` only (no secrets in git)
+- [ ] Stripe webhook signature verified before processing
 
 ### Data & Privacy
-- [ ] Delete account flow removes all user data from all tables
-- [ ] Privacy policy page exists (even if simple)
+- [ ] Delete account removes all user data from all tables
+- [ ] Privacy policy page exists
 - [ ] Terms of service page exists
-- [ ] Cookie banner (if using analytics)
 - [ ] GDPR-compliant email unsubscribe
+- [ ] Cookie banner if using analytics
 
 ### Reliability
-- [ ] Database connection pooling configured correctly for production load
-- [ ] AI API errors don't crash the UI (user sees friendly error, not stack trace)
-- [ ] Cron job failure alerts (Vercel dashboard monitoring)
-- [ ] Vercel preview deployments tested before merging to main
+- [ ] Database connection pooling configured for production load
+- [ ] AI API errors don't crash the UI
+- [ ] Cron job failure alerts (Vercel monitoring)
+- [ ] All AI calls have timeouts and fallback error messages
+- [ ] Resend API key and cron secret in Vercel environment
 
 ### Quality
-- [ ] Core flows tested end-to-end: signup → onboarding → capture → review → teach-back
+- [ ] Core flow tested end-to-end: signup → onboarding → capture → review → teach-back → express
 - [ ] All forms validate input and show inline errors
 - [ ] Loading states on all async actions
 - [ ] 404 page exists
 - [ ] Error boundary at app layout level
-- [ ] No hardcoded IDs or mock data in production routes (fix teach-back `learning-1` bug)
+- [ ] No hardcoded IDs or mock data in any route
 
 ### Performance
-- [ ] Images have `alt` text and proper sizing
-- [ ] AI responses stream where possible (avoid 10+ second blank waits)
-- [ ] Library page paginates (don't load 1000 learnings at once)
-- [ ] Core Web Vitals passing (LCP < 2.5s, CLS < 0.1)
+- [ ] Library paginates (don't load 1000 learnings at once)
+- [ ] AI responses that are slow (> 8s) have streaming or a progress state
+- [ ] Core Web Vitals: LCP < 2.5s, CLS < 0.1
+- [ ] Images have `alt` text
 
 ---
 
-## 6. Known Bugs (Must Fix Before Launch)
+## 9. Suggested Review Order (Highest Risk First)
 
-| Bug | Severity | Location |
-|-----|----------|----------|
-| Teach-back page loads hardcoded `learning-1` instead of the correct learning | 🔴 Critical | `app/(app)/teachback/page.tsx` |
-| Email digest has no opt-in UI — users receive unsolicited email | 🔴 Critical | `app/(app)/settings`, `lib/actions/` |
-| Settings preferences (review difficulty, reminder) are non-interactive stubs | 🟡 Medium | `app/(app)/settings/page.tsx` |
-| Delete account not available | 🟡 Medium | Missing |
-| Forgot password flow not built | 🟡 Medium | Missing |
-| Library category filter uses hardcoded list, not user's actual topics | 🟡 Medium | `app/(app)/library/page.tsx` |
-| No session summary screen after completing a review session | 🟡 Medium | `app/(app)/review/page.tsx` |
-| Freeze tokens have no UI to display or consume | 🟡 Medium | Dashboard |
-| Express mode uses last 40 learnings with no topic filtering | 🟡 Low | `app/(app)/express/page.tsx` |
-| Review session has no progress indicator | 🟡 Low | `app/(app)/review/page.tsx` |
-| Error handling shows no UI feedback on AI timeouts | 🟡 Low | Multiple pages |
-
----
-
-## 7. Suggested Review Order
-
-To review features one-by-one for release readiness, go in this order (highest risk first):
-
-1. **Teach-back page** — critical bug with hardcoded learningId
-2. **Settings page** — many stubs, email consent needed
-3. **Onboarding flow** — test full new-user experience end to end
-4. **Capture flow** — test URLs, long text, error cases
-5. **Review session** — test SM-2, session end state, empty state
-6. **Library** — test search, filter, detail page navigation
-7. **Express mode** — test all 4 formats, copy to clipboard
-8. **Dashboard** — verify all stats and empty states
-9. **Auth flows** — signup, login, logout, session persistence
-10. **Email digest** — add opt-in UI, test cron with real Resend key
-11. **Landing page** — copy, CTAs, OG image, mobile
-12. **Security audit** — rate limiting, auth guards, data deletion
+1. **Teach-back page** — verify learningId from URL param is working correctly
+2. **Settings** — make interactive; add delete account; add email digest toggle
+3. **Forgot password + delete account** — legal/trust blockers
+4. **Stripe / billing** — upgrade modals need a real destination
+5. **Email digest** — add opt-in UI, set Resend env var, test delivery
+6. **Review session** — add progress indicator, summary screen, empty state
+7. **Capture daily limit** — upgrade prompt UI instead of raw error
+8. **Onboarding** — full new-user flow test end to end
+9. **Dashboard** — freeze token UI, empty state, streak day 0
+10. **Library + detail** — delete/edit, source URL link
+11. **Auth** — rate limiting, forgot password, session edge cases
+12. **Landing page** — pricing, OG image, social proof, copy review
+13. **Security audit** — auth guards, data deletion, cron secret
+14. **Performance pass** — library pagination, AI timeout handling
