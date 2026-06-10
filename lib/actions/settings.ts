@@ -37,18 +37,10 @@ export async function updateProfile(input: {
 
     await db
       .insert(userProfiles)
-      .values({
-        userId,
-        goals: input.goals ?? [],
-        streakTarget: input.streakTarget ?? 1,
-      })
+      .values({ userId, goals: input.goals ?? [], streakTarget: input.streakTarget ?? 1 })
       .onConflictDoUpdate({
         target: userProfiles.userId,
-        set: {
-          goals: input.goals ?? [],
-          streakTarget: input.streakTarget ?? 1,
-          updatedAt: new Date(),
-        },
+        set: { goals: input.goals ?? [], streakTarget: input.streakTarget ?? 1, updatedAt: new Date() },
       });
 
     revalidatePath('/settings');
@@ -101,7 +93,6 @@ export async function savePreferences(input: Partial<UserPreferences>): Promise<
 
 export async function deleteAccount(): Promise<void> {
   const userId = await requireUserId();
-  // cascade on users table removes all related rows (profiles, learnings, etc.)
   await db.delete(users).where(eq(users.id, userId));
   await signOut({ redirect: false });
   redirect('/login');

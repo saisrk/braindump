@@ -1,7 +1,17 @@
 import { getSettings } from '@/lib/actions/settings';
+import { getSubscriptionInfo } from '@/lib/actions/billing';
 import { SettingsClient } from './client';
 
 export default async function SettingsPage() {
-  const settings = await getSettings();
-  return <SettingsClient initialSettings={settings} />;
+  const [settings, subscription] = await Promise.all([
+    getSettings(),
+    getSubscriptionInfo(),
+  ]);
+  return (
+    <SettingsClient
+      initialSettings={settings}
+      isPro={subscription.isPro}
+      subscriptionEndsAt={subscription.endsAt}
+    />
+  );
 }

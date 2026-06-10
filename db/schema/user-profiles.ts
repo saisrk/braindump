@@ -29,9 +29,9 @@ export const userProfiles = pgTable('user_profiles', {
   expressTrialUsed: boolean('express_trial_used').default(false).notNull(),
   isPro: boolean('is_pro').default(false),
   proTrialEndsAt: timestamp('pro_trial_ends_at', { withTimezone: true }),
-  proSubscriptionEndsAt: timestamp('pro_subscription_ends_at', {
-    withTimezone: true,
-  }),
+  proSubscriptionEndsAt: timestamp('pro_subscription_ends_at', { withTimezone: true }),
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
