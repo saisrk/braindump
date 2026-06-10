@@ -372,7 +372,7 @@ export function LearningDetailClient({
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setCoverTransform(null);
-        setTimeout(() => setPanelVisible(true), 200);
+        setTimeout(() => setPanelVisible(true), 350);
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -401,7 +401,7 @@ export function LearningDetailClient({
   return (
     <>
       <style>{`
-        .book-cover-animated { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: center center; }
+        .book-cover-animated { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: center center; }
         .tab-btn { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .tab-btn:hover { transform: translateX(6px); }
         .tab-btn.tab-active { transform: translateX(10px) !important; box-shadow: 5px 5px 12px -3px rgba(42,38,32,.55) !important; }
