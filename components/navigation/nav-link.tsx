@@ -11,9 +11,10 @@ interface NavLinkProps {
   icon?: ReactNode;
   badge?: number;
   compact?: boolean;
+  tourKey?: string;
 }
 
-export function NavLink({ href, label, icon, badge, compact }: NavLinkProps) {
+export function NavLink({ href, label, icon, badge, compact, tourKey }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + '/');
 
@@ -22,6 +23,7 @@ export function NavLink({ href, label, icon, badge, compact }: NavLinkProps) {
       <Link
         href={href}
         aria-current={isActive ? 'page' : undefined}
+        data-tour={tourKey}
         className={cn(
           'relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-medium transition-colors',
           isActive ? 'text-primary' : 'text-muted-foreground'
@@ -44,6 +46,7 @@ export function NavLink({ href, label, icon, badge, compact }: NavLinkProps) {
     <Link
       href={href}
       aria-current={isActive ? 'page' : undefined}
+      data-tour={tourKey}
       className={cn(
         'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
         isActive

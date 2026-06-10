@@ -6,15 +6,9 @@ import { format } from 'date-fns'
 import { Flame, BookOpen, Brain, CheckCircle2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
-import { getDashboardStats } from '@/lib/actions/insights'
+import { getDashboardStats, type DashboardData } from '@/lib/actions/insights'
+import { DashboardTour } from '@/components/dashboard-tour'
 import { topicGradient } from '@/lib/book-colors'
-
-interface DashboardData {
-  streak: number
-  todayLearnings: number
-  due: number
-  total: number
-}
 
 export default function HomePage() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -55,6 +49,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-full">
+      {!data.tourSeen && <DashboardTour />}
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
 
         {/* Header */}

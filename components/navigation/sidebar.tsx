@@ -48,6 +48,7 @@ export function Sidebar({ dueCount, userEmail, userName }: SidebarProps) {
       <div className="px-4 pb-5">
         <Link
           href="/capture"
+          data-tour="capture"
           className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
           style={{
             background: '#b5462f',
@@ -67,6 +68,7 @@ export function Sidebar({ dueCount, userEmail, userName }: SidebarProps) {
             label={item.label}
             icon={item.icon}
             badge={item.badgeKey === 'due' ? dueCount : undefined}
+            tourKey={item.tourKey}
           />
         ))}
       </nav>
