@@ -1,152 +1,294 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight, Check } from 'lucide-react'
 import { FeatureCards } from './feature-cards'
 
-export default function LandingPage() {
+export const metadata: Metadata = {
+  title: 'Braindump — Remember everything you learn',
+  description: 'Capture an article or note, get AI flashcards in seconds, review with spaced repetition, and turn your knowledge into talking points or interview stories. Free to start.',
+  openGraph: {
+    title: 'Braindump — Remember everything you learn',
+    description: 'Capture articles & notes → AI flashcards → spaced repetition → Express your knowledge. The complete learning loop.',
+    url: 'https://braindump.app',
+    siteName: 'Braindump',
+    images: [{ url: '/og', width: 1200, height: 630, alt: 'Braindump — Remember everything you learn' }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Braindump — Remember everything you learn',
+    description: 'Capture articles & notes → AI flashcards → spaced repetition → Express your knowledge.',
+    images: ['/og'],
+  },
+}
+
+const F = "'Inter', system-ui, sans-serif"
+const SERIF = "'Spectral', Georgia, serif"
+
+const TERRACOTTA = '#b5462f'
+const INK = '#2a2620'
+const INK2 = '#7c7361'
+const FAINT = '#aaa190'
+const RULE = '#e6e0d4'
+const BG = '#f5f2ec'
+const CARD = '#ffffff'
+
+const SPINE_COLORS = [
+  'linear-gradient(160deg,#c97a4a,#b5462f)',
+  'linear-gradient(160deg,#7a9e68,#5a7a4a)',
+  'linear-gradient(160deg,#5c6e99,#3d4f72)',
+  'linear-gradient(160deg,#d4a843,#b5892a)',
+  'linear-gradient(160deg,#9e6080,#7a4060)',
+]
+
+function NavBar() {
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: '#f5f2ec', color: '#2a2620', fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '60px', borderBottom: `1px solid ${RULE}`, background: BG, position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: TERRACOTTA, display: 'grid', placeItems: 'center' }}>
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
+            <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
+            <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
+            <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
+          </svg>
+        </div>
+        <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '18px', color: INK }}>Braindump</span>
+      </div>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
+        <Link href="/signup">
+          <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
+            Get started free
+          </button>
+        </Link>
+      </div>
+    </nav>
+  )
+}
+
+const BOOK_TITLES = ['Attention Mechanisms', 'System Design', 'Decision Making', 'React Patterns', 'Leadership']
+const BOOK_HEIGHTS = [140, 118, 152, 126, 136]
+
+function HeroShelf() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', padding: '16px 20px 0', background: `linear-gradient(180deg, ${BG}, #ede8df)`, borderRadius: '12px 12px 0 0', border: `1px solid ${RULE}`, borderBottom: 'none' }}>
+        {BOOK_TITLES.map((title, i) => (
+          <div key={i} className="ld-book" style={{
+            width: '38px', height: `${BOOK_HEIGHTS[i]}px`,
+            background: SPINE_COLORS[i],
+            borderRadius: '2px 5px 5px 2px',
+            boxShadow: 'inset 3px 0 0 rgba(255,255,255,.18), inset -4px 0 8px rgba(0,0,0,.22)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+            overflow: 'hidden', position: 'relative', cursor: 'pointer',
+          }}>
+            {i === 2 && (
+              <div style={{ position: 'absolute', top: 0, right: '5px', width: '7px', height: '22px', background: '#c79a3e', borderRadius: '0 0 3px 3px' }} />
+            )}
+            <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '7px', fontWeight: 700, fontFamily: F, color: 'rgba(255,255,255,.8)', letterSpacing: '0.5px', padding: '0 4px', textAlign: 'center', overflow: 'hidden', maxHeight: '90%' }}>{title}</span>
+          </div>
+        ))}
+        <div style={{ width: '38px', height: '96px', border: `2px dashed ${RULE}`, borderRadius: '4px', display: 'grid', placeItems: 'center', color: FAINT, fontSize: '18px' }}>+</div>
+      </div>
+      {/* Shelf board */}
+      <div style={{ height: '14px', background: 'linear-gradient(180deg,#c8b99a,#b8a888)', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 12px -4px rgba(42,38,32,.3)', border: `1px solid ${RULE}`, borderTop: 'none' }} />
+      {/* Flash cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+        {[
+          { q: 'What is spaced repetition?', a: 'A learning technique that schedules reviews at increasing intervals just before you would forget — maximising retention per unit of study time.', color: TERRACOTTA },
+          { q: "What does Braindump's Express mode do?", a: 'Converts your captured learnings into polished outputs: talking points, STAR stories, LinkedIn bios, and team summaries.', color: '#c79a3e' },
+        ].map((card) => (
+          <div key={card.q} style={{ background: CARD, borderRadius: '10px', border: `1px solid ${RULE}`, padding: '18px 20px', boxShadow: '0 4px 16px -8px rgba(42,38,32,.2)' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
+              <div style={{ width: '4px', flexShrink: 0, borderRadius: '2px', background: card.color, alignSelf: 'stretch', minHeight: '16px' }} />
+              <p style={{ fontFamily: SERIF, fontSize: '14px', fontWeight: 600, color: INK, lineHeight: 1.4 }}>{card.q}</p>
+            </div>
+            <p style={{ fontFamily: F, fontSize: '13px', color: INK2, lineHeight: 1.6, paddingLeft: '12px' }}>{card.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <div style={{ minHeight: '100vh', background: BG, color: INK }}>
       <style>{`
-        .landing-book {
+        .ld-book {
           transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
-          cursor: pointer;
         }
-        .landing-book:hover {
+        .ld-book:hover {
           transform: translateY(-18px);
-          box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18);
+          box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18) !important;
         }
-        .landing-hero-title { font-size: 58px; }
-        .landing-hero-section { padding: 80px 40px 64px; }
-        .landing-nav { padding: 18px 40px; }
-        .landing-bookshelf { padding: 0 40px 64px; }
-        .landing-features-section { padding: 64px 40px; max-width: 1080px; }
-        .landing-how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-        .landing-how-section { padding: 48px 40px 80px; max-width: 860px; }
-        @media (max-width: 640px) {
-          .landing-nav { padding: 14px 20px; }
-          .landing-hero-title { font-size: 36px; }
-          .landing-hero-section { padding: 48px 20px 40px; }
-          .landing-bookshelf { padding: 0 20px 40px; }
-          .landing-bookshelf .book-row { gap: 3px; }
-          .landing-features-section { padding: 40px 20px; }
-          .landing-how-grid { grid-template-columns: 1fr; gap: 28px; }
-          .landing-how-section { padding: 32px 20px 60px; }
+        .hero-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+        .how-grid   { display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; }
+        .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 700px; margin: 0 auto; }
+        @media (max-width: 768px) {
+          .hero-grid  { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .hero-visual{ display: none !important; }
+          .how-grid   { grid-template-columns: repeat(2,1fr) !important; gap: 24px !important; }
+          .price-grid { grid-template-columns: 1fr !important; }
+          .footer-inner { flex-direction: column; align-items: flex-start !important; }
+          .hero-h1    { font-size: 36px !important; }
+        }
+        @media (max-width: 480px) {
+          .how-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
-      {/* Nav */}
-      <nav className="landing-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6e0d4', background: '#f5f2ec' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '34px', height: '34px', background: '#b5462f', borderRadius: '6px', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
-              <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
-              <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
-              <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
-            </svg>
-          </div>
-          <span style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '20px', color: '#2a2620' }}>Braindump</span>
-        </div>
-        <Link href="/home">
-          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 22px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)', transition: 'opacity 0.15s' }}>
-            Open App
-          </button>
-        </Link>
-      </nav>
+      <NavBar />
 
-      {/* Hero */}
-      <section className="landing-hero-section" style={{ textAlign: 'center', maxWidth: '760px', margin: '0 auto' }}>
-        <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase', color: '#b5462f', marginBottom: '20px' }}>
-          Knowledge Externalization Engine
-        </p>
-        <h1 className="landing-hero-title" style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, lineHeight: '1.08', color: '#2a2620', marginBottom: '24px', letterSpacing: '-0.5px' }}>
-          Build a{' '}
-          <em style={{ color: '#b5462f', fontStyle: 'italic' }}>library</em>
-          {' '}of everything you learn
-        </h1>
-        <p style={{ fontSize: '19px', color: '#7c7361', lineHeight: '1.6', maxWidth: '540px', margin: '0 auto 36px', fontWeight: 400 }}>
-          Capture knowledge from anywhere. Review with spaced repetition. Teach back to solidify understanding.
-        </p>
-        <Link href="/home">
-          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '10px', padding: '15px 36px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 8px 20px -6px rgba(181,70,47,.6)', transition: 'transform 0.15s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            Start your library →
-          </button>
-        </Link>
+      {/* ── Hero ── */}
+      <section className="hero-grid" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px 56px' }}>
+        <div>
+          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '16px' }}>
+            Knowledge externalization engine
+          </p>
+          <h1 className="hero-h1" style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '52px', lineHeight: 1.08, color: INK, marginBottom: '20px' }}>
+            Read it once.<br />
+            <span style={{ color: TERRACOTTA }}>Remember it</span><br />
+            forever.
+          </h1>
+          <p style={{ fontFamily: F, fontSize: '17px', color: INK2, lineHeight: 1.65, marginBottom: '32px', maxWidth: '440px' }}>
+            Paste any URL or note. Braindump extracts the key ideas, builds flashcards, and schedules reviews so you never forget — then turns your knowledge into talking points or interview stories on demand.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
+            <Link href="/signup">
+              <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
+                Start for free <ArrowRight style={{ width: '16px', height: '16px' }} />
+              </button>
+            </Link>
+            <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 24px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '15px', textDecoration: 'none' }}>
+              Log in
+            </Link>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
+              <strong style={{ color: INK2 }}>Free</strong> · No credit card needed
+            </p>
+            <span style={{ color: RULE }}>·</span>
+            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
+              <strong style={{ color: INK2 }}>5</strong> captures/day on free tier
+            </p>
+          </div>
+        </div>
+
+        <div className="hero-visual" style={{ display: 'flex', flexDirection: 'column' }}>
+          <HeroShelf />
+        </div>
       </section>
 
-      {/* Bookshelf illustration */}
-      <div className="landing-bookshelf" style={{ display: 'flex', justifyContent: 'center' }}>
-        <div className="book-row" style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '0 16px' }}>
-          {[
-            { h: 130, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Deep Work' },
-            { h: 158, grad: 'linear-gradient(160deg, #6f8a5a, #4a6040)', title: 'Psychology' },
-            { h: 142, grad: 'linear-gradient(160deg, #46557a, #2f3d5e)', title: 'Systems' },
-            { h: 168, grad: 'linear-gradient(160deg, #c79a3e, #a07828)', title: 'Leadership' },
-            { h: 136, grad: 'linear-gradient(160deg, #8a5072, #633858)', title: 'Design' },
-            { h: 152, grad: 'linear-gradient(160deg, #5a6a7a, #3e4e5e)', title: 'Philosophy' },
-            { h: 124, grad: 'linear-gradient(160deg, #c97a4a, #a05a30)', title: 'Science' },
-          ].map((book, i) => (
-            <div key={i} className="landing-book" style={{ position: 'relative', width: '42px', height: `${book.h}px`, background: book.grad, borderRadius: '3px 4px 4px 3px', boxShadow: 'inset -3px 0 6px rgba(0,0,0,.18), 2px 0 4px rgba(0,0,0,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {i === 3 && (
-                <div style={{ position: 'absolute', top: 0, right: '6px', width: '8px', height: '28px', background: '#c79a3e', borderRadius: '0 0 3px 3px', boxShadow: '0 2px 4px rgba(0,0,0,.2)' }} />
-              )}
-              <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: "'Inter', system-ui, sans-serif" }}>
-                {book.title}
-              </span>
-            </div>
-          ))}
-          {/* shelf board */}
-          <div style={{ position: 'absolute', bottom: '-12px', left: '-8px', right: '-8px', height: '12px', background: '#d8cdb8', borderRadius: '0 0 4px 4px', boxShadow: '0 4px 8px -2px rgba(42,38,32,.2)' }} />
+      {/* ── How it works ── */}
+      <section style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '64px 32px' }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>How it works</p>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '48px' }}>From reading to remembering in 4 steps</h2>
+          <div className="how-grid">
+            {[
+              { n: '1', title: 'Capture', body: 'Paste a URL, article, or your own notes. AI reads it and extracts key ideas.', color: TERRACOTTA },
+              { n: '2', title: 'Review', body: 'Spaced-repetition flashcards surface at the perfect moment — a few minutes a day keeps everything fresh.', color: '#c79a3e' },
+              { n: '3', title: 'Prove it', body: 'Teach the concept back in your own words. AI grades your understanding and closes the gaps.', color: '#46557a' },
+              { n: '4', title: 'Express', body: 'Turn your library into talking points, interview stories, or LinkedIn bios — in seconds.', color: '#6f8a5a' },
+            ].map((s) => (
+              <div key={s.n} style={{ textAlign: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: s.color, display: 'grid', placeItems: 'center', margin: '0 auto 16px', color: '#fff', fontFamily: SERIF, fontWeight: 700, fontSize: '20px' }}>{s.n}</div>
+                <h3 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '17px', color: INK, marginBottom: '8px' }}>{s.title}</h3>
+                <p style={{ fontFamily: F, fontSize: '14px', color: INK2, lineHeight: 1.6 }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features */}
-      <section className="landing-features-section" style={{ margin: '0 auto', width: '100%' }}>
-        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', textAlign: 'center', marginBottom: '40px', color: '#2a2620' }}>
-          Your complete learning system
-        </h2>
+      {/* ── Features (interactive accordion) ── */}
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Everything you need</p>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>Your complete learning system</h2>
+        </div>
         <FeatureCards />
       </section>
 
-      {/* How it works */}
-      <section className="landing-how-section" style={{ margin: '0 auto', width: '100%', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '32px', marginBottom: '48px', color: '#2a2620' }}>
-          How it works
-        </h2>
-        <div className="landing-how-grid">
-          {[
-            { n: '1', title: 'Capture the concept', desc: 'Paste a URL, article, or write a note. AI extracts and organises the key ideas.' },
-            { n: '2', title: 'Review & reinforce', desc: 'Spaced repetition schedules the right moment to review — locking it into long-term memory.' },
-            { n: '3', title: 'Apply your knowledge', desc: 'Use Express mode to articulate what you know, in interviews, conversations, or writing.' },
-          ].map((step) => (
-            <div key={step.n} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-              <div style={{ width: '52px', height: '52px', borderRadius: '50%', border: '2px solid #b5462f', color: '#b5462f', fontFamily: "'Spectral', Georgia, serif", fontWeight: 700, fontSize: '22px', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                {step.n}
-              </div>
-              <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 600, fontSize: '17px', color: '#2a2620' }}>
-                {step.title}
-              </h3>
-              <p style={{ fontSize: '14px', color: '#7c7361', lineHeight: '1.55', maxWidth: '240px' }}>
-                {step.desc}
-              </p>
+      {/* ── Pricing ── */}
+      <section style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
+          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Start free. Upgrade when you&apos;re ready.</h2>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>No credit card needed to start.</p>
+        </div>
+        <div className="price-grid">
+          {/* Free */}
+          <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
+            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>Free</p>
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$0</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>forever</span>
             </div>
-          ))}
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              {['5 captures / day', 'AI summaries & key points', 'Spaced repetition reviews', 'Teach-back loop', '1 free Express generation'].map((f) => (
+                <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
+                  <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
+              Get started free
+            </Link>
+          </div>
+          {/* Pro */}
+          <div style={{ background: CARD, border: `2px solid ${TERRACOTTA}`, borderRadius: '16px', padding: '28px', position: 'relative', boxShadow: '0 12px 32px -12px rgba(181,70,47,.2)' }}>
+            <div style={{ position: 'absolute', top: '-13px', left: '50%', transform: 'translateX(-50%)', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '10px', letterSpacing: '1px', padding: '4px 12px', borderRadius: '99px', whiteSpace: 'nowrap' }}>
+              BEST VALUE
+            </div>
+            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pro</p>
+            <div style={{ marginBottom: '4px' }}>
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$8</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>/mo</span>
+            </div>
+            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT, marginBottom: '20px' }}>Billed $96/yr · or $12/mo monthly</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              {['Unlimited captures', 'Everything in Free', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
+                <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK, alignItems: 'flex-start' }}>
+                  <Check style={{ width: '14px', height: '14px', color: TERRACOTTA, flexShrink: 0, marginTop: '2px' }} />{f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '14px', textDecoration: 'none', textAlign: 'center', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)' }}>
+              Start free, upgrade anytime
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer CTA */}
-      <div style={{ background: '#fff', borderTop: '1px solid #e6e0d4', padding: '48px 40px', textAlign: 'center' }}>
-        <p style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '22px', color: '#2a2620', marginBottom: '20px', fontStyle: 'italic' }}>
-          Ready to build your library?
-        </p>
-        <Link href="/home">
-          <button style={{ background: '#b5462f', color: '#fff', border: 'none', borderRadius: '10px', padding: '13px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', system-ui, sans-serif", boxShadow: '0 6px 16px -6px rgba(181,70,47,.6)' }}>
-            Start your library →
-          </button>
-        </Link>
-        <p style={{ fontSize: '12px', color: '#aaa190', marginTop: '32px' }}>
-          Braindump · Knowledge externalization engine
-        </p>
-      </div>
+      {/* ── Bottom CTA ── */}
+      <section style={{ padding: '80px 32px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK, lineHeight: 1.15, marginBottom: '16px' }}>
+            Start building your<br />knowledge library today.
+          </h2>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2, marginBottom: '32px' }}>
+            Free forever. No credit card required.
+          </p>
+          <Link href="/signup">
+            <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 36px', borderRadius: '12px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 28px -8px rgba(181,70,47,.55)' }}>
+              Get started — it&apos;s free <ArrowRight style={{ width: '18px', height: '18px' }} />
+            </button>
+          </Link>
+        </div>
+      </section>
 
+      {/* ── Footer ── */}
+      <footer className="footer-inner" style={{ borderTop: `1px solid ${RULE}`, padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '15px', color: INK }}>Braindump</span>
+        <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>Knowledge externalization engine · {new Date().getFullYear()}</p>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <Link href="/login" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>Log in</Link>
+          <Link href="/signup" style={{ fontFamily: F, fontSize: '13px', color: TERRACOTTA, fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
+        </div>
+      </footer>
     </div>
   )
 }
