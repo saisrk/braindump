@@ -123,12 +123,33 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
       `}</style>
 
       {/* Shelf header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-semibold text-foreground" style={{ fontSize: '16px' }}>
-          {topic}
-        </h3>
-        <span className="text-xs text-muted-foreground">{learnings.length} vol{learnings.length !== 1 ? 's' : ''}</span>
-      </div>
+      {(() => {
+        const isSampleShelf = learnings.every((l) => l.sourceType === 'sample');
+        return (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <h3 className="font-display font-semibold text-foreground" style={{ fontSize: '16px' }}>
+                {topic}
+              </h3>
+              {isSampleShelf && (
+                <span
+                  className="text-xs font-semibold rounded-full px-2 py-0.5"
+                  style={{
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    background: 'rgba(199,154,62,0.15)',
+                    color: '#c79a3e',
+                    border: '1px solid rgba(199,154,62,0.35)',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  Sample
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">{learnings.length} vol{learnings.length !== 1 ? 's' : ''}</span>
+          </div>
+        );
+      })()}
 
       {/* Books row */}
       <div
@@ -314,6 +335,28 @@ function BookItem({ learning, height, gradient, hasDue, onOpen }: BookItemProps)
         style={{ width: '44px', height: `${height}px`, background: gradient }}
       >
         {hasDue && <div className="book-ribbon" />}
+        {learning.sourceType === 'sample' && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '6px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(255,255,255,0.22)',
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: '7px',
+              fontWeight: 700,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              letterSpacing: '0.08em',
+              padding: '2px 5px',
+              borderRadius: '3px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}
+          >
+            SAMPLE
+          </div>
+        )}
         <span>{learning.title}</span>
       </div>
     </div>
