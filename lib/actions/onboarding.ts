@@ -141,7 +141,7 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
       .values({
         userId,
         title: seed.title,
-        sourceType: 'note',
+        sourceType: 'sample',
         summary: seed.summary,
         topic: seed.topic,
         tags: [seed.topic.toLowerCase().replace(/ /g, '-')],
