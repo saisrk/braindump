@@ -15,7 +15,7 @@ export default function BillingSuccessPage() {
       setCountdown((n) => {
         if (n <= 1) {
           clearInterval(t);
-          window.location.href = '/library';
+          window.location.href = '/home';
           return 0;
         }
         return n - 1;
@@ -40,9 +40,9 @@ export default function BillingSuccessPage() {
         Unlimited captures, unlimited Express, and everything else — unlocked. Welcome to the full experience.
       </p>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <Link href="/library">
+        <Link href="/home">
           <button style={{ padding: '13px 28px', borderRadius: '10px', border: 'none', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 20px -8px rgba(181,70,47,.6)' }}>
-            Go to Library →
+            Go to Home →
           </button>
         </Link>
         <Link href="/capture">
