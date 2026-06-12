@@ -66,19 +66,38 @@ function HeroShelf() {
         <div style={{ width: '38px', height: '96px', border: `2px dashed ${RULE}`, borderRadius: '4px', display: 'grid', placeItems: 'center', color: FAINT, fontSize: '18px' }}>+</div>
       </div>
       <div style={{ height: '14px', background: 'linear-gradient(180deg,#c8b99a,#b8a888)', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 12px -4px rgba(42,38,32,.3)', border: `1px solid ${RULE}`, borderTop: 'none' }} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-        {[
-          { q: 'What is spaced repetition?', a: 'A learning technique that schedules reviews at increasing intervals just before you would forget — maximising retention per unit of study time.', color: TERRACOTTA },
-          { q: "What does Braindump's Express mode do?", a: 'Converts your captured learnings into polished outputs: talking points, STAR stories, LinkedIn bios, and team summaries.', color: '#c79a3e' },
-        ].map((card) => (
-          <div key={card.q} style={{ background: CARD, borderRadius: '10px', border: `1px solid ${RULE}`, padding: '18px 20px', boxShadow: '0 4px 16px -8px rgba(42,38,32,.2)' }}>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
-              <div style={{ width: '4px', flexShrink: 0, borderRadius: '2px', background: card.color, alignSelf: 'stretch', minHeight: '16px' }} />
-              <p style={{ fontFamily: SERIF, fontSize: '14px', fontWeight: 600, color: INK, lineHeight: 1.4 }}>{card.q}</p>
-            </div>
-            <p style={{ fontFamily: F, fontSize: '13px', color: INK2, lineHeight: 1.6, paddingLeft: '12px' }}>{card.a}</p>
+
+      {/* ── Express output placeholder — swap with a real screenshot ── */}
+      <div style={{ marginTop: '20px', background: CARD, border: `1px solid ${RULE}`, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px -8px rgba(42,38,32,.18)' }}>
+        {/* card header */}
+        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '28px', height: '28px', background: '#6f8a5a', borderRadius: '7px', display: 'grid', placeItems: 'center', fontSize: '13px' }}>✨</div>
+          <div>
+            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6f8a5a', lineHeight: 1 }}>Express · STAR Story</p>
+            <p style={{ fontFamily: F, fontSize: '11px', color: FAINT, marginTop: '2px' }}>from "Deep Work" + "System Design"</p>
           </div>
-        ))}
+        </div>
+        {/* body — placeholder for real screenshot */}
+        <div style={{ padding: '14px 16px', position: 'relative' }}>
+          {/* placeholder overlay — remove this div and drop in <Image> to swap */}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(245,242,236,.82)', backdropFilter: 'blur(2px)', zIndex: 2, borderRadius: '0 0 12px 12px' }}>
+            <span style={{ fontSize: '20px' }}>🖼</span>
+            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 600, color: FAINT, letterSpacing: '1px', textTransform: 'uppercase' }}>Screenshot placeholder</p>
+            <p style={{ fontFamily: F, fontSize: '11px', color: FAINT }}>Replace with real Express output</p>
+          </div>
+          {/* blurred preview content underneath */}
+          {[
+            { label: 'Situation', text: 'Led backend architecture for a high-traffic search feature serving 2M daily requests…' },
+            { label: 'Task', text: 'Reduce p99 latency below 200ms without a full rewrite…' },
+            { label: 'Action', text: 'Applied deep-work scheduling to eliminate context switches, then systematically profiled…' },
+            { label: 'Result', text: 'Reduced latency by 64%. Presented at eng all-hands and promoted to tech lead…' },
+          ].map((row) => (
+            <div key={row.label} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <span style={{ fontFamily: F, fontSize: '10px', fontWeight: 700, color: TERRACOTTA, minWidth: '58px', paddingTop: '1px' }}>{row.label}</span>
+              <p style={{ fontFamily: F, fontSize: '12px', color: INK2, lineHeight: 1.5, margin: 0 }}>{row.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -143,16 +162,16 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="hero-grid" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px 56px' }}>
         <div>
-          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '16px' }}>
-            Knowledge externalization engine
+          <p style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, marginBottom: '16px' }}>
+            For people who read a lot and want to show for it — in interviews, at work, everywhere.
           </p>
           <h1 className="hero-h1" style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '52px', lineHeight: 1.08, color: INK, marginBottom: '20px' }}>
             Read it once.<br />
-            <span style={{ color: TERRACOTTA }}>Remember it</span><br />
-            forever.
+            <span style={{ color: TERRACOTTA }}>Actually retain</span><br />
+            what matters.
           </h1>
           <p style={{ fontFamily: F, fontSize: '17px', color: INK2, lineHeight: 1.65, marginBottom: '32px', maxWidth: '440px' }}>
-            Paste any URL or note. Braindump extracts the key ideas, builds flashcards, and schedules reviews so you never forget — then turns your knowledge into talking points or interview stories on demand.
+            Paste a URL or note. Braindump extracts key ideas, builds flashcards, and schedules reviews — then turns your library into talking points, STAR stories, and interview answers on demand.
           </p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
             <Link href="/signup">
@@ -223,11 +242,14 @@ export default function HomePage() {
               BEST VALUE
             </div>
             <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pro</p>
-            <div style={{ marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '6px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$8</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>/mo</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2 }}>/mo</span>
+              <span style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, background: 'rgba(181,70,47,.12)', color: TERRACOTTA, borderRadius: '4px', padding: '2px 6px', marginLeft: '4px' }}>save 33%</span>
             </div>
-            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT, marginBottom: '20px' }}>Billed $96/yr · or $12/mo monthly</p>
+            <p style={{ fontFamily: F, fontSize: '13px', fontWeight: 500, color: INK2, marginBottom: '20px' }}>
+              Billed annually ($96/yr) — or $12/mo month-to-month.
+            </p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
               {['Unlimited captures', 'Everything in Free', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK, alignItems: 'flex-start' }}>
