@@ -41,32 +41,6 @@ const SPINE_COLORS = [
   'linear-gradient(160deg,#9e6080,#7a4060)',
 ]
 
-function NavBar() {
-  return (
-    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '60px', borderBottom: `1px solid ${RULE}`, background: BG, position: 'sticky', top: 0, zIndex: 50 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: TERRACOTTA, display: 'grid', placeItems: 'center' }}>
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-            <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
-            <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
-            <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
-            <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
-          </svg>
-        </div>
-        <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '18px', color: INK }}>Braindump</span>
-      </div>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
-        <Link href="/signup">
-          <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
-            Get started free
-          </button>
-        </Link>
-      </div>
-    </nav>
-  )
-}
-
 const BOOK_TITLES = ['Attention Mechanisms', 'System Design', 'Decision Making', 'React Patterns', 'Leadership']
 const BOOK_HEIGHTS = [140, 118, 152, 126, 136]
 
@@ -91,9 +65,7 @@ function HeroShelf() {
         ))}
         <div style={{ width: '38px', height: '96px', border: `2px dashed ${RULE}`, borderRadius: '4px', display: 'grid', placeItems: 'center', color: FAINT, fontSize: '18px' }}>+</div>
       </div>
-      {/* Shelf board */}
       <div style={{ height: '14px', background: 'linear-gradient(180deg,#c8b99a,#b8a888)', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 12px -4px rgba(42,38,32,.3)', border: `1px solid ${RULE}`, borderTop: 'none' }} />
-      {/* Flash cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
         {[
           { q: 'What is spaced repetition?', a: 'A learning technique that schedules reviews at increasing intervals just before you would forget — maximising retention per unit of study time.', color: TERRACOTTA },
@@ -124,22 +96,49 @@ export default function HomePage() {
           box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18) !important;
         }
         .hero-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
-        .how-grid   { display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; }
         .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 700px; margin: 0 auto; }
+        .nav-link   { font-family: ${F}; font-size: 14px; font-weight: 500; color: ${INK2}; text-decoration: none; transition: color 0.15s; }
+        .nav-link:hover { color: ${INK}; }
         @media (max-width: 768px) {
           .hero-grid  { grid-template-columns: 1fr !important; gap: 40px !important; }
           .hero-visual{ display: none !important; }
-          .how-grid   { grid-template-columns: repeat(2,1fr) !important; gap: 24px !important; }
           .price-grid { grid-template-columns: 1fr !important; }
           .footer-inner { flex-direction: column; align-items: flex-start !important; }
           .hero-h1    { font-size: 36px !important; }
-        }
-        @media (max-width: 480px) {
-          .how-grid { grid-template-columns: 1fr !important; }
+          .nav-links  { display: none !important; }
         }
       `}</style>
 
-      <NavBar />
+      {/* ── Nav ── */}
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '60px', borderBottom: `1px solid ${RULE}`, background: BG, position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+          {/* Logo */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: TERRACOTTA, display: 'grid', placeItems: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
+                <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
+                <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
+                <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
+              </svg>
+            </div>
+            <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '18px', color: INK }}>Braindump</span>
+          </Link>
+          {/* Section links */}
+          <div className="nav-links" style={{ display: 'flex', gap: '24px' }}>
+            <a href="#features" className="nav-link">How it works</a>
+            <a href="#pricing" className="nav-link">Pricing</a>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
+          <Link href="/signup">
+            <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
+              Get started free
+            </button>
+          </Link>
+        </div>
+      </nav>
 
       {/* ── Hero ── */}
       <section className="hero-grid" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px 56px' }}>
@@ -181,39 +180,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '64px 32px' }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>How it works</p>
-          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '48px' }}>From reading to remembering in 4 steps</h2>
-          <div className="how-grid">
-            {[
-              { n: '1', title: 'Capture', body: 'Paste a URL, article, or your own notes. AI reads it and extracts key ideas.', color: TERRACOTTA },
-              { n: '2', title: 'Review', body: 'Spaced-repetition flashcards surface at the perfect moment — a few minutes a day keeps everything fresh.', color: '#c79a3e' },
-              { n: '3', title: 'Prove it', body: 'Teach the concept back in your own words. AI grades your understanding and closes the gaps.', color: '#46557a' },
-              { n: '4', title: 'Express', body: 'Turn your library into talking points, interview stories, or LinkedIn bios — in seconds.', color: '#6f8a5a' },
-            ].map((s) => (
-              <div key={s.n} style={{ textAlign: 'center' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: s.color, display: 'grid', placeItems: 'center', margin: '0 auto 16px', color: '#fff', fontFamily: SERIF, fontWeight: 700, fontSize: '20px' }}>{s.n}</div>
-                <h3 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '17px', color: INK, marginBottom: '8px' }}>{s.title}</h3>
-                <p style={{ fontFamily: F, fontSize: '14px', color: INK2, lineHeight: 1.6 }}>{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Features (interactive accordion) ── */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Everything you need</p>
-          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>Your complete learning system</h2>
+      <section id="features" style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>How it works</p>
+            <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>Your complete learning system</h2>
+          </div>
+          <FeatureCards />
         </div>
-        <FeatureCards />
       </section>
 
       {/* ── Pricing ── */}
-      <section style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
+      <section id="pricing" style={{ padding: '72px 32px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
           <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Start free. Upgrade when you&apos;re ready.</h2>
@@ -264,7 +243,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section style={{ padding: '80px 32px', textAlign: 'center' }}>
+      <section style={{ background: CARD, borderTop: `1px solid ${RULE}`, padding: '80px 32px', textAlign: 'center' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK, lineHeight: 1.15, marginBottom: '16px' }}>
             Start building your<br />knowledge library today.
