@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { users } from '@/db/schema';
+import { users, userProfiles } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { getDueCount } from '@/lib/data/reviews';
 import { getStreak } from '@/lib/data/activity';
 import { sendDigestEmail } from '@/lib/email';
@@ -20,11 +21,23 @@ export async function GET(req: NextRequest) {
   let failed = 0;
 
   try {
-    const allUsers = await db.select({ id: users.id, email: users.email, name: users.name }).from(users);
+    const allUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        preferences: userProfiles.preferences,
+      })
+      .from(users)
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id));
 
     await Promise.all(
-      allUsers.map(async (user: { id: string; email: string; name: string | null }) => {
+      allUsers.map(async (user: { id: string; email: string; name: string | null; preferences: unknown }) => {
         try {
+          // Respect the user's email preference — opt-in model (default false).
+          const prefs = (user.preferences ?? {}) as Record<string, unknown>;
+          if (!prefs.dailyDigestEnabled) return;
+
           const [dueCount, streak] = await Promise.all([
             getDueCount(user.id),
             getStreak(user.id),

@@ -2,9 +2,10 @@
 
 import { createHash } from 'crypto';
 import { db } from '@/db';
-import { userProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { userProfiles, users, reviewItems, learnings as learningsTable, teachBacks, quizAttempts } from '@/db/schema';
+import { and, eq, gte, lte, sql, desc } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
+import { auth } from '@/lib/auth';
 import { getRecentTopics } from '@/lib/data/learnings';
 import {
   getTodaysCaptures,
@@ -17,19 +18,45 @@ import { suggestWhatsNext, type WhatsNextSuggestion } from '@/lib/ai/capture';
 import { generateDailySummary } from '@/lib/ai/express';
 import { listLearnings, getUserFacets } from '@/lib/data/learnings';
 import { getDueReviewItems } from '@/lib/data/reviews';
+import { topicGradient } from '@/lib/book-colors';
 import { todayISO } from '@/lib/utils';
+
+export interface VolumeStatus {
+  id: string;
+  title: string;
+  topic: string;
+  dueCount: number;
+  totalCards: number;
+  confidence: number; // 0-100
+  daysUntilNextReview: number | null; // null = has due items
+  hasSummary: boolean;
+}
 
 export interface DashboardData {
   streak: number;
   todayLearnings: number;
   due: number;
+  dueThisWeek: number;
   total: number;
+  topicCount: number;
+  masteredCount: number;
+  userName: string | null;
+  topTopics: { topic: string; color: string }[];
+  recentVolumes: VolumeStatus[];
   tourSeen: boolean;
 }
 
 export async function getDashboardStats(): Promise<DashboardData> {
   const userId = await requireUserId();
-  const [streak, today, due, stats, profileRows] = await Promise.all([
+  const session = await auth();
+  const userName = session?.user?.name ?? null;
+
+  const today = todayISO();
+  const weekFromNow = new Date();
+  weekFromNow.setDate(weekFromNow.getDate() + 7);
+  const weekISO = weekFromNow.toISOString().slice(0, 10);
+
+  const [streak, todayCaptures, dueItems, stats, profileRows, allLearnings] = await Promise.all([
     getStreak(userId),
     getTodaysCaptures(userId),
     getDueReviewItems(userId),
@@ -37,13 +64,102 @@ export async function getDashboardStats(): Promise<DashboardData> {
     db.select({ dashboardTourSeenAt: userProfiles.dashboardTourSeenAt })
       .from(userProfiles)
       .where(eq(userProfiles.userId, userId)),
+    listLearnings(userId, { sort: 'recent' }),
   ]);
+
+  // Due this week (today + 7 days)
+  const [weekRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(reviewItems)
+    .where(and(
+      eq(reviewItems.userId, userId),
+      gte(reviewItems.dueDate, today),
+      lte(reviewItems.dueDate, weekISO),
+    ));
+  const dueThisWeek = weekRow?.count ?? 0;
+
+  // Mastered = confidence >= 80 (based on listLearnings meta)
+  const masteredCount = allLearnings.filter(l => l.confidence >= 80).length;
+
+  // Topic count + top topics for colour bars
+  const topicMap = new Map<string, number>();
+  for (const l of allLearnings) {
+    const t = l.topic ?? 'Uncategorised';
+    topicMap.set(t, (topicMap.get(t) ?? 0) + 1);
+  }
+  const sortedTopics = Array.from(topicMap.entries()).sort((a, b) => b[1] - a[1]);
+  const topTopics = sortedTopics.slice(0, 4).map(([topic]) => ({
+    topic,
+    color: topicGradient(topic),
+  }));
+
+  // Recent 3 volumes with status
+  const recentLearnings = allLearnings.slice(0, 6);
+  const recentIds = recentLearnings.map(l => l.id);
+
+  // Teach-back scores to determine mastered status
+  const teachRows = recentIds.length > 0
+    ? await db
+        .select({ learningId: teachBacks.learningId, gapScore: teachBacks.gapScore })
+        .from(teachBacks)
+        .where(and(
+          eq(teachBacks.userId, userId),
+          sql`${teachBacks.learningId} = ANY(ARRAY[${sql.join(recentIds.map(id => sql`${id}::uuid`), sql`, `)}])`
+        ))
+        .orderBy(desc(teachBacks.createdAt))
+    : [];
+
+  // Next review date per learning (earliest upcoming due date)
+  const nextReviewRows = recentIds.length > 0
+    ? await db
+        .select({ learningId: reviewItems.learningId, dueDate: reviewItems.dueDate })
+        .from(reviewItems)
+        .where(and(
+          eq(reviewItems.userId, userId),
+          gte(reviewItems.dueDate, today),
+          sql`${reviewItems.learningId} = ANY(ARRAY[${sql.join(recentIds.map(id => sql`${id}::uuid`), sql`, `)}])`
+        ))
+    : [];
+
+  const nextReviewByLearning = new Map<string, string>();
+  for (const r of nextReviewRows) {
+    const existing = nextReviewByLearning.get(r.learningId);
+    if (!existing || r.dueDate < existing) nextReviewByLearning.set(r.learningId, r.dueDate);
+  }
+
+  const latestTeach = new Map<string, number | null>();
+  for (const r of teachRows) {
+    if (!latestTeach.has(r.learningId)) latestTeach.set(r.learningId, r.gapScore);
+  }
+
+  const recentVolumes: VolumeStatus[] = recentLearnings.slice(0, 3).map(l => {
+    const nextReview = nextReviewByLearning.get(l.id) ?? null;
+    const daysUntil = nextReview
+      ? Math.max(0, Math.round((new Date(nextReview).getTime() - Date.now()) / 86400000))
+      : null;
+    return {
+      id: l.id,
+      title: l.title,
+      topic: l.topic ?? 'Uncategorised',
+      dueCount: l.dueCount,
+      totalCards: l.reviewCount,
+      confidence: l.confidence,
+      daysUntilNextReview: l.dueCount > 0 ? null : daysUntil,
+      hasSummary: !!l.summary,
+    };
+  });
 
   return {
     streak: streak.currentCount ?? 0,
-    todayLearnings: today.length,
-    due: due.length,
+    todayLearnings: todayCaptures.length,
+    due: dueItems.length,
+    dueThisWeek,
     total: stats.totalLearnings,
+    topicCount: topicMap.size,
+    masteredCount,
+    userName,
+    topTopics,
+    recentVolumes,
     tourSeen: !!profileRows[0]?.dashboardTourSeenAt,
   };
 }
