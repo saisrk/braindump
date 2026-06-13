@@ -129,27 +129,26 @@ export default function HomePage() {
       `}</style>
 
       {/* ── Nav ── */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '60px', borderBottom: `1px solid ${RULE}`, background: BG, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-          {/* Logo */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: TERRACOTTA, display: 'grid', placeItems: 'center' }}>
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
-                <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
-                <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
-                <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
-              </svg>
-            </div>
-            <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '18px', color: INK }}>Braindump</span>
-          </Link>
-          {/* Section links */}
-          <div className="nav-links" style={{ display: 'flex', gap: '24px' }}>
-            <a href="#features" className="nav-link">How it works</a>
-            <a href="#pricing" className="nav-link">Pricing</a>
+      <nav style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '0 32px', height: '60px', borderBottom: `1px solid ${RULE}`, background: BG, position: 'sticky', top: 0, zIndex: 50 }}>
+        {/* Logo — left */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: TERRACOTTA, display: 'grid', placeItems: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <rect x="3" y="4" width="2" height="10" rx="1" fill="white" opacity="0.9" />
+              <rect x="7" y="2" width="2" height="14" rx="1" fill="white" />
+              <rect x="11" y="5" width="2" height="9" rx="1" fill="white" opacity="0.75" />
+              <rect x="15" y="3" width="1.5" height="12" rx="0.75" fill="white" opacity="0.6" />
+            </svg>
           </div>
+          <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '18px', color: INK }}>Braindump</span>
+        </Link>
+        {/* Section links — center */}
+        <div className="nav-links" style={{ display: 'flex', gap: '32px' }}>
+          <a href="#features" className="nav-link">How it works</a>
+          <a href="#pricing" className="nav-link">Pricing</a>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        {/* Auth — right */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'flex-end' }}>
           <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
           <Link href="/signup">
             <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
