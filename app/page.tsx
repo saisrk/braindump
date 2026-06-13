@@ -126,6 +126,7 @@ export default function HomePage() {
           .hero-h1    { font-size: 36px !important; }
           .nav-links  { display: none !important; }
         }
+        #demo, #features, #pricing { scroll-margin-top: 64px; }
       `}</style>
 
       {/* ── Nav ── */}
@@ -144,7 +145,8 @@ export default function HomePage() {
         </Link>
         {/* Section links — center */}
         <div className="nav-links" style={{ display: 'flex', gap: '32px' }}>
-          <a href="#features" className="nav-link">How it works</a>
+          <a href="#demo" className="nav-link">How it works</a>
+          <a href="#features" className="nav-link">Features</a>
           <a href="#pricing" className="nav-link">Pricing</a>
         </div>
         {/* Auth — right */}
@@ -198,12 +200,109 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Demo / How it works ── */}
+      <section id="demo" style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '52px' }}>
+            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>How it works</p>
+            <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>From reading to ready — in four steps</h2>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {[
+              {
+                n: '01',
+                color: TERRACOTTA,
+                title: 'Capture anything',
+                body: 'Paste a URL, drop in raw notes, or type a concept. AI reads it, pulls out the key ideas, and stores everything in your personal library — organised by topic.',
+                aside: (
+                  <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '14px 16px', fontSize: '13px', fontFamily: F, color: INK2 }}>
+                    <p style={{ fontWeight: 600, color: INK, marginBottom: '6px' }}>🔗 medium.com/deep-work-summary</p>
+                    <p style={{ color: '#6f8a5a', fontWeight: 600, fontSize: '11px', letterSpacing: '1px', marginBottom: '8px' }}>✓ 6 key ideas extracted · 8 flashcards generated</p>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {['Focus', 'Deep Work', 'Productivity'].map(t => (
+                        <span key={t} style={{ background: CARD, border: `1px solid ${RULE}`, borderRadius: '4px', padding: '2px 8px', fontSize: '11px', color: INK2 }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                n: '02',
+                color: '#c79a3e',
+                title: 'Review at the right moment',
+                body: 'Spaced repetition surfaces each card just before your memory fades. A few minutes a day is all it takes to move knowledge from short-term to long-term.',
+                aside: (
+                  <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '14px 16px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, right: '8px', width: '7px', height: '22px', background: '#c79a3e', borderRadius: '0 0 3px 3px' }} />
+                      <p style={{ fontFamily: SERIF, fontSize: '13px', fontWeight: 600, color: INK, marginBottom: '10px', lineHeight: 1.4, paddingRight: '20px' }}>What makes "deep work" different from ordinary focus?</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+                      {[['Again', TERRACOTTA], ['Hard', '#9c7a23'], ['Good', '#46557a'], ['Easy', '#4f6b3a']].map(([l, c]) => (
+                        <div key={l} style={{ flex: 1, border: `1px solid ${c}`, color: c, borderRadius: '6px', padding: '4px 0', fontSize: '11px', fontWeight: 700, textAlign: 'center', fontFamily: F }}>{l}</div>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                n: '03',
+                color: '#46557a',
+                title: 'Prove you know it',
+                body: 'Type an explanation in your own words. AI scores your comprehension, tells you what you nailed, and surfaces the gaps — so you actually close them.',
+                aside: (
+                  <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '14px 16px', fontFamily: F, fontSize: '12px' }}>
+                    <p style={{ color: INK2, lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic' }}>"Deep work is concentrating on a cognitively demanding task without switching contexts…"</p>
+                    <div style={{ background: 'rgba(111,138,90,.1)', border: '1px solid rgba(111,138,90,.3)', borderRadius: '7px', padding: '9px 12px' }}>
+                      <p style={{ fontWeight: 700, color: '#4f6b3a', marginBottom: '3px' }}>✓ 84% comprehension</p>
+                      <p style={{ color: INK2 }}>Gap: mention the Newport scheduling framework.</p>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                n: '04',
+                color: '#6f8a5a',
+                title: 'Express it on demand',
+                body: 'Pick a format — talking points, STAR story, LinkedIn bio. Braindump pulls from your library and generates polished output in seconds, ready to use in interviews or writing.',
+                aside: (
+                  <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '14px 16px', fontFamily: F, fontSize: '12px' }}>
+                    <p style={{ fontWeight: 700, color: '#6f8a5a', marginBottom: '10px', fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase' }}>✨ STAR Story · generated</p>
+                    {[['Situation', 'Led architecture for a 2M-req/day search feature…'], ['Task', 'Cut p99 latency below 200ms without a rewrite…'], ['Action', 'Applied deep-work blocks, profiled bottlenecks…'], ['Result', 'Latency down 64%. Promoted to tech lead.']].map(([l, t]) => (
+                      <div key={l} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{ fontWeight: 700, color: TERRACOTTA, minWidth: '56px', fontSize: '11px', paddingTop: '1px' }}>{l}</span>
+                        <span style={{ color: INK2, lineHeight: 1.5 }}>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+            ].map((step, idx) => (
+              <div key={step.n} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', padding: '40px 0', borderTop: idx > 0 ? `1px solid ${RULE}` : 'none' }}>
+                <div style={{ order: idx % 2 === 0 ? 0 : 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                    <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '13px', color: step.color, letterSpacing: '1px' }}>{step.n}</span>
+                    <div style={{ height: '1px', width: '24px', background: step.color, opacity: 0.4 }} />
+                  </div>
+                  <h3 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '22px', color: INK, marginBottom: '12px', lineHeight: 1.2 }}>{step.title}</h3>
+                  <p style={{ fontFamily: F, fontSize: '15px', color: INK2, lineHeight: 1.7 }}>{step.body}</p>
+                </div>
+                <div style={{ order: idx % 2 === 0 ? 1 : 0 }}>
+                  {step.aside}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Features (interactive accordion) ── */}
-      <section id="features" style={{ background: CARD, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
+      <section id="features" style={{ background: BG, borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`, padding: '72px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>How it works</p>
-            <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>Your complete learning system</h2>
+            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Features</p>
+            <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK }}>Every tool in the loop — try them live</h2>
           </div>
           <FeatureCards />
         </div>
