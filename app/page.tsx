@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
 import { FeatureCards } from './feature-cards'
+import { HeroCard } from './hero-card'
 
 export const metadata: Metadata = {
   title: 'Braindump — Remember everything you learn',
@@ -163,8 +164,8 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="hero-grid" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 32px 56px' }}>
         <div>
-          <p style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, marginBottom: '16px' }}>
-            For people who read a lot and want to show for it — in interviews, at work, everywhere.
+          <p style={{ fontFamily: F, fontSize: '15px', color: INK2, lineHeight: 1.6, marginBottom: '20px', maxWidth: '420px' }}>
+            The gap between people who read and people who remember is practice.<br />This is the practice.
           </p>
           <h1 className="hero-h1" style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '52px', lineHeight: 1.08, color: INK, marginBottom: '20px' }}>
             Read it once.<br />
@@ -196,7 +197,7 @@ export default function HomePage() {
         </div>
 
         <div className="hero-visual" style={{ display: 'flex', flexDirection: 'column' }}>
-          <HeroShelf />
+          <HeroCard />
         </div>
       </section>
 
