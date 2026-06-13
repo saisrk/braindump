@@ -10,11 +10,12 @@ import type { LearningWithMeta } from '@/lib/data/learnings';
 interface BookShelfProps {
   topic: string;
   learnings: LearningWithMeta[];
+  highlightId?: string;
 }
 
 const BOOK_HEIGHTS = [158, 138, 170, 146, 162, 132, 152];
 
-export function BookShelf({ topic, learnings }: BookShelfProps) {
+export function BookShelf({ topic, learnings, highlightId }: BookShelfProps) {
   const gradient = topicGradient(topic);
   const router = useRouter();
   const { setOrigin } = useBookTransition();
@@ -82,6 +83,15 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
           55%  { transform: translateY(-18px) scale(1.08); }
           100% { transform: translateY(-12px) scale(1.05); }
         }
+        @keyframes book-highlight-ring {
+          0%   { box-shadow: 0 0 0 0 rgba(181,70,47,.55), 0 8px 20px -6px rgba(42,38,32,.3); transform: translateY(-14px) scale(1.06); }
+          60%  { box-shadow: 0 0 0 6px rgba(181,70,47,.12), 0 8px 20px -6px rgba(42,38,32,.3); }
+          100% { box-shadow: 0 0 0 0 rgba(181,70,47,0), 0 2px 8px -4px rgba(42,38,32,.2); transform: translateY(0) scale(1); }
+        }
+        .book-new {
+          animation: book-highlight-ring 1.4s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {/* Shelf header */}
@@ -126,6 +136,7 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
         {learnings.map((learning, i) => {
           const height = BOOK_HEIGHTS[i % BOOK_HEIGHTS.length];
           const hasDue = learning.dueCount > 0;
+          const isNew = highlightId === learning.id;
           return (
             <BookItem
               key={learning.id}
@@ -133,6 +144,7 @@ export function BookShelf({ topic, learnings }: BookShelfProps) {
               height={height}
               gradient={gradient}
               hasDue={hasDue}
+              isNew={isNew}
               onOpen={handleBookClick}
             />
           );
@@ -174,12 +186,14 @@ interface BookItemProps {
   height: number;
   gradient: string;
   hasDue: boolean;
+  isNew: boolean;
   onOpen: (e: React.MouseEvent, id: string, el: HTMLElement) => void;
 }
 
-function BookItem({ learning, height, gradient, hasDue, onOpen }: BookItemProps) {
+function BookItem({ learning, height, gradient, hasDue, isNew, onOpen }: BookItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [popping, setPopping] = useState(false);
+  const isProcessing = (learning as { status?: string }).status === 'processing';
 
   const handleClick = (e: React.MouseEvent) => {
     if (!ref.current) return;
@@ -190,33 +204,28 @@ function BookItem({ learning, height, gradient, hasDue, onOpen }: BookItemProps)
   return (
     <div
       ref={ref}
-      className={`no-underline book-tip${popping ? ' book-opening' : ''}`}
-      data-tip={learning.title}
+      data-learning-id={learning.id}
+      className={`no-underline book-tip${popping ? ' book-opening' : ''}${isNew ? ' book-new' : ''}`}
+      data-tip={isProcessing ? 'Reading…' : learning.title}
       onClick={handleClick}
-      style={{ cursor: 'pointer', display: 'block' }}
+      style={{ cursor: 'pointer', display: 'block', position: 'relative' }}
     >
       <div
         className="book"
-        style={{ width: '44px', height: `${height}px`, background: gradient }}
+        style={{ width: '44px', height: `${height}px`, background: gradient, opacity: isProcessing ? 0.7 : 1 }}
       >
-        {hasDue && <div className="book-ribbon" />}
+        {hasDue && !isProcessing && <div className="book-ribbon" />}
+        {isProcessing && (
+          <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', border: '2px solid rgba(255,255,255,.25)', borderTopColor: 'rgba(255,255,255,.85)', animation: 'spin 0.8s linear infinite' }} />
+        )}
         {learning.sourceType === 'sample' && (
           <div
             style={{
-              position: 'absolute',
-              bottom: '6px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(255,255,255,0.22)',
-              color: 'rgba(255,255,255,0.9)',
-              fontSize: '7px',
-              fontWeight: 700,
-              fontFamily: 'Inter, system-ui, sans-serif',
-              letterSpacing: '0.08em',
-              padding: '2px 5px',
-              borderRadius: '3px',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
+              position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)',
+              background: 'rgba(255,255,255,0.22)', color: 'rgba(255,255,255,0.9)',
+              fontSize: '7px', fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif',
+              letterSpacing: '0.08em', padding: '2px 5px', borderRadius: '3px',
+              whiteSpace: 'nowrap', pointerEvents: 'none',
             }}
           >
             SAMPLE
