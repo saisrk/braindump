@@ -9,20 +9,25 @@ import { BookShelf } from './book-shelf';
 import { LibraryCardList } from './library-card-list';
 import { LibraryFilters } from './library-filters';
 import { groupSimilarTopics } from '@/lib/ai/topic-groups';
+import { NewLearningHighlight } from './new-learning-highlight';
 import type { LearningWithMeta } from '@/lib/data/learnings';
+import { db } from '@/db';
+import { learnings as learningsTable } from '@/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 type Sort = 'recent' | 'due' | 'confidence';
 
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; topic?: string; tag?: string; sort?: string }>;
+  searchParams: Promise<{ search?: string; topic?: string; tag?: string; sort?: string; new?: string }>;
 }) {
   const params = await searchParams;
   const search = params.search?.trim() ?? '';
   const topic = params.topic?.trim() ?? '';
   const tag = params.tag?.trim() ?? '';
   const sort = (['recent', 'due', 'confidence'].includes(params.sort ?? '') ? params.sort : 'recent') as Sort;
+  const newId = params.new?.trim() ?? '';
 
   // Any active filter besides sort → show flat card list (filters + bookshelf don't mix well)
   const isFiltered = !!(search || topic || tag);
@@ -34,6 +39,16 @@ export default async function LibraryPage({
       listLearnings(userId, { search, topic, tag, sort }),
       getUserFacets(userId),
     ]);
+
+    // Check enrichment status for the newly captured learning
+    let newIsProcessing = false;
+    if (newId) {
+      const [row] = await db
+        .select({ status: learningsTable.status })
+        .from(learningsTable)
+        .where(and(eq(learningsTable.id, newId), eq(learningsTable.userId, userId)));
+      newIsProcessing = row?.status === 'processing';
+    }
 
     // Bookshelf view: AI-merge similar topic names, then group
     let grouped = new Map<string, LearningWithMeta[]>();
@@ -63,7 +78,11 @@ export default async function LibraryPage({
             className="mb-6"
           />
 
-          <LibraryFilters
+            {newId && (
+            <NewLearningHighlight newId={newId} isProcessing={newIsProcessing} />
+          )}
+
+        <LibraryFilters
             facets={facets}
             currentSearch={search}
             currentTopic={topic}
@@ -108,7 +127,7 @@ export default async function LibraryPage({
             /* Bookshelf view grouped by topic — 2-column grid */
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', alignItems: 'start' }}>
               {Array.from(grouped.entries()).map(([t, items]) => (
-                <BookShelf key={t} topic={t} learnings={items} />
+                <BookShelf key={t} topic={t} learnings={items} highlightId={newId} />
               ))}
             </div>
           )}
