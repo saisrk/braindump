@@ -67,39 +67,6 @@ function HeroShelf() {
         <div style={{ width: '38px', height: '96px', border: `2px dashed ${RULE}`, borderRadius: '4px', display: 'grid', placeItems: 'center', color: FAINT, fontSize: '18px' }}>+</div>
       </div>
       <div style={{ height: '14px', background: 'linear-gradient(180deg,#c8b99a,#b8a888)', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 12px -4px rgba(42,38,32,.3)', border: `1px solid ${RULE}`, borderTop: 'none' }} />
-
-      {/* ── Express output placeholder — swap with a real screenshot ── */}
-      <div style={{ marginTop: '20px', background: CARD, border: `1px solid ${RULE}`, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px -8px rgba(42,38,32,.18)' }}>
-        {/* card header */}
-        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${RULE}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '28px', height: '28px', background: '#6f8a5a', borderRadius: '7px', display: 'grid', placeItems: 'center', fontSize: '13px' }}>✨</div>
-          <div>
-            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#6f8a5a', lineHeight: 1 }}>Express · STAR Story</p>
-            <p style={{ fontFamily: F, fontSize: '11px', color: FAINT, marginTop: '2px' }}>from "Deep Work" + "System Design"</p>
-          </div>
-        </div>
-        {/* body — placeholder for real screenshot */}
-        <div style={{ padding: '14px 16px', position: 'relative' }}>
-          {/* placeholder overlay — remove this div and drop in <Image> to swap */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(245,242,236,.82)', backdropFilter: 'blur(2px)', zIndex: 2, borderRadius: '0 0 12px 12px' }}>
-            <span style={{ fontSize: '20px' }}>🖼</span>
-            <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 600, color: FAINT, letterSpacing: '1px', textTransform: 'uppercase' }}>Screenshot placeholder</p>
-            <p style={{ fontFamily: F, fontSize: '11px', color: FAINT }}>Replace with real Express output</p>
-          </div>
-          {/* blurred preview content underneath */}
-          {[
-            { label: 'Situation', text: 'Led backend architecture for a high-traffic search feature serving 2M daily requests…' },
-            { label: 'Task', text: 'Reduce p99 latency below 200ms without a full rewrite…' },
-            { label: 'Action', text: 'Applied deep-work scheduling to eliminate context switches, then systematically profiled…' },
-            { label: 'Result', text: 'Reduced latency by 64%. Presented at eng all-hands and promoted to tech lead…' },
-          ].map((row) => (
-            <div key={row.label} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <span style={{ fontFamily: F, fontSize: '10px', fontWeight: 700, color: TERRACOTTA, minWidth: '58px', paddingTop: '1px' }}>{row.label}</span>
-              <p style={{ fontFamily: F, fontSize: '12px', color: INK2, lineHeight: 1.5, margin: 0 }}>{row.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }
