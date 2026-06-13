@@ -484,16 +484,33 @@ function ScopeSelector({
       {/* Learning card grid */}
       {mode === 'pick' && (
         <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search learnings…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-card pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search learnings…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full rounded-xl border border-border bg-card pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+              />
+            </div>
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground whitespace-nowrap flex-shrink-0"
               style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-            />
+              onClick={() => {
+                const allIds = filteredLearnings.map(l => l.id);
+                const allSelected = allIds.every(id => selectedIds.has(id));
+                setSelectedIds(prev => {
+                  const next = new Set(prev);
+                  allIds.forEach(id => allSelected ? next.delete(id) : next.add(id));
+                  return next;
+                });
+              }}
+            >
+              {filteredLearnings.every(l => selectedIds.has(l.id)) ? 'Deselect all' : 'Select all'}
+            </button>
           </div>
 
           <div style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -501,81 +518,40 @@ function ScopeSelector({
               const grad = topicGradient(topic);
               return (
                 <div key={topic}>
-                  <div className="flex items-center justify-between mb-2 px-0.5">
+                  <div className="mb-2 px-0.5">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{topic}</p>
-                    <button
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                      onClick={() => {
-                        const allSelected = items.every(l => selectedIds.has(l.id));
-                        setSelectedIds(prev => {
-                          const next = new Set(prev);
-                          items.forEach(l => allSelected ? next.delete(l.id) : next.add(l.id));
-                          return next;
-                        });
-                      }}
-                    >
-                      {items.every(l => selectedIds.has(l.id)) ? 'Deselect all' : 'Select all'}
-                    </button>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                    {items.map((l, i) => {
+                    {items.map((l) => {
                       const active = selectedIds.has(l.id);
-                      const h = BOOK_HEIGHTS_SM[i % BOOK_HEIGHTS_SM.length];
                       return (
                         <div
                           key={l.id}
                           onClick={() => toggleId(l.id)}
-                          className="rounded-xl overflow-hidden transition-all cursor-pointer"
+                          className="rounded-xl overflow-hidden transition-all cursor-pointer flex"
                           style={{
                             border: `2px solid ${active ? format.color : 'var(--color-border)'}`,
                             background: 'var(--color-card)',
                             boxShadow: active ? `0 0 0 3px ${format.color}22` : '0 1px 4px rgba(42,38,32,0.06)',
                             position: 'relative',
+                            minHeight: '72px',
                           }}
                         >
-                          {/* Book cover header */}
-                          <div
-                            style={{
-                              background: grad,
-                              height: `${h + 10}px`,
-                              display: 'flex',
-                              alignItems: 'flex-end',
-                              padding: '8px',
-                              position: 'relative',
-                            }}
-                          >
-                            <span
-                              style={{
-                                writingMode: 'vertical-rl',
-                                textOrientation: 'mixed',
-                                transform: 'rotate(180deg)',
-                                color: 'rgba(255,255,255,0.75)',
-                                fontSize: '9px',
-                                fontWeight: 700,
-                                fontFamily: 'Spectral, Georgia, serif',
-                                letterSpacing: '0.04em',
-                                maxHeight: '100%',
-                                overflow: 'hidden',
-                                lineHeight: 1.2,
-                              }}
-                            >
-                              {l.title}
-                            </span>
-                          </div>
+                          {/* Narrow colour band on the left */}
+                          <div style={{ width: '10px', flexShrink: 0, background: grad }} />
                           {/* Card body */}
-                          <div className="px-2.5 py-2">
+                          <div className="px-3 py-2.5 flex flex-col justify-center flex-1 min-w-0">
                             <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: 'var(--color-muted-foreground)', fontSize: '9px' }}>
                               {topic}
                             </p>
-                            <p className="text-xs font-semibold text-foreground leading-snug" style={{ fontFamily: 'Spectral, Georgia, serif', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            <p className="text-sm font-semibold text-foreground leading-snug" style={{ fontFamily: 'Spectral, Georgia, serif', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                               {l.title}
                             </p>
                           </div>
                           {/* Selection check */}
                           <div
-                            className="absolute top-2 right-2 w-5 h-5 rounded-full border-2 grid place-items-center transition-all"
-                            style={{ borderColor: active ? format.color : 'rgba(255,255,255,0.6)', background: active ? format.color : 'rgba(255,255,255,0.25)' }}
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full border-2 grid place-items-center transition-all flex-shrink-0"
+                            style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'var(--color-card)' }}
                           >
                             {active && <Check size={10} strokeWidth={3} color="#fff" />}
                           </div>
