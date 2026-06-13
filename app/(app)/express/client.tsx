@@ -262,6 +262,8 @@ function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_prove
 
 /* ── Step 2: Scope Selector ─────────────────────────────────────── */
 
+const BOOK_HEIGHTS_SM = [48, 42, 52, 44, 50, 40, 46];
+
 function ScopeSelector({
   learnings,
   format,
@@ -278,7 +280,6 @@ function ScopeSelector({
   const [mode, setMode] = useState<'shelf' | 'pick'>('shelf');
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [audience, setAudience] = useState('');
   const [search, setSearch] = useState('');
 
   const topicGroups = useMemo(() => {
@@ -326,23 +327,20 @@ function ScopeSelector({
   const handleSubmit = () => {
     if (mode === 'shelf') {
       if (selectedTopics.size === 0) {
-        // use all
         const ids = learnings.map(l => l.id);
-        onGenerate(ids, 'Entire library', audience);
+        onGenerate(ids, 'Entire library', '');
       } else {
         const ids = learnings.filter(l => selectedTopics.has(l.topic ?? 'Uncategorised')).map(l => l.id);
         const label = Array.from(selectedTopics).join(', ');
-        onGenerate(ids, label, audience);
+        onGenerate(ids, label, '');
       }
     } else {
       const ids = Array.from(selectedIds);
-      onGenerate(ids, `${ids.length} selected learnings`, audience);
+      onGenerate(ids, `${ids.length} selected learnings`, '');
     }
   };
 
-  const canSubmit = mode === 'shelf'
-    ? true
-    : selectedIds.size > 0;
+  const canSubmit = mode === 'shelf' ? true : selectedIds.size > 0;
 
   const submitLabel = mode === 'shelf'
     ? selectedTopics.size === 0
@@ -366,43 +364,39 @@ function ScopeSelector({
         </button>
       </div>
 
-      {/* Audience */}
-      <div className="mb-4">
-        <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-          Who is this for? <span className="font-normal normal-case">(optional)</span>
-        </label>
-        <input
-          type="text"
-          placeholder="e.g. a technical hiring manager, my engineering team, my LinkedIn audience"
-          value={audience}
-          onChange={e => setAudience(e.target.value)}
-          className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-          style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-        />
-      </div>
-
-      {/* Source toggle */}
-      <div className="flex gap-2 mb-4">
+      {/* Segmented mode switcher */}
+      <div
+        className="flex mb-5 p-1 rounded-xl"
+        style={{ background: 'var(--color-muted)', width: 'fit-content' }}
+      >
         {(['shelf', 'pick'] as const).map(m => (
           <button
             key={m}
             onClick={() => setMode(m)}
-            className="flex-1 rounded-lg py-2 text-sm font-semibold transition-colors"
+            className="px-5 py-1.5 rounded-lg text-sm font-semibold transition-all"
             style={{
               fontFamily: 'Inter, system-ui, sans-serif',
-              background: mode === m ? format.color : 'var(--color-card)',
-              color: mode === m ? '#fff' : 'var(--color-muted-foreground)',
-              border: `1.5px solid ${mode === m ? format.color : 'var(--color-border)'}`,
+              background: mode === m ? 'var(--color-card)' : 'transparent',
+              color: mode === m ? 'var(--color-foreground)' : 'var(--color-muted-foreground)',
+              boxShadow: mode === m ? '0 1px 4px rgba(42,38,32,0.10)' : 'none',
             }}
           >
-            {m === 'shelf' ? 'By Shelf' : 'Pick Learnings'}
+            {m === 'shelf' ? 'By Shelf' : 'By Learning'}
           </button>
         ))}
       </div>
 
-      {/* Shelf selector */}
+      {/* Shelf card grid */}
       {mode === 'shelf' && (
-        <div className="space-y-2 overflow-y-auto" style={{ maxHeight: '340px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '12px',
+            maxHeight: '420px',
+            overflowY: 'auto',
+          }}
+        >
           {Array.from(topicGroups.entries()).map(([topic, items]) => {
             const grad = topicGradient(topic);
             const active = selectedTopics.has(topic);
@@ -412,42 +406,74 @@ function ScopeSelector({
               <div
                 key={topic}
                 onClick={() => hasProven && toggleTopic(topic)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                className="rounded-xl overflow-hidden transition-all"
                 style={{
-                  border: `1.5px solid ${active ? format.color : 'var(--color-border)'}`,
-                  background: active ? format.tint : hasProven ? 'var(--color-card)' : 'var(--color-muted)',
-                  boxShadow: active ? `0 0 0 2px ${format.color}22` : 'none',
+                  border: `2px solid ${active ? format.color : 'var(--color-border)'}`,
+                  background: 'var(--color-card)',
+                  boxShadow: active ? `0 0 0 3px ${format.color}22` : '0 1px 4px rgba(42,38,32,0.06)',
                   cursor: hasProven ? 'pointer' : 'not-allowed',
-                  opacity: hasProven ? 1 : 0.6,
+                  opacity: hasProven ? 1 : 0.55,
+                  position: 'relative',
                 }}
               >
-                {/* Mini book spines */}
-                <div className="flex items-end gap-0.5 flex-shrink-0">
-                  {items.slice(0, 5).map((_, i) => (
-                    <div key={i} className="rounded-sm" style={{ width: '8px', height: `${24 + (i % 3) * 6}px`, background: grad, opacity: 0.85 }} />
+                {/* Shelf visual area */}
+                <div
+                  style={{
+                    background: 'linear-gradient(180deg, var(--color-background) 0%, var(--color-muted) 100%)',
+                    padding: '12px 12px 0 12px',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '3px',
+                    minHeight: '72px',
+                  }}
+                >
+                  {items.slice(0, 6).map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-sm flex-shrink-0"
+                      style={{
+                        width: '14px',
+                        height: `${BOOK_HEIGHTS_SM[i % BOOK_HEIGHTS_SM.length]}px`,
+                        background: grad,
+                        opacity: 0.9,
+                      }}
+                    />
                   ))}
-                  {items.length > 5 && (
-                    <div className="rounded-sm flex items-center justify-center text-white" style={{ width: '12px', height: '30px', background: grad, fontSize: '7px', opacity: 0.7 }}>
-                      +{items.length - 5}
+                  {items.length > 6 && (
+                    <div
+                      className="rounded-sm flex items-center justify-center text-white flex-shrink-0"
+                      style={{ width: '18px', height: '44px', background: grad, fontSize: '8px', opacity: 0.65, fontFamily: 'Inter, system-ui, sans-serif' }}
+                    >
+                      +{items.length - 6}
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
+                {/* Shelf board */}
+                <div style={{ height: '6px', background: 'var(--color-shelf, #d8cdb8)', borderBottom: '1px solid rgba(42,38,32,0.08)' }} />
+                {/* Card body */}
+                <div className="px-3 py-2.5">
                   <p className="text-sm font-semibold text-foreground truncate" style={{ fontFamily: 'Spectral, Georgia, serif' }}>{topic}</p>
-                  <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <p className="text-xs mt-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: 'var(--color-muted-foreground)' }}>
                     {items.length} vol{items.length !== 1 ? 's' : ''}
                     {hasProven
                       ? <span style={{ color: '#6f8a5a' }}> · {provenCount} proven</span>
-                      : <span style={{ color: '#c79a3e' }}> · no proven learnings</span>
+                      : <span style={{ color: '#c79a3e' }}> · prove first</span>
                     }
                   </p>
                 </div>
-                {hasProven ? (
-                  <div className={`w-5 h-5 rounded-full border-2 grid place-items-center flex-shrink-0 transition-all`} style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'transparent' }}>
-                    {active && <Check size={11} strokeWidth={3} color="#fff" />}
+                {/* Selection indicator */}
+                {hasProven && (
+                  <div
+                    className="absolute top-2 right-2 w-5 h-5 rounded-full border-2 grid place-items-center transition-all"
+                    style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'var(--color-card)' }}
+                  >
+                    {active && <Check size={10} strokeWidth={3} color="#fff" />}
                   </div>
-                ) : (
-                  <Lock size={14} className="flex-shrink-0" style={{ color: 'var(--color-muted-foreground)' }} />
+                )}
+                {!hasProven && (
+                  <div className="absolute top-2 right-2">
+                    <Lock size={12} style={{ color: 'var(--color-muted-foreground)' }} />
+                  </div>
                 )}
               </div>
             );
@@ -455,10 +481,10 @@ function ScopeSelector({
         </div>
       )}
 
-      {/* Pick learnings */}
+      {/* Learning card grid */}
       {mode === 'pick' && (
-        <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: '340px' }}>
-          <div className="relative sticky top-0 z-10 bg-background pb-1">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
@@ -470,46 +496,97 @@ function ScopeSelector({
             />
           </div>
 
-          {Array.from(filteredGroups.entries()).map(([topic, items]) => (
-            <div key={topic}>
-              <div className="flex items-center justify-between px-1 py-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{topic}</p>
-                <button
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                  onClick={() => {
-                    const allSelected = items.every(l => selectedIds.has(l.id));
-                    setSelectedIds(prev => {
-                      const next = new Set(prev);
-                      items.forEach(l => allSelected ? next.delete(l.id) : next.add(l.id));
-                      return next;
-                    });
-                  }}
-                >
-                  {items.every(l => selectedIds.has(l.id)) ? 'Deselect all' : 'Select all'}
-                </button>
-              </div>
-              {items.map(l => {
-                const active = selectedIds.has(l.id);
-                return (
-                  <div
-                    key={l.id}
-                    onClick={() => toggleId(l.id)}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg cursor-pointer mb-1 transition-all"
-                    style={{
-                      background: active ? format.tint : 'transparent',
-                      border: `1px solid ${active ? format.color + '44' : 'transparent'}`,
-                    }}
-                  >
-                    <div className={`w-5 h-5 rounded border-2 grid place-items-center flex-shrink-0 transition-all`} style={{ borderColor: active ? format.color : 'var(--color-border)', background: active ? format.color : 'transparent' }}>
-                      {active && <Check size={11} strokeWidth={3} color="#fff" />}
-                    </div>
-                    <p className="text-sm text-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{l.title}</p>
+          <div style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {Array.from(filteredGroups.entries()).map(([topic, items]) => {
+              const grad = topicGradient(topic);
+              return (
+                <div key={topic}>
+                  <div className="flex items-center justify-between mb-2 px-0.5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{topic}</p>
+                    <button
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                      onClick={() => {
+                        const allSelected = items.every(l => selectedIds.has(l.id));
+                        setSelectedIds(prev => {
+                          const next = new Set(prev);
+                          items.forEach(l => allSelected ? next.delete(l.id) : next.add(l.id));
+                          return next;
+                        });
+                      }}
+                    >
+                      {items.every(l => selectedIds.has(l.id)) ? 'Deselect all' : 'Select all'}
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-          ))}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                    {items.map((l, i) => {
+                      const active = selectedIds.has(l.id);
+                      const h = BOOK_HEIGHTS_SM[i % BOOK_HEIGHTS_SM.length];
+                      return (
+                        <div
+                          key={l.id}
+                          onClick={() => toggleId(l.id)}
+                          className="rounded-xl overflow-hidden transition-all cursor-pointer"
+                          style={{
+                            border: `2px solid ${active ? format.color : 'var(--color-border)'}`,
+                            background: 'var(--color-card)',
+                            boxShadow: active ? `0 0 0 3px ${format.color}22` : '0 1px 4px rgba(42,38,32,0.06)',
+                            position: 'relative',
+                          }}
+                        >
+                          {/* Book cover header */}
+                          <div
+                            style={{
+                              background: grad,
+                              height: `${h + 10}px`,
+                              display: 'flex',
+                              alignItems: 'flex-end',
+                              padding: '8px',
+                              position: 'relative',
+                            }}
+                          >
+                            <span
+                              style={{
+                                writingMode: 'vertical-rl',
+                                textOrientation: 'mixed',
+                                transform: 'rotate(180deg)',
+                                color: 'rgba(255,255,255,0.75)',
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                fontFamily: 'Spectral, Georgia, serif',
+                                letterSpacing: '0.04em',
+                                maxHeight: '100%',
+                                overflow: 'hidden',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {l.title}
+                            </span>
+                          </div>
+                          {/* Card body */}
+                          <div className="px-2.5 py-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: 'var(--color-muted-foreground)', fontSize: '9px' }}>
+                              {topic}
+                            </p>
+                            <p className="text-xs font-semibold text-foreground leading-snug" style={{ fontFamily: 'Spectral, Georgia, serif', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {l.title}
+                            </p>
+                          </div>
+                          {/* Selection check */}
+                          <div
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full border-2 grid place-items-center transition-all"
+                            style={{ borderColor: active ? format.color : 'rgba(255,255,255,0.6)', background: active ? format.color : 'rgba(255,255,255,0.25)' }}
+                          >
+                            {active && <Check size={10} strokeWidth={3} color="#fff" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -525,7 +602,7 @@ function ScopeSelector({
         </button>
         {mode === 'shelf' && selectedTopics.size > 0 && (
           <button
-            onClick={() => { setSelectedTopics(new Set()); handleSubmit(); }}
+            onClick={() => setSelectedTopics(new Set())}
             className="w-full text-center text-xs text-muted-foreground mt-2 hover:text-foreground transition-colors"
             style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
           >
