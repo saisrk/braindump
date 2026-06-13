@@ -231,7 +231,7 @@ export default function HomePage() {
                 n: '02',
                 color: '#c79a3e',
                 title: 'Review at the right moment',
-                body: 'Spaced repetition surfaces each card just before your memory fades. A few minutes a day is all it takes to move knowledge from short-term to long-term.',
+                body: 'Re-reading gives you familiarity. Retrieval practice gives you memory. These are not the same thing.\n\nEach card asks you to recall — then you rate it: Again, Hard, Good, or Easy. That signal tells the algorithm when to show it next. Good cards return in a few days. Easy ones in weeks. Hard ones tomorrow. Cards you truly know eventually disappear for months at a time.\n\n5 minutes of review a day is enough to retain a library of 200+ ideas.',
                 aside: (
                   <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '14px 16px' }}>
                     <div style={{ position: 'relative' }}>
@@ -286,7 +286,11 @@ export default function HomePage() {
                     <div style={{ height: '1px', width: '24px', background: step.color, opacity: 0.4 }} />
                   </div>
                   <h3 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '22px', color: INK, marginBottom: '12px', lineHeight: 1.2 }}>{step.title}</h3>
-                  <p style={{ fontFamily: F, fontSize: '15px', color: INK2, lineHeight: 1.7 }}>{step.body}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {step.body.split('\n\n').map((para, i) => (
+                      <p key={i} style={{ fontFamily: F, fontSize: '15px', color: INK2, lineHeight: 1.7, margin: 0 }}>{para}</p>
+                    ))}
+                  </div>
                 </div>
                 <div style={{ order: idx % 2 === 0 ? 1 : 0 }}>
                   {step.aside}
