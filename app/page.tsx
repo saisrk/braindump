@@ -196,7 +196,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hero-visual" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="hero-visual" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <HeroShelf />
           <HeroCard />
         </div>
       </section>
