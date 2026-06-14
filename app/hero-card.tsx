@@ -93,9 +93,10 @@ export function HeroCard() {
           padding: '28px 28px 24px',
           boxShadow: '0 8px 32px -12px rgba(42,38,32,.18)',
           position: 'relative',
-          minHeight: '220px',
+          height: '220px',
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
         {/* ribbon */}
