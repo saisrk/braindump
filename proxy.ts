@@ -5,6 +5,16 @@ import { auth } from '@/lib/auth';
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Redirect logged-in users away from auth pages
+  const authOnlyPaths = ['/login', '/signup'];
+  if (authOnlyPaths.includes(pathname)) {
+    const session = await auth();
+    if (session?.user?.id) {
+      return NextResponse.redirect(new URL('/home', request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Routes that are always public — no auth required.
   const publicPaths = [
     '/',
