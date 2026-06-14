@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
 import { FeatureCards } from './feature-cards'
 import { HeroCard } from './hero-card'
+import { auth } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: 'Braindump — Remember everything you learn',
@@ -71,7 +72,10 @@ function HeroShelf() {
   )
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth()
+  const isLoggedIn = !!session?.user?.id
+
   return (
     <div style={{ minHeight: '100vh', background: BG, color: INK }}>
       <style>{`
@@ -119,12 +123,22 @@ export default function HomePage() {
         </div>
         {/* Auth — right */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
-          <Link href="/signup">
-            <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
-              Get started free
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/home">
+              <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
+                Go to dashboard →
+              </button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
+              <Link href="/signup">
+                <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
+                  Get started free
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -143,14 +157,24 @@ export default function HomePage() {
             Paste a URL or note. Braindump extracts key ideas, builds flashcards, and schedules reviews — then turns your library into talking points, STAR stories, and interview answers on demand.
           </p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
-            <Link href="/signup">
-              <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
-                Start for free <ArrowRight style={{ width: '16px', height: '16px' }} />
-              </button>
-            </Link>
-            <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 24px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '15px', textDecoration: 'none' }}>
-              Log in
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/home">
+                <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
+                  Go to dashboard <ArrowRight style={{ width: '16px', height: '16px' }} />
+                </button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/signup">
+                  <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
+                    Start for free <ArrowRight style={{ width: '16px', height: '16px' }} />
+                  </button>
+                </Link>
+                <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 24px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '15px', textDecoration: 'none' }}>
+                  Log in
+                </Link>
+              </>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>

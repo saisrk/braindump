@@ -8,7 +8,8 @@ import { eq } from 'drizzle-orm';
 const hasDb = db && Object.keys(db).length > 0;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
+  jwt: { maxAge: 30 * 24 * 60 * 60 },
   pages: {
     signIn: '/login',
   },
