@@ -6,7 +6,9 @@ import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-type Step = 'email' | 'otp';
+type Step = 'email' | 'otp' | 'tester';
+
+const TESTER_EMAIL = 'tester@brain-dump.co';
 
 export function LoginForm() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export function LoginForm() {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const isDev = process.env.NODE_ENV !== 'production';
@@ -23,6 +26,13 @@ export function LoginForm() {
   async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    // Tester account — skip OTP, show password field instead
+    if (email.trim().toLowerCase() === TESTER_EMAIL) {
+      setStep('tester');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch('/api/auth/send-otp', {
@@ -36,6 +46,27 @@ export function LoginForm() {
         return;
       }
       setStep('otp');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleTesterLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const result = await signIn('tester', {
+        email,
+        password,
+        redirect: false,
+      });
+      if (result?.error) {
+        setError('Incorrect password.');
+        return;
+      }
+      router.push(callbackUrl);
+      router.refresh();
     } finally {
       setLoading(false);
     }
@@ -135,6 +166,35 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => { setStep('email'); setOtp(''); setError(''); }}
+            className="text-sm text-muted-foreground hover:text-foreground text-center"
+          >
+            ← Change email
+          </button>
+        </form>
+      )}
+
+      {step === 'tester' && (
+        <form onSubmit={handleTesterLogin} className="flex flex-col gap-4">
+          <div className="text-center text-sm text-muted-foreground">
+            Signing in as <span className="font-medium text-foreground">{email}</span>
+          </div>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoFocus
+            autoComplete="current-password"
+          />
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <Button type="submit" loading={loading} className="w-full">
+            Sign in
+          </Button>
+          <button
+            type="button"
+            onClick={() => { setStep('email'); setPassword(''); setError(''); }}
             className="text-sm text-muted-foreground hover:text-foreground text-center"
           >
             ← Change email

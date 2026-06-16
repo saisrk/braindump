@@ -7,6 +7,9 @@ import { eq } from 'drizzle-orm';
 
 const hasDb = db && Object.keys(db).length > 0;
 
+const TESTER_EMAIL = 'tester@brain-dump.co';
+const TESTER_PASSWORD = 'tester@12345';
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   jwt: { maxAge: 30 * 24 * 60 * 60 },
@@ -14,6 +17,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/login',
   },
   providers: [
+    Credentials({
+      id: 'tester',
+      name: 'Tester',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!hasDb) return null;
+        const email = String(credentials?.email ?? '').trim().toLowerCase();
+        const password = String(credentials?.password ?? '');
+        if (email !== TESTER_EMAIL || password !== TESTER_PASSWORD) return null;
+
+        let [user] = await db.select().from(users).where(eq(users.email, email));
+        if (!user) {
+          [user] = await db
+            .insert(users)
+            .values({ email, name: 'Tester', emailVerified: new Date() })
+            .returning();
+        }
+        await db.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
+        return { id: user.id, email: user.email, name: user.name, image: user.image };
+      },
+    }),
     Credentials({
       id: 'email-otp',
       name: 'Email OTP',
