@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, Zap, ArrowLeft } from 'lucide-react';
-import { createCheckoutSession, createPortalSession } from '@/lib/actions/billing';
+import { createSubscription, cancelSubscription, verifyAndActivate } from '@/lib/actions/billing';
 
 const F = "'Inter', system-ui, sans-serif";
 const SERIF = "'Spectral', Georgia, serif";
@@ -31,34 +32,109 @@ const PRO_FEATURES = [
   'Early access to new features',
 ];
 
-type BillingInterval = 'monthly' | 'annual';
+type PlanKey = 'monthly' | 'annual';
 
 interface PricingClientProps {
   isPro: boolean;
   endsAt: Date | null;
 }
 
+// Razorpay types
+declare global {
+  interface Window {
+    Razorpay: new (opts: Record<string, unknown>) => { open(): void };
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export function PricingClient({ isPro, endsAt }: PricingClientProps) {
-  const [interval, setInterval] = useState<BillingInterval>('annual');
-  const [loading, setLoading] = useState<BillingInterval | null>(null);
+  const router = useRouter();
+  const [interval, setInterval] = useState<PlanKey>('annual');
+  const [loading, setLoading] = useState<PlanKey | 'cancel' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubscribe = async (plan: BillingInterval) => {
+  const handleSubscribe = useCallback(async (plan: PlanKey) => {
     setLoading(plan);
+    setError(null);
     try {
-      await createCheckoutSession(plan);
-    } catch {
-      setLoading(null);
-    }
-  };
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        setError('Failed to load payment gateway. Check your connection.');
+        setLoading(null);
+        return;
+      }
 
-  const handleManage = async () => {
-    setLoading('monthly');
-    try {
-      await createPortalSession();
+      const { subscriptionId, keyId, userName, userEmail } = await createSubscription(plan);
+
+      const rzp = new window.Razorpay({
+        key: keyId,
+        subscription_id: subscriptionId,
+        name: 'Braindump',
+        description: `Pro ${plan === 'annual' ? 'Annual' : 'Monthly'} Subscription`,
+        image: '/icon.png',
+        prefill: { name: userName, email: userEmail },
+        theme: { color: TERRACOTTA },
+        modal: {
+          ondismiss: () => setLoading(null),
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_subscription_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            const result = await verifyAndActivate(
+              response.razorpay_payment_id,
+              response.razorpay_subscription_id,
+              response.razorpay_signature,
+            );
+            if (result.ok) {
+              router.push('/home?upgraded=1');
+            } else {
+              setError(result.error ?? 'Payment verification failed. Contact support.');
+              setLoading(null);
+            }
+          } catch {
+            setError('Something went wrong activating your plan. Contact support.');
+            setLoading(null);
+          }
+        },
+      });
+
+      rzp.open();
     } catch {
+      setError('Could not start checkout. Please try again.');
       setLoading(null);
     }
-  };
+  }, [router]);
+
+  const handleCancel = useCallback(async () => {
+    if (!confirm('Cancel your subscription at the end of the billing period?')) return;
+    setLoading('cancel');
+    setError(null);
+    try {
+      const result = await cancelSubscription();
+      if (!result.ok) setError(result.error ?? 'Could not cancel.');
+      else router.refresh();
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(null);
+    }
+  }, [router]);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: INK }}>
@@ -95,6 +171,13 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
           </p>
         </div>
 
+        {/* Error banner */}
+        {error && (
+          <div style={{ background: '#fef2f0', border: '1px solid rgba(181,70,47,.3)', borderRadius: '10px', padding: '12px 16px', marginBottom: '24px', fontFamily: F, fontSize: '14px', color: TERRACOTTA }}>
+            {error}
+          </div>
+        )}
+
         {/* Billing toggle */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'inline-flex', background: CARD, border: `1px solid ${RULE}`, borderRadius: '10px', padding: '4px', gap: '4px' }}>
@@ -129,7 +212,7 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
           <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
             <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', color: INK2, marginBottom: '12px' }}>Free</p>
             <div style={{ marginBottom: '20px' }}>
-              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>$0</span>
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>₹0</span>
               <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>forever</span>
             </div>
             <div style={{ height: '1px', background: RULE, marginBottom: '20px' }} />
@@ -161,13 +244,13 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
             <div style={{ marginBottom: '20px' }}>
               {interval === 'annual' ? (
                 <>
-                  <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>$8</span>
+                  <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>₹667</span>
                   <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>/ month</span>
-                  <p style={{ fontFamily: F, fontSize: '12px', color: FAINT, marginTop: '4px' }}>Billed $96/year · save $48</p>
+                  <p style={{ fontFamily: F, fontSize: '12px', color: FAINT, marginTop: '4px' }}>Billed ₹8000/year · save ₹4000</p>
                 </>
               ) : (
                 <>
-                  <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>$12</span>
+                  <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>₹1000</span>
                   <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>/ month</span>
                 </>
               )}
@@ -185,14 +268,14 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
             {isPro ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ background: 'rgba(111,138,90,0.12)', border: '1px solid rgba(111,138,90,0.3)', borderRadius: '10px', padding: '10px 14px', textAlign: 'center', fontFamily: F, fontSize: '13px', color: '#6f8a5a', fontWeight: 600 }}>
-                  ✓ You&apos;re on Pro{endsAt && ` · renews ${endsAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                  ✓ You&apos;re on Pro{endsAt && ` · renews ${endsAt.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}`}
                 </div>
                 <button
-                  onClick={handleManage}
+                  onClick={handleCancel}
                   disabled={loading !== null}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: 'transparent', color: INK, fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', opacity: loading !== null ? 0.6 : 1 }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: 'transparent', color: INK, fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: loading !== null ? 'not-allowed' : 'pointer', opacity: loading !== null ? 0.6 : 1 }}
                 >
-                  {loading !== null ? 'Loading…' : 'Manage subscription'}
+                  {loading === 'cancel' ? 'Cancelling…' : 'Cancel subscription'}
                 </button>
               </div>
             ) : (
@@ -211,14 +294,14 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
                 onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
               >
-                {loading === interval ? 'Redirecting…' : `Get Pro ${interval === 'annual' ? 'Annual' : 'Monthly'} →`}
+                {loading === interval ? 'Opening checkout…' : `Get Pro ${interval === 'annual' ? 'Annual' : 'Monthly'} →`}
               </button>
             )}
           </div>
         </div>
 
         <p style={{ textAlign: 'center', marginTop: '28px', fontFamily: F, fontSize: '12px', color: FAINT }}>
-          Cancel anytime. No questions asked. Payments secured by Stripe.
+          Cancel anytime. No questions asked. Payments secured by Razorpay.
         </p>
       </div>
     </div>

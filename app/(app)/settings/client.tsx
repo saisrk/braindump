@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useTheme } from 'next-themes';
 import { logout } from '@/lib/actions/auth';
 import { savePreferences, deleteAccount, type UserPreferences, type ReviewDifficulty } from '@/lib/actions/settings';
-import { createPortalSession } from '@/lib/actions/billing';
+import { cancelSubscription } from '@/lib/actions/billing';
 
 const F = "'Inter', system-ui, sans-serif";
 const SERIF = "'Spectral', Georgia, serif";
@@ -125,9 +125,11 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
   };
 
   const handleManageSubscription = async () => {
+    if (!confirm('Cancel your subscription at the end of the current billing period?')) return;
     setPortalLoading(true);
     try {
-      await createPortalSession();
+      await cancelSubscription();
+      router.refresh();
     } catch {
       setPortalLoading(false);
     }
@@ -219,7 +221,7 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
                     className="flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm font-semibold transition-all"
                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-foreground)' }}
                   >
-                    {portalLoading ? 'Opening…' : 'Manage subscription →'}
+                    {portalLoading ? 'Cancelling…' : 'Cancel subscription'}
                   </button>
                 </div>
               </div>
