@@ -4,73 +4,90 @@ import { db } from '@/db';
 import { users, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
-import { stripe, PLANS, type PlanKey } from '@/lib/stripe';
-import { redirect } from 'next/navigation';
+import { razorpay, verifySubscriptionSignature, PLANS, type PlanKey } from '@/lib/razorpay';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-
-export async function createCheckoutSession(plan: PlanKey): Promise<void> {
+export async function createSubscription(plan: PlanKey): Promise<{
+  subscriptionId: string;
+  keyId: string;
+  userName: string;
+  userEmail: string;
+}> {
   const userId = await requireUserId();
 
-  const [[user], [profile]] = await Promise.all([
-    db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)),
-    db.select({ stripeCustomerId: userProfiles.stripeCustomerId }).from(userProfiles).where(eq(userProfiles.userId, userId)),
-  ]);
-
+  const [user] = await db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId));
   if (!user) throw new Error('User not found');
 
-  // Reuse existing Stripe customer or create a new one
-  let customerId = profile?.stripeCustomerId ?? null;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name ?? undefined,
-      metadata: { userId },
-    });
-    customerId = customer.id;
-    await db
-      .update(userProfiles)
-      .set({ stripeCustomerId: customerId, updatedAt: new Date() })
-      .where(eq(userProfiles.userId, userId));
-  }
+  const selectedPlan = PLANS[plan];
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    line_items: [{ price: PLANS[plan].priceId, quantity: 1 }],
-    success_url: `${APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${APP_URL}/pricing`,
-    subscription_data: {
-      metadata: { userId },
-    },
-    allow_promotion_codes: true,
+  const subscription = await (razorpay.subscriptions as unknown as {
+    create: (opts: Record<string, unknown>) => Promise<{ id: string }>;
+  }).create({
+    plan_id: selectedPlan.planId,
+    customer_notify: 1,
+    quantity: 1,
+    total_count: plan === 'annual' ? 12 : 120,
+    notes: { userId },
   });
 
-  redirect(session.url!);
+  return {
+    subscriptionId: subscription.id,
+    keyId: process.env.RAZORPAY_KEY_ID!,
+    userName: user.name ?? '',
+    userEmail: user.email,
+  };
 }
 
-export async function createPortalSession(): Promise<void> {
+export async function verifyAndActivate(
+  razorpayPaymentId: string,
+  razorpaySubscriptionId: string,
+  razorpaySignature: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const userId = await requireUserId();
+
+  if (!verifySubscriptionSignature(razorpayPaymentId, razorpaySubscriptionId, razorpaySignature)) {
+    return { ok: false, error: 'Invalid payment signature' };
+  }
+
+  const sub = await (razorpay.subscriptions as {
+    fetch: (id: string) => Promise<{ id: string; current_end: number | null; status: string }>;
+  }).fetch(razorpaySubscriptionId);
+
+  const endsAt = sub.current_end ? new Date(sub.current_end * 1000) : null;
+
+  await db
+    .update(userProfiles)
+    .set({
+      isPro: true,
+      stripeSubscriptionId: razorpaySubscriptionId,
+      proSubscriptionEndsAt: endsAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(userProfiles.userId, userId));
+
+  return { ok: true };
+}
+
+export async function cancelSubscription(): Promise<{ ok: boolean; error?: string }> {
   const userId = await requireUserId();
 
   const [profile] = await db
-    .select({ stripeCustomerId: userProfiles.stripeCustomerId })
+    .select({ stripeSubscriptionId: userProfiles.stripeSubscriptionId })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
 
-  if (!profile?.stripeCustomerId) throw new Error('No billing record found.');
+  if (!profile?.stripeSubscriptionId) return { ok: false, error: 'No active subscription found.' };
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: profile.stripeCustomerId,
-    return_url: `${APP_URL}/settings`,
-  });
+  await (razorpay.subscriptions as {
+    cancel: (id: string, cancelAtCycleEnd: boolean) => Promise<unknown>;
+  }).cancel(profile.stripeSubscriptionId, true);
 
-  redirect(session.url);
+  return { ok: true };
 }
 
 export async function getSubscriptionInfo(): Promise<{
   isPro: boolean;
   endsAt: Date | null;
-  stripeCustomerId: string | null;
+  subscriptionId: string | null;
 }> {
   const userId = await requireUserId();
 
@@ -78,7 +95,7 @@ export async function getSubscriptionInfo(): Promise<{
     .select({
       isPro: userProfiles.isPro,
       proSubscriptionEndsAt: userProfiles.proSubscriptionEndsAt,
-      stripeCustomerId: userProfiles.stripeCustomerId,
+      stripeSubscriptionId: userProfiles.stripeSubscriptionId,
     })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
@@ -86,6 +103,6 @@ export async function getSubscriptionInfo(): Promise<{
   return {
     isPro: profile?.isPro ?? false,
     endsAt: profile?.proSubscriptionEndsAt ?? null,
-    stripeCustomerId: profile?.stripeCustomerId ?? null,
+    subscriptionId: profile?.stripeSubscriptionId ?? null,
   };
 }
