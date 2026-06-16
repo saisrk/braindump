@@ -78,8 +78,26 @@ export async function getDashboardStats(): Promise<DashboardData> {
     ));
   const dueThisWeek = weekRow?.count ?? 0;
 
-  // Mastered = confidence >= 80 (based on listLearnings meta)
-  const masteredCount = allLearnings.filter(l => l.confidence >= 80).length;
+  // Mastered = has a teach-back with gap_score >= 80 OR confidence >= 80 from SR
+  const masteredFromSr = new Set(allLearnings.filter(l => l.confidence >= 80).map(l => l.id));
+
+  // Fetch best teach-back score per learning
+  const teachBackRows = allLearnings.length > 0
+    ? await db
+        .select({ learningId: teachBacks.learningId, gapScore: teachBacks.gapScore })
+        .from(teachBacks)
+        .where(eq(teachBacks.userId, userId))
+    : [];
+  const bestTeachScore = new Map<string, number>();
+  for (const r of teachBackRows) {
+    const prev = bestTeachScore.get(r.learningId) ?? 0;
+    if ((r.gapScore ?? 0) > prev) bestTeachScore.set(r.learningId, r.gapScore ?? 0);
+  }
+  const masteredIds = new Set([
+    ...masteredFromSr,
+    ...Array.from(bestTeachScore.entries()).filter(([, s]) => s >= 80).map(([id]) => id),
+  ]);
+  const masteredCount = masteredIds.size;
 
   // Topic count + top topics for colour bars
   const topicMap = new Map<string, number>();
