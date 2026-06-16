@@ -118,14 +118,19 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
     .set({ name: name.trim() || null, updatedAt: new Date() })
     .where(eq(users.id, userId));
 
-  // Upsert profile — ensure profile row exists then set goals + onboardedAt.
-  await db
-    .insert(userProfiles)
-    .values({ userId, goals, onboardedAt: new Date() })
-    .onConflictDoUpdate({
-      target: userProfiles.userId,
-      set: { goals, onboardedAt: new Date(), updatedAt: new Date() },
-    });
+  // Profile row is always created at sign-in; just update it.
+  // Fallback insert handles edge case where profile doesn't exist yet.
+  const updated = await db
+    .update(userProfiles)
+    .set({ goals, onboardedAt: new Date(), updatedAt: new Date() })
+    .where(eq(userProfiles.userId, userId))
+    .returning({ userId: userProfiles.userId });
+
+  if (updated.length === 0) {
+    await db
+      .insert(userProfiles)
+      .values({ userId, goals, onboardedAt: new Date() });
+  }
 
   // Seed up to 2 relevant starter learnings so the app isn't empty.
   const seeds = goals
