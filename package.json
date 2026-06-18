@@ -17,6 +17,7 @@
     "@ai-sdk/react": "^3.0.195",
     "@anthropic-ai/sdk": "^0.100.1",
     "@auth/drizzle-adapter": "^1.11.2",
+    "@vercel/analytics": "^2.0.1",
     "ai": "^6.0.193",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
