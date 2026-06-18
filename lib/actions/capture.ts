@@ -16,7 +16,8 @@ import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { and, eq, gte, count } from 'drizzle-orm';
 
-const FREE_DAILY_CAPTURE_LIMIT = 5;
+const FREE_DAILY_CAPTURE_LIMIT = 3;
+const FREE_LIBRARY_CAP = 50;
 
 export type SourceType = 'url' | 'text' | 'file' | 'wizard';
 
@@ -119,8 +120,11 @@ export interface SaveCaptureInput {
 export interface SaveCaptureResult {
   ok: boolean;
   error?: string;
-  /** 'daily_limit' when free user has hit 5 captures today */
-  errorCode?: 'daily_limit';
+  /**
+   * 'daily_limit' when a free user has hit their daily capture limit.
+   * 'library_full' when a free user has reached the total library cap.
+   */
+  errorCode?: 'daily_limit' | 'library_full';
   learningId?: string;
   reviewCount?: number;
 }
@@ -157,6 +161,19 @@ export async function saveCapture(
         ok: false,
         errorCode: 'daily_limit',
         error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
+      };
+    }
+
+    const [{ totalCount }] = await db
+      .select({ totalCount: count() })
+      .from(learnings)
+      .where(eq(learnings.userId, userId));
+
+    if (totalCount >= FREE_LIBRARY_CAP) {
+      return {
+        ok: false,
+        errorCode: 'library_full',
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }
@@ -263,6 +280,11 @@ export interface AnalyzeContentMetadataResult {
 export interface SaveSkeletonResult {
   ok: boolean;
   error?: string;
+  /**
+   * 'daily_limit' when a free user has hit their daily capture limit.
+   * 'library_full' when a free user has reached the total library cap.
+   */
+  errorCode?: 'daily_limit' | 'library_full';
   learningId?: string;
 }
 
@@ -294,7 +316,21 @@ export async function saveSkeleton(input: {
     if (todayCount >= FREE_DAILY_CAPTURE_LIMIT) {
       return {
         ok: false,
+        errorCode: 'daily_limit',
         error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
+      };
+    }
+
+    const [{ totalCount }] = await db
+      .select({ totalCount: count() })
+      .from(learnings)
+      .where(eq(learnings.userId, userId));
+
+    if (totalCount >= FREE_LIBRARY_CAP) {
+      return {
+        ok: false,
+        errorCode: 'library_full',
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }

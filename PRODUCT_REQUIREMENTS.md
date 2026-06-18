@@ -370,8 +370,8 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 ## 5. Monetisation — Pro Tier
 
 **Current state:** Razorpay subscriptions live. Feature gates wired:
-- Capture: 5/day free, unlimited Pro
-- Express: 1 free trial run, unlimited Pro
+- Capture: 3/day free + a 50-learning total library cap, unlimited Pro
+- Express: 1 run per calendar month free (resets monthly), unlimited Pro
 - Express proof gate: all users must prove learning (not a Pro feature)
 
 **INR pricing:**
@@ -397,12 +397,13 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 
 | Feature | Free | Pro |
 |---------|------|-----|
-| Captures per day | 5 | Unlimited |
-| Express runs | 1 lifetime trial | Unlimited |
+| Captures per day | 3 | Unlimited |
+| Library size | Up to 50 learnings | Unlimited |
+| Express runs | 1 per calendar month | Unlimited |
 | Video capture | ❌ | ✅ |
 | AI connections (future) | ❌ | ✅ |
 | Email digest | ✅ | ✅ |
-| Library + Review + Teach Back | ✅ | ✅ |
+| Review + Teach Back | ✅ | ✅ |
 
 ---
 

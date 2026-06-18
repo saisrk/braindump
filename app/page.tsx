@@ -182,7 +182,7 @@ export default async function HomePage() {
             </p>
             <span style={{ color: RULE }}>·</span>
             <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
-              <strong style={{ color: INK2 }}>5</strong> captures/day on free tier
+              <strong style={{ color: INK2 }}>3</strong> captures/day on free tier
             </p>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default async function HomePage() {
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
           <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Start free. Upgrade when you&apos;re ready.</h2>
-          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>No credit card needed to start.</p>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>No credit card needed to start. Upgrade any time as your library grows.</p>
         </div>
         <div className="price-grid">
           {/* Free */}
@@ -318,10 +318,10 @@ export default async function HomePage() {
             <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>Free</p>
             <div style={{ marginBottom: '20px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>forever</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['5 captures / day', 'AI summaries & key points', 'Spaced repetition reviews', 'Teach-back loop', '1 free Express generation'].map((f) => (
+              {['3 captures / day', 'Up to 50 learnings', 'AI summaries & key points', 'Spaced repetition reviews', 'Teach-back loop', '1 Express generation / month'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>
@@ -346,7 +346,7 @@ export default async function HomePage() {
               Billed annually ($96/yr) — or $12/mo month-to-month.
             </p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['Unlimited captures', 'Everything in Free', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
+              {['Unlimited captures', 'Unlimited library', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: TERRACOTTA, flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>
@@ -366,7 +366,7 @@ export default async function HomePage() {
             Start building your<br />knowledge library today.
           </h2>
           <p style={{ fontFamily: F, fontSize: '16px', color: INK2, marginBottom: '32px' }}>
-            Free forever. No credit card required.
+            Free to start. No credit card required.
           </p>
           <Link href="/signup">
             <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 36px', borderRadius: '12px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 28px -8px rgba(181,70,47,.55)' }}>

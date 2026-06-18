@@ -17,16 +17,17 @@ const BG = '#f5f2ec';
 const CARD = '#ffffff';
 
 const FREE_FEATURES = [
-  '5 captures per day',
+  '3 captures per day',
+  'Up to 50 learnings',
   'AI summaries & key points',
   'Spaced repetition reviews',
   'Teach-back loop',
-  '1 free Express generation',
+  '1 Express generation / month',
 ];
 
 const PRO_FEATURES = [
   'Unlimited captures',
-  'Everything in Free',
+  'Unlimited library',
   'Unlimited Express generations',
   'Priority AI processing',
   'Early access to new features',
@@ -213,7 +214,7 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
             <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', color: INK2, marginBottom: '12px' }}>Free</p>
             <div style={{ marginBottom: '20px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>₹0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>forever</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
             </div>
             <div style={{ height: '1px', background: RULE, marginBottom: '20px' }} />
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
