@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/login-form';
+
+export const metadata: Metadata = {
+  title: 'Sign in — Braindump',
+  description: 'Sign in to your Braindump library. Continue capturing, reviewing, and retaining what you learn.',
+  robots: { index: false, follow: false },
+};
 
 export default function LoginPage() {
   return (

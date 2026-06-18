@@ -20,6 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brain-dump.co'),
   title: {
     default: 'Braindump — Externalize what you learn',
     template: '%s · Braindump',
@@ -27,7 +28,22 @@ export const metadata: Metadata = {
   description:
     'A knowledge externalization engine. Capture what you learn, prove you understand it, retain it with spaced repetition, and express it when it matters.',
   applicationName: 'Braindump',
-  keywords: ['learning', 'spaced repetition', 'knowledge management', 'teach-back', 'interview prep'],
+  keywords: ['learning', 'spaced repetition', 'knowledge management', 'teach-back', 'interview prep', 'flashcards', 'active recall'],
+  authors: [{ name: 'Braindump', url: 'https://brain-dump.co' }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Braindump',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@braindump_app',
+  },
 };
 
 export const viewport: Viewport = {
@@ -39,6 +55,50 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://brain-dump.co/#organization',
+      name: 'Braindump',
+      url: 'https://brain-dump.co',
+      logo: 'https://brain-dump.co/favicon.ico',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://brain-dump.co/#website',
+      url: 'https://brain-dump.co',
+      name: 'Braindump',
+      publisher: { '@id': 'https://brain-dump.co/#organization' },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Braindump',
+      applicationCategory: 'EducationalApplication',
+      operatingSystem: 'Web',
+      url: 'https://brain-dump.co',
+      description: 'Capture what you read, review with spaced repetition, prove understanding with teach-back and quizzes, and express your knowledge on demand.',
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Free',
+          price: '0',
+          priceCurrency: 'INR',
+          description: '1 capture/day, 30 learnings lifetime, 3 teach-backs/week, 1 Express trial',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Pro',
+          price: '1000',
+          priceCurrency: 'INR',
+          description: '10 captures/day, infinite library, unlimited teach-backs, quizzes, unlimited Express',
+        },
+      ],
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -47,6 +107,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -1,7 +1,7 @@
 import 'server-only';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.AUTH_URL ?? 'https://braindump.app';
-const FROM = 'Braindump <digest@braindump.app>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.AUTH_URL ?? 'https://brain-dump.co';
+const FROM = 'Braindump <digest@brain-dump.co>';
 
 function buildSubject(dueCount: number, streak: number): string {
   const parts: string[] = [];
