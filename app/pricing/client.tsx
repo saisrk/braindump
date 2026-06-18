@@ -17,8 +17,8 @@ const BG = '#f5f2ec';
 const CARD = '#ffffff';
 
 const FREE_FEATURES = [
-  '3 captures per day',
-  'Up to 30 learnings',
+  '1 capture per day',
+  'Up to 30 learnings (lifetime)',
   'AI summaries & key points',
   'Spaced repetition reviews',
   '3 teach-backs per week',
@@ -26,9 +26,10 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  'Unlimited captures',
-  'Unlimited library',
+  '10 captures per day',
+  'Infinite library',
   'Unlimited teach-backs',
+  'Quizzes to test yourself',
   'Unlimited Express generations',
   'Priority AI processing',
   'Early access to new features',

@@ -16,7 +16,8 @@ import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { and, eq, gte, count } from 'drizzle-orm';
 
-const FREE_DAILY_CAPTURE_LIMIT = 3;
+const FREE_DAILY_CAPTURE_LIMIT = 1;
+const PRO_DAILY_CAPTURE_LIMIT = 10;
 const FREE_LIBRARY_CAP = 30;
 
 export type SourceType = 'url' | 'text' | 'file' | 'wizard';
@@ -122,9 +123,10 @@ export interface SaveCaptureResult {
   error?: string;
   /**
    * 'daily_limit' when a free user has hit their daily capture limit.
+   * 'pro_daily_limit' when a Pro user has hit the 10/day capture limit.
    * 'library_full' when a free user has reached the total library cap.
    */
-  errorCode?: 'daily_limit' | 'library_full';
+  errorCode?: 'daily_limit' | 'pro_daily_limit' | 'library_full';
   learningId?: string;
   reviewCount?: number;
 }
@@ -142,28 +144,37 @@ export async function saveCapture(
     return { ok: false, error: 'A title is required.' };
   }
 
-  // Daily quota check for free users
+  // Capture quota checks
   const [profile] = await db
     .select({ isPro: userProfiles.isPro })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
 
-  if (!profile?.isPro) {
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
-    const [{ todayCount }] = await db
-      .select({ todayCount: count() })
-      .from(learnings)
-      .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+  const isPro = profile?.isPro ?? false;
+  const dailyLimit = isPro ? PRO_DAILY_CAPTURE_LIMIT : FREE_DAILY_CAPTURE_LIMIT;
 
-    if (todayCount >= FREE_DAILY_CAPTURE_LIMIT) {
-      return {
-        ok: false,
-        errorCode: 'daily_limit',
-        error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
-      };
-    }
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const [{ todayCount }] = await db
+    .select({ todayCount: count() })
+    .from(learnings)
+    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
 
+  if (todayCount >= dailyLimit) {
+    return isPro
+      ? {
+          ok: false,
+          errorCode: 'pro_daily_limit',
+          error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
+        }
+      : {
+          ok: false,
+          errorCode: 'daily_limit',
+          error: `You've used your ${FREE_DAILY_CAPTURE_LIMIT} capture for today. Upgrade to Pro for up to ${PRO_DAILY_CAPTURE_LIMIT} captures a day.`,
+        };
+  }
+
+  if (!isPro) {
     const [{ totalCount }] = await db
       .select({ totalCount: count() })
       .from(learnings)
@@ -173,7 +184,7 @@ export async function saveCapture(
       return {
         ok: false,
         errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning library limit on the free plan. Upgrade to Pro for an unlimited library.`,
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning lifetime limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }
@@ -282,9 +293,10 @@ export interface SaveSkeletonResult {
   error?: string;
   /**
    * 'daily_limit' when a free user has hit their daily capture limit.
+   * 'pro_daily_limit' when a Pro user has hit the 10/day capture limit.
    * 'library_full' when a free user has reached the total library cap.
    */
-  errorCode?: 'daily_limit' | 'library_full';
+  errorCode?: 'daily_limit' | 'pro_daily_limit' | 'library_full';
   learningId?: string;
 }
 
@@ -299,28 +311,37 @@ export async function saveSkeleton(input: {
 }): Promise<SaveSkeletonResult> {
   const userId = await requireUserId();
 
-  // Daily quota check (same limit as saveCapture)
+  // Capture quota checks (same limits as saveCapture)
   const [profile] = await db
     .select({ isPro: userProfiles.isPro })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
 
-  if (!profile?.isPro) {
-    const todayStart = new Date();
-    todayStart.setUTCHours(0, 0, 0, 0);
-    const [{ todayCount }] = await db
-      .select({ todayCount: count() })
-      .from(learnings)
-      .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+  const isPro = profile?.isPro ?? false;
+  const dailyLimit = isPro ? PRO_DAILY_CAPTURE_LIMIT : FREE_DAILY_CAPTURE_LIMIT;
 
-    if (todayCount >= FREE_DAILY_CAPTURE_LIMIT) {
-      return {
-        ok: false,
-        errorCode: 'daily_limit',
-        error: `You've reached your ${FREE_DAILY_CAPTURE_LIMIT} captures for today. Upgrade to Pro for unlimited captures.`,
-      };
-    }
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const [{ todayCount }] = await db
+    .select({ todayCount: count() })
+    .from(learnings)
+    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
 
+  if (todayCount >= dailyLimit) {
+    return isPro
+      ? {
+          ok: false,
+          errorCode: 'pro_daily_limit',
+          error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
+        }
+      : {
+          ok: false,
+          errorCode: 'daily_limit',
+          error: `You've used your ${FREE_DAILY_CAPTURE_LIMIT} capture for today. Upgrade to Pro for up to ${PRO_DAILY_CAPTURE_LIMIT} captures a day.`,
+        };
+  }
+
+  if (!isPro) {
     const [{ totalCount }] = await db
       .select({ totalCount: count() })
       .from(learnings)
@@ -330,7 +351,7 @@ export async function saveSkeleton(input: {
       return {
         ok: false,
         errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning library limit on the free plan. Upgrade to Pro for an unlimited library.`,
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning lifetime limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }

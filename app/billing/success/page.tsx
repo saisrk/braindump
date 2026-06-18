@@ -37,7 +37,7 @@ export default function BillingSuccessPage() {
         You&apos;re on Pro!
       </h1>
       <p style={{ fontFamily: F, fontSize: '16px', color: '#7c7361', maxWidth: '360px', lineHeight: 1.6, marginBottom: '32px' }}>
-        Unlimited captures, unlimited Express, and everything else — unlocked. Welcome to the full experience.
+        10 captures a day, an infinite library, quizzes, unlimited Express, and everything else — unlocked. Welcome to the full experience.
       </p>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link href="/home">

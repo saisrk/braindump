@@ -4,9 +4,10 @@
 > were drafted in Braindump's editorial voice. Replace any section with your own
 > wording before publishing.
 
-Plan reference: free tier is **3 captures/day**, **up to 50 learnings**, and
-**1 Express generation per month**. Pro is unlimited. Keep launch claims aligned
-with this (no "free forever", no "5 captures/day").
+Plan reference: free tier is **1 capture/day**, **up to 30 learnings (lifetime)**,
+**3 teach-backs/week**, and **1 Express trial (lifetime)**; quizzes are Pro-only.
+Pro is **10 captures/day**, an infinite library, and unlimited everything else.
+Keep launch claims aligned with this (no "free forever", no "unlimited free").
 
 ---
 
@@ -38,8 +39,8 @@ stories, or a LinkedIn bio in seconds.
 The whole thing looks and feels like a library you own — book spines, shelves,
 the works — not another inbox.
 
-**Free to start:** 3 captures a day, up to 50 learnings, and one Express
-generation each month. Go Pro for unlimited everything.
+**Free to start:** 1 capture a day, up to 30 learnings, 3 teach-backs a week,
+and one Express trial. Go Pro for 10 captures/day and unlimited everything else.
 
 Would love your honest feedback — what would make you come back on day 7?
 
@@ -94,8 +95,8 @@ Pick a format — talking points, STAR story, LinkedIn bio — and Braindump tur
 proven learnings into polished output in seconds.
 
 **7/**
-Free to start: 3 captures/day, up to 50 learnings, 1 Express run a month.
-Pro unlocks unlimited everything.
+Free to start: 1 capture/day, up to 30 learnings, 3 teach-backs/week, 1 Express trial.
+Pro unlocks 10 captures/day and unlimited everything else.
 
 Build a library you actually remember 👇
 [link]
@@ -124,8 +125,8 @@ So we built **Braindump** around the full loop:
 It's designed to feel like a personal library you own — not another inbox to
 declare bankruptcy on.
 
-You can start free: 3 captures a day, up to 50 learnings, and one Express
-generation each month. Pro removes the limits when you're ready.
+You can start free: 1 capture a day, up to 30 learnings, 3 teach-backs a week,
+and one Express trial. Pro removes the limits when you're ready.
 
 If you've ever finished a great book and realised a month later you couldn't explain
 a single idea from it — this is for you.

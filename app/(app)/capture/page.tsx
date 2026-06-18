@@ -7,7 +7,7 @@ import { Link2 } from 'lucide-react';
 import { saveSkeleton } from '@/lib/actions/capture';
 
 type Phase = 'form' | 'saving' | 'success';
-type LimitReason = 'daily_limit' | 'library_full';
+type LimitReason = 'daily_limit' | 'pro_daily_limit' | 'library_full';
 
 export default function CapturePage() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function CapturePage() {
       });
 
       if (!result.ok || !result.learningId) {
-        if (result.errorCode === 'daily_limit' || result.errorCode === 'library_full') {
+        if (result.errorCode === 'daily_limit' || result.errorCode === 'pro_daily_limit' || result.errorCode === 'library_full') {
           setLimitReason(result.errorCode);
         } else {
           setError(result.error ?? 'Failed to save. Please try again.');
@@ -144,36 +144,47 @@ export default function CapturePage() {
     );
   }
 
-  // ── Upgrade prompt (free-tier limit reached) ────────────────────
+  // ── Upgrade prompt (capture limit reached) ──────────────────────
   if (limitReason) {
     const isDaily = limitReason === 'daily_limit';
+    const isProDaily = limitReason === 'pro_daily_limit';
+    const heading = isProDaily
+      ? "That's 10 captures today"
+      : isDaily
+        ? "That's your capture for today"
+        : 'Your free library is full';
+    const body = isProDaily
+      ? 'Pro includes up to 10 captures a day — a healthy amount to actually retain. Come back tomorrow to keep building.'
+      : isDaily
+        ? 'The free plan includes 1 capture per day. Upgrade to Pro for up to 10 captures a day — or come back tomorrow.'
+        : 'The free plan holds up to 30 learnings (lifetime). Upgrade to Pro for an unlimited library and keep building.';
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="max-w-md w-full">
             <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(181,70,47,.12)', border: '1.5px solid rgba(181,70,47,.3)', display: 'grid', placeItems: 'center', margin: '0 auto 24px', fontSize: '28px' }}>
-              {isDaily ? '⏳' : '📚'}
+              {isProDaily ? '✅' : isDaily ? '⏳' : '📚'}
             </div>
 
             <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '26px', color: 'var(--color-foreground)', textAlign: 'center', marginBottom: '10px' }}>
-              {isDaily ? "That's your 3 captures for today" : "Your free library is full"}
+              {heading}
             </h2>
             <p style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', textAlign: 'center', lineHeight: 1.6, marginBottom: '28px' }}>
-              {isDaily
-                ? 'The free plan includes 3 captures per day. Upgrade to Pro for unlimited captures — or come back tomorrow.'
-                : 'The free plan holds up to 30 learnings. Upgrade to Pro for an unlimited library and keep building.'}
+              {body}
             </p>
 
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Link
-                href="/pricing"
-                style={{ flex: 1, padding: '13px 20px', borderRadius: '10px', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 6px 16px -6px rgba(181,70,47,.55)' }}
-              >
-                Upgrade to Pro →
-              </Link>
+              {!isProDaily && (
+                <Link
+                  href="/pricing"
+                  style={{ flex: 1, padding: '13px 20px', borderRadius: '10px', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 6px 16px -6px rgba(181,70,47,.55)' }}
+                >
+                  Upgrade to Pro →
+                </Link>
+              )}
               <button
                 onClick={() => { setLimitReason(null); }}
-                style={{ padding: '13px 18px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-muted-foreground)', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+                style={{ flex: isProDaily ? 1 : undefined, padding: '13px 18px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-muted-foreground)', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
               >
                 ← Back
               </button>
