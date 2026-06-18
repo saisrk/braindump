@@ -49,7 +49,7 @@ async function fetchAndExtract(url: string): Promise<{ text: string; title: stri
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BraindumpBot/1.0; +https://braindump.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; BraindumpBot/1.0; +https://brain-dump.co)',
         Accept: 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(12000),

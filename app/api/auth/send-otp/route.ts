@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const { Resend } = await import('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'noreply@braindump.app',
+      from: process.env.EMAIL_FROM ?? 'noreply@brain-dump.co',
       to: normalised,
       subject: `${otp} — your Braindump sign-in code`,
       html: `

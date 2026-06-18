@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Braindump — Remember everything you learn',
     description: 'Capture articles & notes → AI flashcards → spaced repetition → Express your knowledge. The complete learning loop.',
-    url: 'https://braindump.app',
+    url: 'https://brain-dump.co',
     siteName: 'Braindump',
     images: [{ url: '/og', width: 1200, height: 630, alt: 'Braindump — Remember everything you learn' }],
     type: 'website',
