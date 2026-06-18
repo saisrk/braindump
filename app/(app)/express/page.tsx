@@ -1,20 +1,15 @@
 import { requireUserId } from '@/lib/session';
 import { db } from '@/db';
-import { learnings, userProfiles, expressResults } from '@/db/schema';
-import { eq, desc, and, gte, count } from 'drizzle-orm';
+import { learnings, userProfiles } from '@/db/schema';
+import { eq, desc } from 'drizzle-orm';
 import { getExpressHistory } from '@/lib/data/express';
 import { getProvenLearningIds } from '@/lib/data/learnings';
 import { ExpressClient } from './client';
 
-const FREE_MONTHLY_EXPRESS = 1;
-
 export default async function ExpressPage() {
   const userId = await requireUserId();
 
-  const now = new Date();
-  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-
-  const [rows, history, profileRows, monthRows] = await Promise.all([
+  const [rows, history, profileRows] = await Promise.all([
     db
       .select({ id: learnings.id, title: learnings.title, topic: learnings.topic })
       .from(learnings)
@@ -22,19 +17,14 @@ export default async function ExpressPage() {
       .orderBy(desc(learnings.createdAt)),
     getExpressHistory(userId).catch(() => []),
     db
-      .select({ isPro: userProfiles.isPro })
+      .select({ isPro: userProfiles.isPro, expressTrialUsed: userProfiles.expressTrialUsed })
       .from(userProfiles)
       .where(eq(userProfiles.userId, userId)),
-    db
-      .select({ monthCount: count() })
-      .from(expressResults)
-      .where(and(eq(expressResults.userId, userId), gte(expressResults.createdAt, monthStart))),
   ]);
 
   const profile = profileRows[0];
   const isPro = profile?.isPro ?? false;
-  // True once the free monthly Express run has been used (resets next month).
-  const freeRunUsedThisMonth = (monthRows[0]?.monthCount ?? 0) >= FREE_MONTHLY_EXPRESS;
+  const trialUsed = profile?.expressTrialUsed ?? false;
 
   const allIds = rows.map((r: { id: string }) => r.id);
   const provenSet = allIds.length > 0
@@ -47,7 +37,7 @@ export default async function ExpressPage() {
       learnings={rows}
       history={history}
       isPro={isPro}
-      freeRunUsedThisMonth={freeRunUsedThisMonth}
+      trialUsed={trialUsed}
       provenIds={Array.from(provenIds)}
     />
   );

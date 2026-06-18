@@ -321,7 +321,7 @@ export default async function HomePage() {
               <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['3 captures / day', 'Up to 50 learnings', 'AI summaries & key points', 'Spaced repetition reviews', 'Teach-back loop', '1 Express generation / month'].map((f) => (
+              {['3 captures / day', 'Up to 30 learnings', 'AI summaries & key points', 'Spaced repetition reviews', '3 teach-backs / week', '1 Express trial (lifetime)'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>
@@ -346,7 +346,7 @@ export default async function HomePage() {
               Billed annually ($96/yr) — or $12/mo month-to-month.
             </p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['Unlimited captures', 'Unlimited library', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
+              {['Unlimited captures', 'Unlimited library', 'Unlimited teach-backs', 'Unlimited Express generations', 'Priority AI processing', 'Early access to new features'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: TERRACOTTA, flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>

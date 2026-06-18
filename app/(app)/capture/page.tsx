@@ -161,7 +161,7 @@ export default function CapturePage() {
             <p style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', textAlign: 'center', lineHeight: 1.6, marginBottom: '28px' }}>
               {isDaily
                 ? 'The free plan includes 3 captures per day. Upgrade to Pro for unlimited captures — or come back tomorrow.'
-                : 'The free plan holds up to 50 learnings. Upgrade to Pro for an unlimited library and keep building.'}
+                : 'The free plan holds up to 30 learnings. Upgrade to Pro for an unlimited library and keep building.'}
             </p>
 
             <div style={{ display: 'flex', gap: '10px' }}>
