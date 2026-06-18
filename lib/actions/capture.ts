@@ -14,7 +14,7 @@ import { detectVideoUrl } from '@/lib/video-detection';
 import { recordActivity } from '@/lib/data/activity';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
-import { and, eq, gte, count } from 'drizzle-orm';
+import { and, eq, gte, ne, count } from 'drizzle-orm';
 
 const FREE_DAILY_CAPTURE_LIMIT = 1;
 const PRO_DAILY_CAPTURE_LIMIT = 10;
@@ -158,7 +158,7 @@ export async function saveCapture(
   const [{ todayCount }] = await db
     .select({ todayCount: count() })
     .from(learnings)
-    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart), ne(learnings.sourceType, 'sample')));
 
   if (todayCount >= dailyLimit) {
     return isPro
@@ -178,7 +178,7 @@ export async function saveCapture(
     const [{ totalCount }] = await db
       .select({ totalCount: count() })
       .from(learnings)
-      .where(eq(learnings.userId, userId));
+      .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')));
 
     if (totalCount >= FREE_LIBRARY_CAP) {
       return {
@@ -325,7 +325,7 @@ export async function saveSkeleton(input: {
   const [{ todayCount }] = await db
     .select({ todayCount: count() })
     .from(learnings)
-    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart)));
+    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart), ne(learnings.sourceType, 'sample')));
 
   if (todayCount >= dailyLimit) {
     return isPro
@@ -345,7 +345,7 @@ export async function saveSkeleton(input: {
     const [{ totalCount }] = await db
       .select({ totalCount: count() })
       .from(learnings)
-      .where(eq(learnings.userId, userId));
+      .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')));
 
     if (totalCount >= FREE_LIBRARY_CAP) {
       return {
