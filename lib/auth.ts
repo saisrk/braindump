@@ -124,6 +124,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async jwt({ token, user }) {
       if (user?.id) token.sub = user.id;
+      else if (token.sub && hasDb) {
+        // If the JWT points at a user that no longer exists in the DB (e.g. stale
+        // cookie from a different environment), invalidate the token so the user
+        // is forced back to the login page instead of getting a 500.
+        const [u] = await db.select({ id: users.id }).from(users).where(eq(users.id, token.sub));
+        if (!u) return null;
+      }
       return token;
     },
     async session({ session, token }) {
