@@ -228,7 +228,7 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
             ) : (
               <div>
                 <p className="font-semibold text-foreground">Free</p>
-                <p className="text-sm text-muted-foreground mt-0.5 mb-4">3 captures/day · up to 30 learnings · 3 teach-backs/week · 1 Express trial</p>
+                <p className="text-sm text-muted-foreground mt-0.5 mb-4">1 capture/day · up to 30 learnings · 3 teach-backs/week · 1 Express trial</p>
                 <button
                   onClick={() => router.push('/pricing')}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '12px', borderRadius: '10px', border: 'none', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)' }}

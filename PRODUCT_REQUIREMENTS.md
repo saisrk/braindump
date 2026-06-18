@@ -182,7 +182,7 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 
 ### Feature 5: Capture
 
-**Current state:** Full pipeline. Skeleton-first instant save → async enrichment. Daily quota: 5 captures/day for free users enforced in `saveCapture` and `saveSkeleton`.
+**Current state:** Full pipeline. Skeleton-first instant save → async enrichment. Daily quota enforced in `saveCapture` and `saveSkeleton`: 1 capture/day + 30-learning lifetime cap for free, 10 captures/day for Pro.
 
 **Gaps:**
 - [ ] Daily quota shows raw error string, not a designed upgrade prompt
@@ -370,8 +370,10 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 ## 5. Monetisation — Pro Tier
 
 **Current state:** Razorpay subscriptions live. Feature gates wired:
-- Capture: 3/day free + a 50-learning total library cap, unlimited Pro
-- Express: 1 run per calendar month free (resets monthly), unlimited Pro
+- Capture: 1/day free + a 30-learning lifetime library cap; Pro is 10/day + infinite library
+- Teach Back: 3 per ISO week free, unlimited Pro
+- Quiz: Pro-only (free users see an upgrade screen)
+- Express: 1 lifetime trial free, unlimited Pro
 - Express proof gate: all users must prove learning (not a Pro feature)
 
 **INR pricing:**
@@ -397,13 +399,15 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 
 | Feature | Free | Pro |
 |---------|------|-----|
-| Captures per day | 3 | Unlimited |
-| Library size | Up to 50 learnings | Unlimited |
-| Express runs | 1 per calendar month | Unlimited |
+| Captures per day | 1 | 10 |
+| Library size | Up to 30 learnings (lifetime) | Infinite |
+| Teach Back | 3 per week | Unlimited |
+| Quiz | ❌ | ✅ |
+| Express runs | 1 trial (lifetime) | Unlimited |
 | Video capture | ❌ | ✅ |
 | AI connections (future) | ❌ | ✅ |
 | Email digest | ✅ | ✅ |
-| Review + Teach Back | ✅ | ✅ |
+| Review | ✅ | ✅ |
 
 ---
 

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, BookOpen } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, BookOpen, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,7 @@ import { BookLoader } from '@/components/ui/book-loader';
 import { getQuizQuestions, submitQuizAttempt } from '@/lib/actions/quiz';
 import type { QuizQuestion, QuizAnswer } from '@/db/schema';
 
-type Stage = 'loading' | 'cooldown' | 'quiz' | 'submitting' | 'results' | 'error';
+type Stage = 'loading' | 'cooldown' | 'quiz' | 'submitting' | 'results' | 'error' | 'locked';
 
 const MIN_LOADER_MS = 2500;
 
@@ -37,7 +38,9 @@ export default function QuizPage() {
       const delay = Math.max(0, MIN_LOADER_MS - elapsed);
       setTimeout(() => {
         if (!res.ok) {
-          if (res.cooldownHours) {
+          if (res.errorCode === 'pro_required') {
+            setStage('locked');
+          } else if (res.cooldownHours) {
             setCooldownHours(res.cooldownHours);
             setStage('cooldown');
           } else {
@@ -93,6 +96,37 @@ export default function QuizPage() {
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
           <BookLoader variant="quiz" />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Locked (Pro feature) ──────────────────────────────────────────────
+  if (stage === 'locked') {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
+          <PageHeader title="Quiz" className="mb-4" />
+          <div className="max-w-xl mx-auto">
+            <Card className="p-8 text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl grid place-items-center mx-auto" style={{ background: 'rgba(181,70,47,0.12)' }}>
+                <Lock className="h-6 w-6" style={{ color: '#b5462f' }} />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Quizzes are a Pro feature</h2>
+              <p className="text-sm text-muted-foreground">
+                Test yourself with auto-generated multiple-choice and short-answer quizzes — and feed missed questions straight into your review queue. Upgrade to Pro to unlock.
+              </p>
+              <div className="flex gap-3 justify-center pt-1">
+                <Button variant="outline" onClick={() => router.push(`/library/${learningId}`)}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+                <Link href="/pricing">
+                  <Button>Upgrade to Pro</Button>
+                </Link>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     );

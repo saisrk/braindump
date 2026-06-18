@@ -26,6 +26,7 @@ interface Props {
   teachBackHistory: TeachBackRecord[];
   quizHistory: QuizRecord[];
   reviewCardHistory: ReviewCardHistory[];
+  isPro: boolean;
 }
 
 const S = { font: "'Inter', system-ui, sans-serif", serif: "'Spectral', Georgia, serif" };
@@ -250,12 +251,13 @@ interface AnalyticsPanelProps {
   reviewCardHistory: ReviewCardHistory[];
   learningId: string;
   dueCount: number;
+  isPro: boolean;
 }
 
 function AnalyticsPanel({
   reviewItems, teachBacks, confidence, latestQuizScore,
   teachBackHistory, quizHistory, reviewCardHistory,
-  learningId, dueCount,
+  learningId, dueCount, isPro,
 }: AnalyticsPanelProps) {
   const router = useRouter();
   const mastery = Math.round(confidence);
@@ -325,10 +327,10 @@ function AnalyticsPanel({
           ◳ Review{dueCount > 0 ? ` (${dueCount})` : ''}
         </button>
         <button
-          onClick={() => router.push(`/library/${learningId}/quiz`)}
+          onClick={() => router.push(isPro ? `/library/${learningId}/quiz` : '/pricing')}
           style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-card)', color: 'var(--color-foreground)', cursor: 'pointer', fontWeight: 600, fontSize: '13px', fontFamily: S.font }}
         >
-          ? Quiz
+          ? Quiz{!isPro && ' 🔒'}
         </button>
       </div>
     </div>
@@ -347,6 +349,7 @@ export function LearningDetailClient({
   teachBackHistory,
   quizHistory,
   reviewCardHistory,
+  isPro,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ContentTab>('summary');
@@ -395,7 +398,7 @@ export function LearningDetailClient({
   const ACTION_TABS = [
     { label: 'Teach Back', color: '#c79a3e', icon: '▣', textColor: '#3a2c08', onClick: () => router.push(`/teachback?learningId=${learningId}`) },
     { label: 'Review', color: '#8a5072', icon: '◳', textColor: '#fff', badge: dueCount > 0 ? dueCount : null, onClick: () => router.push('/review') },
-    { label: 'Quiz', color: '#c97a4a', icon: '?', textColor: '#fff', onClick: () => router.push(`/library/${learningId}/quiz`) },
+    { label: isPro ? 'Quiz' : 'Quiz 🔒', color: '#c97a4a', icon: '?', textColor: '#fff', onClick: () => router.push(isPro ? `/library/${learningId}/quiz` : '/pricing') },
   ];
 
   return (
@@ -536,6 +539,7 @@ export function LearningDetailClient({
               reviewCardHistory={reviewCardHistory}
               learningId={learningId}
               dueCount={dueCount}
+              isPro={isPro}
             />
           )}
         </div>
