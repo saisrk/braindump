@@ -18,16 +18,17 @@ const CARD = '#ffffff';
 
 const FREE_FEATURES = [
   '3 captures per day',
-  'Up to 50 learnings',
+  'Up to 30 learnings',
   'AI summaries & key points',
   'Spaced repetition reviews',
-  'Teach-back loop',
-  '1 Express generation / month',
+  '3 teach-backs per week',
+  '1 Express trial (lifetime)',
 ];
 
 const PRO_FEATURES = [
   'Unlimited captures',
   'Unlimited library',
+  'Unlimited teach-backs',
   'Unlimited Express generations',
   'Priority AI processing',
   'Early access to new features',

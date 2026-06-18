@@ -3,7 +3,7 @@
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { learnings, expressResults, userProfiles } from '@/db/schema';
-import { and, desc, eq, gte, inArray, count } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { getProvenLearningIds } from '@/lib/data/learnings';
 import {
@@ -13,8 +13,7 @@ import {
 } from '@/lib/ai/express';
 import type { ExpressHistoryItem } from '@/lib/data/express';
 
-/** Free users get this many Express generations per calendar month. */
-const FREE_MONTHLY_EXPRESS = 1;
+// Express is a lifetime-trial feature for free users: 1 run ever, unlimited for Pro.
 
 /**
  * Ensures express_results table exists and has all expected columns.
@@ -101,34 +100,21 @@ export async function runExpress(input: {
 }): Promise<RunExpressResult> {
   const userId = await requireUserId();
 
-  // ── Monthly allowance / Pro gate ─────────────────────────────────
-  // Free users get FREE_MONTHLY_EXPRESS generations per calendar month;
-  // the counter resets at the start of each month. Pro is unlimited.
+  // ── Lifetime trial / Pro gate ─────────────────────────────────────
+  // Free users get exactly 1 Express run ever. Pro is unlimited.
   const [profile] = await db
-    .select({ isPro: userProfiles.isPro })
+    .select({ isPro: userProfiles.isPro, expressTrialUsed: userProfiles.expressTrialUsed })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
 
   const isPro = profile?.isPro ?? false;
 
-  if (!isPro) {
-    const now = new Date();
-    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const [{ monthCount }] = await db
-      .select({ monthCount: count() })
-      .from(expressResults)
-      .where(and(
-        eq(expressResults.userId, userId),
-        gte(expressResults.createdAt, monthStart),
-      ));
-
-    if (monthCount >= FREE_MONTHLY_EXPRESS) {
-      return {
-        ok: false,
-        errorCode: 'pro_required',
-        error: "You've used your free Express run for this month. Upgrade to Pro for unlimited generations, or come back next month.",
-      };
-    }
+  if (!isPro && (profile?.expressTrialUsed ?? false)) {
+    return {
+      ok: false,
+      errorCode: 'pro_required',
+      error: "You've used your one free Express trial. Upgrade to Pro for unlimited generations.",
+    };
   }
 
   const conditions = [eq(learnings.userId, userId)];
@@ -197,8 +183,13 @@ export async function runExpress(input: {
       console.error('[express] failed to save result:', (err as Error).message);
     }
 
-    // The monthly allowance is derived by counting express_results rows for the
-    // current month, so saving the result above is what "consumes" the run.
+    // Mark trial as used for free users
+    if (!isPro) {
+      await db
+        .update(userProfiles)
+        .set({ expressTrialUsed: true })
+        .where(eq(userProfiles.userId, userId));
+    }
 
     return { ok: true, result, usedCount: rows.length, savedId };
   } catch (err) {

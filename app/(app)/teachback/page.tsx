@@ -20,9 +20,11 @@ function TeachbackContent() {
   const [step, setStep] = useState<TeachbackStep>('intro')
   const [explanation, setExplanation] = useState('')
   const [feedback, setFeedback] = useState<TeachBackFeedback | null>(null)
+  const [limitError, setLimitError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
     if (!explanation.trim()) return
+    setLimitError(null)
     setStep('loading')
     const start = Date.now()
     try {
@@ -33,6 +35,9 @@ function TeachbackContent() {
         if (result.ok && result.feedback) {
           setFeedback(result.feedback)
           setStep('result')
+        } else if (result.errorCode === 'pro_required') {
+          setLimitError(result.error ?? 'Weekly teach-back limit reached.')
+          setStep('input')
         } else {
           setStep('input')
         }
@@ -100,6 +105,16 @@ function TeachbackContent() {
 
       {step === 'input' && (
         <div className="max-w-xl">
+          {limitError && (
+            <div className="mb-4 px-4 py-3 rounded-xl flex items-start gap-3" style={{ background: 'rgba(181,70,47,0.10)', border: '1px solid rgba(181,70,47,0.35)' }}>
+              <span className="text-base mt-0.5">🔒</span>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#b5462f' }}>Weekly limit reached</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{limitError}</p>
+                <a href="/pricing" className="text-xs font-semibold mt-2 inline-block" style={{ color: '#b5462f' }}>Upgrade to Pro →</a>
+              </div>
+            </div>
+          )}
           <div className="rounded-xl border border-border bg-card p-6 space-y-4">
             <label className="block font-display font-semibold text-foreground">Your Explanation</label>
             <Textarea

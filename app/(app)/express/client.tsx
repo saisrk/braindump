@@ -220,9 +220,9 @@ function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_prove
         {reason === 'pro_required' ? (
           <>
             <div className="w-12 h-12 rounded-xl grid place-items-center text-2xl mb-4" style={{ background: 'rgba(181,70,47,0.12)' }}>⚡</div>
-            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>You&apos;re out of free runs this month</h3>
+            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>You&apos;ve used your free trial</h3>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              You&apos;ve used your free Express run for this month. Upgrade to Pro for unlimited generations, or come back next month for another free run.
+              Express includes one free lifetime trial. Upgrade to Pro for unlimited generations whenever you&apos;re ready.
             </p>
           </>
         ) : (
@@ -799,13 +799,13 @@ export function ExpressClient({
   learnings,
   history: initialHistory,
   isPro,
-  freeRunUsedThisMonth,
+  trialUsed,
   provenIds: provenIdsArray,
 }: {
   learnings: Learning[];
   history: ExpressHistoryItem[];
   isPro: boolean;
-  freeRunUsedThisMonth: boolean;
+  trialUsed: boolean;
   provenIds: string[];
 }) {
   const [tab, setTab] = useState<'generate' | 'history'>('generate');
@@ -816,7 +816,7 @@ export function ExpressClient({
   const [history, setHistory] = useState<ExpressHistoryItem[]>(initialHistory);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<'pro_required' | 'not_proven' | null>(null);
-  const [localFreeRunUsed, setLocalFreeRunUsed] = useState(freeRunUsedThisMonth);
+  const [localFreeRunUsed, setLocalFreeRunUsed] = useState(trialUsed);
 
   const provenIds = useMemo(() => new Set(provenIdsArray), [provenIdsArray]);
   const formatDef = FORMATS.find(f => f.id === selectedFormat) ?? FORMATS[0];
@@ -884,12 +884,12 @@ export function ExpressClient({
           className="mb-4"
         />
 
-        {/* Monthly free-run / Pro status callout */}
+        {/* Trial / Pro status callout */}
         {!isPro && !localFreeRunUsed && (
           <div className="max-w-2xl mb-4 px-4 py-3 rounded-xl flex items-center gap-3" style={{ background: 'rgba(199,154,62,0.12)', border: '1px solid rgba(199,154,62,0.35)' }}>
             <span className="text-base">⚡</span>
             <p className="text-sm" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: '#c79a3e' }}>
-              <strong>One free Express this month.</strong> Your free run resets at the start of each month — make it count.
+              <strong>One free Express trial.</strong> Try Express once on us — upgrade to Pro for unlimited generations.
             </p>
           </div>
         )}

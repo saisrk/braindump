@@ -17,7 +17,7 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, gte, count } from 'drizzle-orm';
 
 const FREE_DAILY_CAPTURE_LIMIT = 3;
-const FREE_LIBRARY_CAP = 50;
+const FREE_LIBRARY_CAP = 30;
 
 export type SourceType = 'url' | 'text' | 'file' | 'wizard';
 
@@ -173,7 +173,7 @@ export async function saveCapture(
       return {
         ok: false,
         errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning limit on the free plan. Upgrade to Pro for an unlimited library.`,
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning library limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }
@@ -330,7 +330,7 @@ export async function saveSkeleton(input: {
       return {
         ok: false,
         errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning limit on the free plan. Upgrade to Pro for an unlimited library.`,
+        error: `You've reached the ${FREE_LIBRARY_CAP}-learning library limit on the free plan. Upgrade to Pro for an unlimited library.`,
       };
     }
   }
