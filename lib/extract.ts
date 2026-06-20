@@ -53,6 +53,7 @@ async function fetchAndExtract(url: string): Promise<{ text: string; title: stri
         Accept: 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(12000),
+      redirect: 'error',
     });
     if (!res.ok) return null;
 
@@ -148,7 +149,21 @@ function safeHostname(url: string): string {
 export function isValidUrl(value: string): boolean {
   try {
     const u = new URL(value);
-    return u.protocol === 'http:' || u.protocol === 'https:';
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const h = u.hostname.toLowerCase();
+    const BLOCKED = [
+      /^localhost$/,
+      /^127\./,
+      /^0\.0\.0\.0$/,
+      /^169\.254\./,
+      /^10\./,
+      /^172\.(1[6-9]|2\d|3[01])\./,
+      /^192\.168\./,
+      /^::1$/,
+      /^fc[0-9a-f]{2}:/i,
+      /^fd[0-9a-f]{2}:/i,
+    ];
+    return !BLOCKED.some((r) => r.test(h));
   } catch {
     return false;
   }

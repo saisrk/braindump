@@ -37,6 +37,8 @@ export const verificationTokens = pgTable(
     identifier: text('identifier').notNull(),
     token: text('token').notNull(),
     expires: timestamp('expires', { withTimezone: true }).notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );

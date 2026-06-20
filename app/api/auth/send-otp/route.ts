@@ -23,6 +23,18 @@ export async function POST(request: Request) {
 
   const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+  // Rate limit: reject if a token was created within the last 60 seconds.
+  const [existing] = await db
+    .select({ createdAt: verificationTokens.createdAt })
+    .from(verificationTokens)
+    .where(eq(verificationTokens.identifier, normalised));
+  if (existing && Date.now() - existing.createdAt.getTime() < 60_000) {
+    return NextResponse.json(
+      { error: 'Please wait before requesting another code.' },
+      { status: 429 }
+    );
+  }
+
   // Upsert — replace any existing token for this email.
   await db
     .delete(verificationTokens)
