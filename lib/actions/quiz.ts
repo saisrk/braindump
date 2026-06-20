@@ -88,6 +88,13 @@ export async function submitQuizAttempt(input: {
     };
   }
 
+  // Verify ownership.
+  const [learning] = await db
+    .select({ id: learnings.id })
+    .from(learnings)
+    .where(and(eq(learnings.id, input.learningId), eq(learnings.userId, userId)));
+  if (!learning) return { ok: false, error: 'Learning not found.' };
+
   // Score each question
   const gradedAnswers: QuizAnswer[] = await Promise.all(
     input.questions.map(async (q) => {

@@ -30,7 +30,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Code expired. Request a new one.' }, { status: 400 });
   }
 
+  const MAX_ATTEMPTS = 5;
+  if (record.attemptCount >= MAX_ATTEMPTS) {
+    await db.delete(verificationTokens).where(eq(verificationTokens.identifier, normalised));
+    return NextResponse.json(
+      { error: 'Too many attempts. Request a new code.' },
+      { status: 429 }
+    );
+  }
+
   if (record.token !== String(otp).trim()) {
+    await db
+      .update(verificationTokens)
+      .set({ attemptCount: record.attemptCount + 1 })
+      .where(eq(verificationTokens.identifier, normalised));
     return NextResponse.json({ error: 'Incorrect code. Try again.' }, { status: 400 });
   }
 

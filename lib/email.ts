@@ -1,5 +1,14 @@
 import 'server-only';
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.AUTH_URL ?? 'https://brain-dump.co';
 const FROM = 'Braindump <digest@brain-dump.co>';
 
@@ -12,7 +21,7 @@ function buildSubject(dueCount: number, streak: number): string {
 
 function buildHtml(name: string, dueCount: number, streak: number): string {
   const reviewUrl = `${APP_URL}/review`;
-  const greeting = name ? `Hi ${name.split(' ')[0]},` : 'Hi,';
+  const greeting = name ? `Hi ${escapeHtml(name.split(' ')[0])},` : 'Hi,';
 
   return `<!DOCTYPE html>
 <html>

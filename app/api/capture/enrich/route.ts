@@ -1,17 +1,23 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { learnings, reviewItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { analyzeCapture } from '@/lib/actions/capture';
 import { generateReviewItems } from '@/lib/ai/capture';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
+import { getOptionalUserId } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 // Allow up to 60 seconds for AI analysis.
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  const userId = await getOptionalUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let learningId: string | undefined;
   try {
     const body = await request.json();
@@ -22,6 +28,15 @@ export async function POST(request: Request) {
 
     if (!learningId || !content) {
       return NextResponse.json({ error: 'Missing learningId or content' }, { status: 400 });
+    }
+
+    // Verify ownership before doing any work.
+    const [owned] = await db
+      .select({ id: learnings.id })
+      .from(learnings)
+      .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
+    if (!owned) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // Run the full AI analysis.
@@ -35,7 +50,7 @@ export async function POST(request: Request) {
       await db
         .update(learnings)
         .set({ status: 'failed', title: 'Analysis failed — tap to retry' })
-        .where(eq(learnings.id, learningId));
+        .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
       return NextResponse.json({ error: result.error }, { status: 422 });
     }
 
@@ -53,7 +68,7 @@ export async function POST(request: Request) {
         keyPoints: s.keyPoints ?? [],
         status: 'ready',
       })
-      .where(eq(learnings.id, learningId));
+      .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
 
     // Generate review items best-effort.
     try {
@@ -64,22 +79,18 @@ export async function POST(request: Request) {
         sourceContent: result.resolvedContent,
       });
       if (items.length) {
-        // Fetch userId from the learning row (enrich route has no session context)
-        const [lr] = await db.select({ userId: learnings.userId }).from(learnings).where(eq(learnings.id, learningId!));
-        if (lr?.userId) {
-          await db.insert(reviewItems).values(
-            items.map((it) => ({
-              userId: lr.userId,
-              learningId: learningId!,
-              type: it.type,
-              question: it.question,
-              answer: it.answer,
-              dueDate: todayISO(),
-              srInterval: 1,
-              srEase: 2.5,
-            }))
-          );
-        }
+        await db.insert(reviewItems).values(
+          items.map((it) => ({
+            userId,
+            learningId: learningId!,
+            type: it.type,
+            question: it.question,
+            answer: it.answer,
+            dueDate: todayISO(),
+            srInterval: 1,
+            srEase: 2.5,
+          }))
+        );
       }
     } catch (err) {
       console.error('[enrich] generateReviewItems failed:', (err as Error).message);
@@ -96,7 +107,7 @@ export async function POST(request: Request) {
       await db
         .update(learnings)
         .set({ status: 'failed', title: 'Analysis failed — tap to retry' })
-        .where(eq(learnings.id, learningId));
+        .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
     }
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
