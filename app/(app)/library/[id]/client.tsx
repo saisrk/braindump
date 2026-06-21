@@ -255,7 +255,7 @@ interface AnalyticsPanelProps {
 }
 
 function AnalyticsPanel({
-  reviewItems, teachBacks, confidence, latestQuizScore,
+  learning, reviewItems, teachBacks, confidence, latestQuizScore,
   teachBackHistory, quizHistory, reviewCardHistory,
   learningId, dueCount, isPro,
 }: AnalyticsPanelProps) {
@@ -331,6 +331,15 @@ function AnalyticsPanel({
           style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-card)', color: 'var(--color-foreground)', cursor: 'pointer', fontWeight: 600, fontSize: '13px', fontFamily: S.font }}
         >
           ? Quiz{!isPro && ' 🔒'}
+        </button>
+        <button
+          onClick={() => {
+            const text = encodeURIComponent(`Just learned "${learning.title}" on Braindump 🧠\nhttps://brain-dump.co`);
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank', 'noopener');
+          }}
+          style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-card)', color: 'var(--color-foreground)', cursor: 'pointer', fontWeight: 600, fontSize: '13px', fontFamily: S.font }}
+        >
+          Share 𝕏
         </button>
       </div>
     </div>
