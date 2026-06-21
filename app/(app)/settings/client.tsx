@@ -97,6 +97,8 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
   const [portalLoading, setPortalLoading] = useState(false);
   const [difficulty, setDifficulty] = useState<ReviewDifficulty>(initialSettings.reviewDifficulty);
   const [digestEnabled, setDigestEnabled] = useState(initialSettings.dailyDigestEnabled);
+  const [feedback, setFeedback] = useState('');
+  const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const handleLogout = async () => {
     setLogging(true);
@@ -305,8 +307,40 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
             </div>
           </div>
 
+          {/* Feedback */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h3 className="font-display font-semibold text-primary mb-4">Feedback</h3>
+            <textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="What's working? What's broken? Anything you'd love to see?"
+              rows={4}
+              style={{ width: '100%', resize: 'vertical', background: 'var(--color-background)', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '12px', fontSize: '14px', fontFamily: F, color: 'var(--color-foreground)', lineHeight: 1.6, boxSizing: 'border-box' }}
+            />
+            <button
+              onClick={async () => {
+                if (!feedback.trim() || feedbackState === 'sending') return;
+                setFeedbackState('sending');
+                try {
+                  const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: feedback }) });
+                  setFeedbackState(res.ok ? 'sent' : 'error');
+                  if (res.ok) setFeedback('');
+                } catch {
+                  setFeedbackState('error');
+                }
+              }}
+              disabled={!feedback.trim() || feedbackState === 'sending' || feedbackState === 'sent'}
+              style={{ marginTop: '12px', width: '100%', padding: '11px', borderRadius: '10px', border: 'none', background: feedbackState === 'sent' ? '#6f8a5a' : '#b5462f', color: '#fff', fontWeight: 700, fontSize: '14px', fontFamily: F, cursor: !feedback.trim() || feedbackState === 'sending' || feedbackState === 'sent' ? 'not-allowed' : 'pointer', opacity: !feedback.trim() ? 0.5 : 1 }}
+            >
+              {feedbackState === 'sending' ? 'Sending…' : feedbackState === 'sent' ? 'Sent ✓' : feedbackState === 'error' ? 'Failed — try again' : 'Send feedback'}
+            </button>
+          </div>
+
           <div className="rounded-xl border border-border bg-muted/50 p-5">
             <p className="text-sm text-muted-foreground">Braindump v1.0 · Knowledge externalization engine.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              <a href="mailto:founder@brain-dump.co" style={{ color: 'var(--color-muted-foreground)', textDecoration: 'underline' }}>Contact founder@brain-dump.co</a>
+            </p>
           </div>
         </div>
       </div>
