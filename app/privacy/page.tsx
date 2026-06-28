@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <LegalShell title="Privacy Policy" lastUpdated="June 28, 2026">
       <p>
         This Privacy Policy explains how Braindump (&ldquo;Braindump&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;), operated by
-        {' '}<strong>[LEGAL ENTITY NAME]</strong>, collects, uses, and protects your information when you use our website and
+        {' '}<strong>Sai Sreevals Consultancy</strong>, collects, uses, and protects your information when you use our website and
         application at brain-dump.co (the &ldquo;Service&rdquo;). By using the Service, you agree to this policy.
       </p>
 
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
       <h2>11. Contact</h2>
       <p>
         Questions? Reach us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{' '}
-        or <strong>[ADDRESS]</strong>.
+        or <strong>F8 Rani Residency A-Block, Velachery Main road, Sembakkam, Chennai - 73</strong>.
       </p>
     </LegalShell>
   );

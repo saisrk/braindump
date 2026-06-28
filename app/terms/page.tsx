@@ -13,7 +13,7 @@ export default function TermsPage() {
     <LegalShell title="Terms of Service" lastUpdated="June 28, 2026">
       <p>
         These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of Braindump (the &ldquo;Service&rdquo;),
-        operated by <strong>[LEGAL ENTITY NAME]</strong>. By creating an account or using the Service, you agree to these Terms.
+        operated by <strong>Sai Sreevals Consultancy</strong>. By creating an account or using the Service, you agree to these Terms.
         If you do not agree, do not use the Service.
       </p>
 
@@ -80,7 +80,7 @@ export default function TermsPage() {
       <h2>10. Governing law</h2>
       <p>
         These Terms are governed by the laws of India, without regard to conflict-of-law principles. Any disputes will be subject
-        to the exclusive jurisdiction of the courts located in <strong>[CITY, INDIA]</strong>.
+        to the exclusive jurisdiction of the courts located in <strong>Chennai, India</strong>.
       </p>
 
       <h2>11. Changes to these terms</h2>
