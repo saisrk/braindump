@@ -8,6 +8,7 @@ import { useTheme } from 'next-themes';
 import { logout } from '@/lib/actions/auth';
 import { savePreferences, deleteAccount, type UserPreferences, type ReviewDifficulty } from '@/lib/actions/settings';
 import { cancelSubscription } from '@/lib/actions/billing';
+import { CONTACT_EMAIL } from '@/lib/constants';
 
 const F = "'Inter', system-ui, sans-serif";
 const SERIF = "'Spectral', Georgia, serif";
@@ -339,7 +340,11 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
           <div className="rounded-xl border border-border bg-muted/50 p-5">
             <p className="text-sm text-muted-foreground">Braindump v1.0 · Knowledge externalization engine.</p>
             <p className="text-sm text-muted-foreground mt-1">
-              <a href="mailto:founder@brain-dump.co" style={{ color: 'var(--color-muted-foreground)', textDecoration: 'underline' }}>Contact founder@brain-dump.co</a>
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--color-muted-foreground)', textDecoration: 'underline' }}>Contact {CONTACT_EMAIL}</a>
+              {' · '}
+              <a href="/privacy" style={{ color: 'var(--color-muted-foreground)', textDecoration: 'underline' }}>Privacy</a>
+              {' · '}
+              <a href="/terms" style={{ color: 'var(--color-muted-foreground)', textDecoration: 'underline' }}>Terms</a>
             </p>
           </div>
         </div>

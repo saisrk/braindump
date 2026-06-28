@@ -44,7 +44,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@braindump_app',
+    site: '@brain_dump_co',
+    creator: '@brain_dump_co',
     title: 'Braindump — Remember everything you learn',
     description: 'Capture what you learn → AI flashcards → spaced repetition → teach-back.',
   },
