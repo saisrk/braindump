@@ -380,7 +380,11 @@ export default async function HomePage() {
       <footer className="footer-inner" style={{ borderTop: `1px solid ${RULE}`, padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '15px', color: INK }}>Braindump</span>
         <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>Knowledge externalization engine · {new Date().getFullYear()}</p>
-        <div style={{ display: 'flex', gap: '20px' }}>
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+          <Link href="/privacy" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/terms" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>Terms</Link>
+          <Link href="/contact" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>Contact</Link>
+          <a href="https://x.com/brain_dump_co" target="_blank" rel="noopener noreferrer" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>X</a>
           <Link href="/login" style={{ fontFamily: F, fontSize: '13px', color: INK2, textDecoration: 'none' }}>Log in</Link>
           <Link href="/signup" style={{ fontFamily: F, fontSize: '13px', color: TERRACOTTA, fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
         </div>
