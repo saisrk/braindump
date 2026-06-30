@@ -16,13 +16,13 @@ const RULE = '#e6e0d4';
 const BG = '#f5f2ec';
 const CARD = '#ffffff';
 
-const FREE_FEATURES = [
-  '1 capture per day',
-  'Up to 30 learnings (lifetime)',
-  'AI summaries & key points',
+const TRIAL_FEATURES = [
+  'Full access to everything in Pro',
+  'No credit card required',
+  '10 captures per day',
+  'Quizzes, unlimited teach-backs & Express',
   'Spaced repetition reviews',
-  '3 teach-backs per week',
-  '1 Express trial (lifetime)',
+  'Auto-converts to Pro only if you subscribe',
 ];
 
 const PRO_FEATURES = [
@@ -40,6 +40,8 @@ type PlanKey = 'monthly' | 'annual';
 interface PricingClientProps {
   isPro: boolean;
   endsAt: Date | null;
+  entitlement: 'pro' | 'trial' | 'expired';
+  trialDaysLeft: number | null;
 }
 
 // Razorpay types
@@ -63,7 +65,7 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
-export function PricingClient({ isPro, endsAt }: PricingClientProps) {
+export function PricingClient({ isPro, endsAt, entitlement, trialDaysLeft }: PricingClientProps) {
   const router = useRouter();
   const [interval, setInterval] = useState<PlanKey>('annual');
   const [loading, setLoading] = useState<PlanKey | 'cancel' | null>(null);
@@ -170,7 +172,7 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
             Invest in your knowledge
           </h1>
           <p style={{ fontFamily: F, fontSize: '16px', color: INK2, lineHeight: 1.6 }}>
-            Free gets you started. Pro removes every limit.
+            Get 7 days free — full access, no card. Then keep everything with Pro.
           </p>
         </div>
 
@@ -211,28 +213,34 @@ export function PricingClient({ isPro, endsAt }: PricingClientProps) {
         {/* Plan cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
 
-          {/* Free card */}
+          {/* Free trial card */}
           <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
-            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', color: INK2, marginBottom: '12px' }}>Free</p>
+            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', color: INK2, marginBottom: '12px' }}>7-day free trial</p>
             <div style={{ marginBottom: '20px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '40px', color: INK }}>₹0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>for 7 days</span>
             </div>
             <div style={{ height: '1px', background: RULE, marginBottom: '20px' }} />
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {FREE_FEATURES.map((f) => (
+              {TRIAL_FEATURES.map((f) => (
                 <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontFamily: F, fontSize: '14px', color: INK2 }}>
                   <Check style={{ width: '15px', height: '15px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />
                   {f}
                 </li>
               ))}
             </ul>
-            <Link
-              href="/home"
-              style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}
-            >
-              {isPro ? 'Go to home' : 'Continue free'}
-            </Link>
+            {entitlement === 'trial' ? (
+              <div style={{ background: 'rgba(199,154,62,0.12)', border: '1px solid rgba(199,154,62,0.35)', borderRadius: '10px', padding: '11px 14px', textAlign: 'center', fontFamily: F, fontSize: '13px', color: '#a8842f', fontWeight: 600 }}>
+                You&apos;re on a free trial{typeof trialDaysLeft === 'number' && ` · ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left`}
+              </div>
+            ) : (
+              <Link
+                href="/home"
+                style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: isPro ? INK2 : INK, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}
+              >
+                {isPro ? 'Go to home' : 'Start 7-day free trial'}
+              </Link>
+            )}
           </div>
 
           {/* Pro card */}

@@ -309,26 +309,26 @@ export default async function HomePage() {
       <section id="pricing" style={{ padding: '72px 32px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
-          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Start free. Upgrade when you&apos;re ready.</h2>
-          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>No credit card needed to start. Upgrade any time as your library grows.</p>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Try it free for 7 days.</h2>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>Full access, no credit card needed. Subscribe to Pro to keep everything when your trial ends.</p>
         </div>
         <div className="price-grid">
           {/* Free */}
           <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
-            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>Free</p>
+            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>7-day free trial</p>
             <div style={{ marginBottom: '20px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>for 7 days</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['1 capture / day', 'Up to 30 learnings (lifetime)', 'AI summaries & key points', 'Spaced repetition reviews', '3 teach-backs / week', '1 Express trial (lifetime)'].map((f) => (
+              {['Full access to everything in Pro', 'No credit card required', '10 captures / day', 'Quizzes, unlimited teach-backs & Express', 'Spaced repetition reviews', 'Subscribe to keep it after 7 days'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>
               ))}
             </ul>
-            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
-              Get started free
+            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
+              Start 7-day free trial
             </Link>
           </div>
           {/* Pro */}

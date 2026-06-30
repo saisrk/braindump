@@ -35,8 +35,8 @@ function TeachbackContent() {
         if (result.ok && result.feedback) {
           setFeedback(result.feedback)
           setStep('result')
-        } else if (result.errorCode === 'pro_required') {
-          setLimitError(result.error ?? 'Weekly teach-back limit reached.')
+        } else if (result.errorCode === 'trial_expired') {
+          setLimitError(result.error ?? 'Your free trial has ended.')
           setStep('input')
         } else {
           setStep('input')

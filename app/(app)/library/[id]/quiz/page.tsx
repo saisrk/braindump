@@ -38,7 +38,7 @@ export default function QuizPage() {
       const delay = Math.max(0, MIN_LOADER_MS - elapsed);
       setTimeout(() => {
         if (!res.ok) {
-          if (res.errorCode === 'pro_required') {
+          if (res.errorCode === 'trial_expired') {
             setStage('locked');
           } else if (res.cooldownHours) {
             setCooldownHours(res.cooldownHours);
@@ -112,9 +112,9 @@ export default function QuizPage() {
               <div className="w-14 h-14 rounded-2xl grid place-items-center mx-auto" style={{ background: 'rgba(181,70,47,0.12)' }}>
                 <Lock className="h-6 w-6" style={{ color: '#b5462f' }} />
               </div>
-              <h2 className="text-lg font-semibold text-foreground">Quizzes are a Pro feature</h2>
+              <h2 className="text-lg font-semibold text-foreground">Your free trial has ended</h2>
               <p className="text-sm text-muted-foreground">
-                Test yourself with auto-generated multiple-choice and short-answer quizzes — and feed missed questions straight into your review queue. Upgrade to Pro to unlock.
+                Subscribe to Pro to keep testing yourself with auto-generated quizzes — and feed missed questions straight into your review queue.
               </p>
               <div className="flex gap-3 justify-center pt-1">
                 <Button variant="outline" onClick={() => router.push(`/library/${learningId}`)}>

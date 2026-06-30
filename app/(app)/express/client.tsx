@@ -204,7 +204,7 @@ function FormatPicker({
 
 /* ── Upgrade Modal ────────────────────────────────────────────────── */
 
-function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_proven'; onClose: () => void }) {
+function UpgradeModal({ reason, onClose }: { reason: 'trial_expired' | 'not_proven'; onClose: () => void }) {
   const router = useRouter();
   return (
     <div
@@ -217,12 +217,12 @@ function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_prove
         style={{ background: 'var(--color-card)', border: '1.5px solid var(--color-border)', boxShadow: '0 24px 48px -12px rgba(42,38,32,0.4)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {reason === 'pro_required' ? (
+        {reason === 'trial_expired' ? (
           <>
             <div className="w-12 h-12 rounded-xl grid place-items-center text-2xl mb-4" style={{ background: 'rgba(181,70,47,0.12)' }}>⚡</div>
-            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>You&apos;ve used your free trial</h3>
+            <h3 className="font-bold text-xl mb-2 text-foreground" style={{ fontFamily: 'Spectral, Georgia, serif' }}>Your free trial has ended</h3>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Express includes one free lifetime trial. Upgrade to Pro for unlimited generations whenever you&apos;re ready.
+              Subscribe to Pro for unlimited Express generations whenever you&apos;re ready.
             </p>
           </>
         ) : (
@@ -238,7 +238,7 @@ function UpgradeModal({ reason, onClose }: { reason: 'pro_required' | 'not_prove
             </ul>
           </>
         )}
-        {reason === 'pro_required' ? (
+        {reason === 'trial_expired' ? (
           <button
             onClick={() => router.push('/pricing')}
             className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
@@ -798,14 +798,10 @@ function HistoryTab({ history }: { history: ExpressHistoryItem[] }) {
 export function ExpressClient({
   learnings,
   history: initialHistory,
-  isPro,
-  trialUsed,
   provenIds: provenIdsArray,
 }: {
   learnings: Learning[];
   history: ExpressHistoryItem[];
-  isPro: boolean;
-  trialUsed: boolean;
   provenIds: string[];
 }) {
   const [tab, setTab] = useState<'generate' | 'history'>('generate');
@@ -815,8 +811,7 @@ export function ExpressClient({
   const [usedCount, setUsedCount] = useState(0);
   const [history, setHistory] = useState<ExpressHistoryItem[]>(initialHistory);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [upgradeModal, setUpgradeModal] = useState<'pro_required' | 'not_proven' | null>(null);
-  const [localFreeRunUsed, setLocalFreeRunUsed] = useState(trialUsed);
+  const [upgradeModal, setUpgradeModal] = useState<'trial_expired' | 'not_proven' | null>(null);
 
   const provenIds = useMemo(() => new Set(provenIdsArray), [provenIdsArray]);
   const formatDef = FORMATS.find(f => f.id === selectedFormat) ?? FORMATS[0];
@@ -853,12 +848,11 @@ export function ExpressClient({
       setResult(res.result);
       setUsedCount(res.usedCount ?? 0);
       setStep('result');
-      if (!isPro) setLocalFreeRunUsed(true);
       // Refresh history in background so History tab is up to date
       getExpressHistoryAction().then(setHistory);
-    } else if (res.errorCode === 'pro_required' || res.errorCode === 'not_proven') {
+    } else if (res.errorCode === 'trial_expired' || res.errorCode === 'not_proven') {
       setStep('scope');
-      setUpgradeModal(res.errorCode as 'pro_required' | 'not_proven');
+      setUpgradeModal(res.errorCode as 'trial_expired' | 'not_proven');
     } else {
       setStep('scope');
     }
@@ -883,16 +877,6 @@ export function ExpressClient({
           subtitle="Choose a format, pick your source, and get a polished output in seconds."
           className="mb-4"
         />
-
-        {/* Trial / Pro status callout */}
-        {!isPro && !localFreeRunUsed && (
-          <div className="max-w-2xl mb-4 px-4 py-3 rounded-xl flex items-center gap-3" style={{ background: 'rgba(199,154,62,0.12)', border: '1px solid rgba(199,154,62,0.35)' }}>
-            <span className="text-base">⚡</span>
-            <p className="text-sm" style={{ fontFamily: 'Inter, system-ui, sans-serif', color: '#c79a3e' }}>
-              <strong>One free Express trial.</strong> Try Express once on us — upgrade to Pro for unlimited generations.
-            </p>
-          </div>
-        )}
 
         {/* Tab bar */}
         <div className="flex gap-1 mb-6 max-w-2xl p-1 rounded-xl" style={{ background: 'var(--color-muted)', width: 'fit-content' }}>

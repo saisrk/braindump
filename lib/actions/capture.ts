@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { learnings, reviewItems, userProfiles } from '@/db/schema';
+import { learnings, reviewItems } from '@/db/schema';
 import { requireUserId, getOptionalUserId } from '@/lib/session';
 import {
   summarizeCapture,
@@ -12,13 +12,13 @@ import { extractFromUrl, isValidUrl } from '@/lib/extract';
 import { analyzeBlogContent, analyzeVideoMetadata } from '@/lib/ai/content-analysis';
 import { detectVideoUrl } from '@/lib/video-detection';
 import { recordActivity } from '@/lib/data/activity';
+import { getEntitlement } from '@/lib/entitlements';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { and, eq, gte, ne, count } from 'drizzle-orm';
 
-const FREE_DAILY_CAPTURE_LIMIT = 1;
+// Trial and Pro users share the same generous limits; expired users are blocked.
 const PRO_DAILY_CAPTURE_LIMIT = 10;
-const FREE_LIBRARY_CAP = 30;
 
 export type SourceType = 'url' | 'text' | 'file' | 'wizard';
 
@@ -122,11 +122,10 @@ export interface SaveCaptureResult {
   ok: boolean;
   error?: string;
   /**
-   * 'daily_limit' when a free user has hit their daily capture limit.
-   * 'pro_daily_limit' when a Pro user has hit the 10/day capture limit.
-   * 'library_full' when a free user has reached the total library cap.
+   * 'trial_expired' when the user's free trial has ended and they have no subscription.
+   * 'pro_daily_limit' when the user has hit the 10/day capture limit.
    */
-  errorCode?: 'daily_limit' | 'pro_daily_limit' | 'library_full';
+  errorCode?: 'trial_expired' | 'pro_daily_limit';
   learningId?: string;
   reviewCount?: number;
 }
@@ -144,14 +143,15 @@ export async function saveCapture(
     return { ok: false, error: 'A title is required.' };
   }
 
-  // Capture quota checks
-  const [profile] = await db
-    .select({ isPro: userProfiles.isPro })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId));
-
-  const isPro = profile?.isPro ?? false;
-  const dailyLimit = isPro ? PRO_DAILY_CAPTURE_LIMIT : FREE_DAILY_CAPTURE_LIMIT;
+  // Access gate: trial or Pro may capture; expired users are paywalled.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
+    return {
+      ok: false,
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro to keep capturing.',
+    };
+  }
 
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
@@ -160,33 +160,12 @@ export async function saveCapture(
     .from(learnings)
     .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart), ne(learnings.sourceType, 'sample')));
 
-  if (todayCount >= dailyLimit) {
-    return isPro
-      ? {
-          ok: false,
-          errorCode: 'pro_daily_limit',
-          error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
-        }
-      : {
-          ok: false,
-          errorCode: 'daily_limit',
-          error: `You've used your ${FREE_DAILY_CAPTURE_LIMIT} capture for today. Upgrade to Pro for up to ${PRO_DAILY_CAPTURE_LIMIT} captures a day.`,
-        };
-  }
-
-  if (!isPro) {
-    const [{ totalCount }] = await db
-      .select({ totalCount: count() })
-      .from(learnings)
-      .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')));
-
-    if (totalCount >= FREE_LIBRARY_CAP) {
-      return {
-        ok: false,
-        errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning lifetime limit on the free plan. Upgrade to Pro for an unlimited library.`,
-      };
-    }
+  if (todayCount >= PRO_DAILY_CAPTURE_LIMIT) {
+    return {
+      ok: false,
+      errorCode: 'pro_daily_limit',
+      error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
+    };
   }
 
   try {
@@ -292,11 +271,10 @@ export interface SaveSkeletonResult {
   ok: boolean;
   error?: string;
   /**
-   * 'daily_limit' when a free user has hit their daily capture limit.
-   * 'pro_daily_limit' when a Pro user has hit the 10/day capture limit.
-   * 'library_full' when a free user has reached the total library cap.
+   * 'trial_expired' when the user's free trial has ended and they have no subscription.
+   * 'pro_daily_limit' when the user has hit the 10/day capture limit.
    */
-  errorCode?: 'daily_limit' | 'pro_daily_limit' | 'library_full';
+  errorCode?: 'trial_expired' | 'pro_daily_limit';
   learningId?: string;
 }
 
@@ -311,14 +289,15 @@ export async function saveSkeleton(input: {
 }): Promise<SaveSkeletonResult> {
   const userId = await requireUserId();
 
-  // Capture quota checks (same limits as saveCapture)
-  const [profile] = await db
-    .select({ isPro: userProfiles.isPro })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId));
-
-  const isPro = profile?.isPro ?? false;
-  const dailyLimit = isPro ? PRO_DAILY_CAPTURE_LIMIT : FREE_DAILY_CAPTURE_LIMIT;
+  // Access gate: trial or Pro may capture; expired users are paywalled.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
+    return {
+      ok: false,
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro to keep capturing.',
+    };
+  }
 
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
@@ -327,33 +306,12 @@ export async function saveSkeleton(input: {
     .from(learnings)
     .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart), ne(learnings.sourceType, 'sample')));
 
-  if (todayCount >= dailyLimit) {
-    return isPro
-      ? {
-          ok: false,
-          errorCode: 'pro_daily_limit',
-          error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
-        }
-      : {
-          ok: false,
-          errorCode: 'daily_limit',
-          error: `You've used your ${FREE_DAILY_CAPTURE_LIMIT} capture for today. Upgrade to Pro for up to ${PRO_DAILY_CAPTURE_LIMIT} captures a day.`,
-        };
-  }
-
-  if (!isPro) {
-    const [{ totalCount }] = await db
-      .select({ totalCount: count() })
-      .from(learnings)
-      .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')));
-
-    if (totalCount >= FREE_LIBRARY_CAP) {
-      return {
-        ok: false,
-        errorCode: 'library_full',
-        error: `You've reached the ${FREE_LIBRARY_CAP}-learning lifetime limit on the free plan. Upgrade to Pro for an unlimited library.`,
-      };
-    }
+  if (todayCount >= PRO_DAILY_CAPTURE_LIMIT) {
+    return {
+      ok: false,
+      errorCode: 'pro_daily_limit',
+      error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
+    };
   }
 
   try {

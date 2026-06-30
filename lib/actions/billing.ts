@@ -5,6 +5,7 @@ import { users, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { razorpay, verifySubscriptionSignature, PLANS, type PlanKey } from '@/lib/razorpay';
+import { entitlementInfo, type Entitlement } from '@/lib/entitlements';
 
 export async function createSubscription(plan: PlanKey): Promise<{
   subscriptionId: string;
@@ -88,6 +89,9 @@ export async function getSubscriptionInfo(): Promise<{
   isPro: boolean;
   endsAt: Date | null;
   subscriptionId: string | null;
+  entitlement: Entitlement;
+  trialEndsAt: Date | null;
+  trialDaysLeft: number | null;
 }> {
   const userId = await requireUserId();
 
@@ -95,14 +99,24 @@ export async function getSubscriptionInfo(): Promise<{
     .select({
       isPro: userProfiles.isPro,
       proSubscriptionEndsAt: userProfiles.proSubscriptionEndsAt,
+      proTrialEndsAt: userProfiles.proTrialEndsAt,
       stripeSubscriptionId: userProfiles.stripeSubscriptionId,
     })
     .from(userProfiles)
     .where(eq(userProfiles.userId, userId));
 
+  const info = entitlementInfo({
+    isPro: profile?.isPro ?? false,
+    proSubscriptionEndsAt: profile?.proSubscriptionEndsAt ?? null,
+    proTrialEndsAt: profile?.proTrialEndsAt ?? null,
+  });
+
   return {
     isPro: profile?.isPro ?? false,
     endsAt: profile?.proSubscriptionEndsAt ?? null,
     subscriptionId: profile?.stripeSubscriptionId ?? null,
+    entitlement: info.entitlement,
+    trialEndsAt: info.trialEndsAt,
+    trialDaysLeft: info.trialDaysLeft,
   };
 }

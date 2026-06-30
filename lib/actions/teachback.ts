@@ -1,18 +1,17 @@
 'use server';
 
 import { db } from '@/db';
-import { learnings, teachBacks, userProfiles } from '@/db/schema';
-import { and, eq, gte, count } from 'drizzle-orm';
+import { learnings, teachBacks } from '@/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
+import { getEntitlement } from '@/lib/entitlements';
 import { gradeTeachBack, type TeachBackFeedback } from '@/lib/ai/teachback';
 import { revalidatePath } from 'next/cache';
-
-const FREE_WEEKLY_TEACHBACK = 3;
 
 export interface TeachBackResult {
   ok: boolean;
   error?: string;
-  errorCode?: 'pro_required';
+  errorCode?: 'trial_expired';
   feedback?: TeachBackFeedback;
 }
 
@@ -26,31 +25,14 @@ export async function submitTeachBack(input: {
     return { ok: false, error: 'Write a little more so we can grade it fairly.' };
   }
 
-  // Weekly quota check for free users
-  const [profile] = await db
-    .select({ isPro: userProfiles.isPro })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId));
-
-  if (!profile?.isPro) {
-    // ISO week: Monday 00:00 UTC
-    const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // 0=Sun, 1=Mon ... 6=Sat
-    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysFromMonday));
-
-    const [{ weekCount }] = await db
-      .select({ weekCount: count() })
-      .from(teachBacks)
-      .where(and(eq(teachBacks.userId, userId), gte(teachBacks.createdAt, weekStart)));
-
-    if (weekCount >= FREE_WEEKLY_TEACHBACK) {
-      return {
-        ok: false,
-        errorCode: 'pro_required',
-        error: `You've used all ${FREE_WEEKLY_TEACHBACK} free teach-backs this week. Upgrade to Pro for unlimited grading.`,
-      };
-    }
+  // Access gate: trial or Pro get unlimited grading; expired users are paywalled.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
+    return {
+      ok: false,
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro for unlimited teach-back grading.',
+    };
   }
 
   const [learning] = await db

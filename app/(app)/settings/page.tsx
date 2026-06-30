@@ -12,6 +12,8 @@ export default async function SettingsPage() {
       initialSettings={settings}
       isPro={subscription.isPro}
       subscriptionEndsAt={subscription.endsAt}
+      entitlement={subscription.entitlement}
+      trialDaysLeft={subscription.trialDaysLeft}
     />
   );
 }

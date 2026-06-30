@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       <ul>
         <li><strong>Anthropic</strong> — to analyze captured content and generate summaries, flashcards, and quizzes.</li>
         <li><strong>Resend</strong> — to send transactional emails (sign-in codes, daily digests, support replies).</li>
-        <li><strong>Stripe</strong> — to process Pro subscription payments.</li>
+        <li><strong>Razorpay</strong> — to process Pro subscription payments.</li>
         <li><strong>Vercel</strong> — for hosting and privacy-friendly usage analytics.</li>
         <li><strong>Our database provider</strong> — to securely store your account and content.</li>
       </ul>

@@ -1,9 +1,10 @@
 'use server';
 
 import { db } from '@/db';
-import { quizAttempts, reviewItems, learnings, userProfiles } from '@/db/schema';
+import { quizAttempts, reviewItems, learnings } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
+import { getEntitlement } from '@/lib/entitlements';
 import { generateQuiz, gradeOneliner } from '@/lib/ai/quiz';
 import { getLatestQuizAttempt, cooldownHoursRemaining } from '@/lib/data/quiz';
 import { todayISO } from '@/lib/utils';
@@ -13,7 +14,7 @@ import type { QuizQuestion, QuizAnswer } from '@/db/schema';
 export interface GenerateQuizResult {
   ok: boolean;
   error?: string;
-  errorCode?: 'pro_required';
+  errorCode?: 'trial_expired';
   questions?: QuizQuestion[];
   cooldownHours?: number;
 }
@@ -21,31 +22,23 @@ export interface GenerateQuizResult {
 export interface SubmitQuizResult {
   ok: boolean;
   error?: string;
-  errorCode?: 'pro_required';
+  errorCode?: 'trial_expired';
   score?: number;
   answers?: QuizAnswer[];
   reviewItemsAdded?: number;
-}
-
-/** Quizzes are a Pro-only feature. Returns true if the user may take quizzes. */
-async function userIsPro(userId: string): Promise<boolean> {
-  const [profile] = await db
-    .select({ isPro: userProfiles.isPro })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId));
-  return profile?.isPro ?? false;
 }
 
 /** Returns quiz questions for a learning. Respects 24h cooldown. */
 export async function getQuizQuestions(learningId: string): Promise<GenerateQuizResult> {
   const userId = await requireUserId();
 
-  // Quizzes are a Pro-only feature.
-  if (!(await userIsPro(userId))) {
+  // Quizzes require an active trial or subscription.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
     return {
       ok: false,
-      errorCode: 'pro_required',
-      error: 'Quizzes are a Pro feature. Upgrade to test yourself with auto-generated quizzes.',
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro to keep taking quizzes.',
     };
   }
 
@@ -79,12 +72,13 @@ export async function submitQuizAttempt(input: {
 }): Promise<SubmitQuizResult> {
   const userId = await requireUserId();
 
-  // Quizzes are a Pro-only feature.
-  if (!(await userIsPro(userId))) {
+  // Quizzes require an active trial or subscription.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
     return {
       ok: false,
-      errorCode: 'pro_required',
-      error: 'Quizzes are a Pro feature. Upgrade to test yourself with auto-generated quizzes.',
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro to keep taking quizzes.',
     };
   }
 
