@@ -26,7 +26,7 @@ interface Props {
   teachBackHistory: TeachBackRecord[];
   quizHistory: QuizRecord[];
   reviewCardHistory: ReviewCardHistory[];
-  isPro: boolean;
+  hasAccess: boolean;
 }
 
 const S = { font: "'Inter', system-ui, sans-serif", serif: "'Spectral', Georgia, serif" };
@@ -251,13 +251,13 @@ interface AnalyticsPanelProps {
   reviewCardHistory: ReviewCardHistory[];
   learningId: string;
   dueCount: number;
-  isPro: boolean;
+  hasAccess: boolean;
 }
 
 function AnalyticsPanel({
   learning, reviewItems, teachBacks, confidence, latestQuizScore,
   teachBackHistory, quizHistory, reviewCardHistory,
-  learningId, dueCount, isPro,
+  learningId, dueCount, hasAccess,
 }: AnalyticsPanelProps) {
   const router = useRouter();
   const mastery = Math.round(confidence);
@@ -327,10 +327,10 @@ function AnalyticsPanel({
           ◳ Review{dueCount > 0 ? ` (${dueCount})` : ''}
         </button>
         <button
-          onClick={() => router.push(isPro ? `/library/${learningId}/quiz` : '/pricing')}
+          onClick={() => router.push(hasAccess ? `/library/${learningId}/quiz` : '/pricing')}
           style={{ flex: 1, padding: '13px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-card)', color: 'var(--color-foreground)', cursor: 'pointer', fontWeight: 600, fontSize: '13px', fontFamily: S.font }}
         >
-          ? Quiz{!isPro && ' 🔒'}
+          ? Quiz{!hasAccess && ' 🔒'}
         </button>
         <button
           onClick={() => {
@@ -358,7 +358,7 @@ export function LearningDetailClient({
   teachBackHistory,
   quizHistory,
   reviewCardHistory,
-  isPro,
+  hasAccess,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ContentTab>('summary');
@@ -407,7 +407,7 @@ export function LearningDetailClient({
   const ACTION_TABS = [
     { label: 'Teach Back', color: '#c79a3e', icon: '▣', textColor: '#3a2c08', onClick: () => router.push(`/teachback?learningId=${learningId}`) },
     { label: 'Review', color: '#8a5072', icon: '◳', textColor: '#fff', badge: dueCount > 0 ? dueCount : null, onClick: () => router.push('/review') },
-    { label: isPro ? 'Quiz' : 'Quiz 🔒', color: '#c97a4a', icon: '?', textColor: '#fff', onClick: () => router.push(isPro ? `/library/${learningId}/quiz` : '/pricing') },
+    { label: hasAccess ? 'Quiz' : 'Quiz 🔒', color: '#c97a4a', icon: '?', textColor: '#fff', onClick: () => router.push(hasAccess ? `/library/${learningId}/quiz` : '/pricing') },
   ];
 
   return (
@@ -548,7 +548,7 @@ export function LearningDetailClient({
               reviewCardHistory={reviewCardHistory}
               learningId={learningId}
               dueCount={dueCount}
-              isPro={isPro}
+              hasAccess={hasAccess}
             />
           )}
         </div>

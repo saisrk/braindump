@@ -87,10 +87,10 @@ const jsonLd = {
       offers: [
         {
           '@type': 'Offer',
-          name: 'Free',
+          name: '7-day free trial',
           price: '0',
           priceCurrency: 'INR',
-          description: '1 capture/day, 30 learnings lifetime, 3 teach-backs/week, 1 Express trial',
+          description: '7-day free trial with full access to all Pro features — no credit card required',
         },
         {
           '@type': 'Offer',

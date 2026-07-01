@@ -7,7 +7,7 @@ import { auth } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: 'Braindump — Remember everything you learn',
-  description: 'Capture an article or note, get AI flashcards in seconds, review with spaced repetition, and turn your knowledge into talking points or interview stories. Free to start.',
+  description: 'Capture an article or note, get AI flashcards in seconds, review with spaced repetition, and turn your knowledge into talking points or interview stories. Start with a 7-day free trial.',
   openGraph: {
     title: 'Braindump — Remember everything you learn',
     description: 'Capture articles & notes → AI flashcards → spaced repetition → Express your knowledge. The complete learning loop.',
@@ -134,7 +134,7 @@ export default async function HomePage() {
               <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup">
                 <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
-                  Get started free
+                  Start Free Trial
                 </button>
               </Link>
             </>
@@ -167,7 +167,7 @@ export default async function HomePage() {
               <>
                 <Link href="/signup">
                   <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
-                    Start for free <ArrowRight style={{ width: '16px', height: '16px' }} />
+                    Start Free Trial <ArrowRight style={{ width: '16px', height: '16px' }} />
                   </button>
                 </Link>
                 <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 24px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '15px', textDecoration: 'none' }}>
@@ -178,11 +178,7 @@ export default async function HomePage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
-              <strong style={{ color: INK2 }}>Free</strong> · No credit card needed
-            </p>
-            <span style={{ color: RULE }}>·</span>
-            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
-              <strong style={{ color: INK2 }}>1</strong> capture/day on free tier
+              <strong style={{ color: INK2 }}>7-day free trial</strong> · No credit card needed
             </p>
           </div>
         </div>
@@ -309,26 +305,26 @@ export default async function HomePage() {
       <section id="pricing" style={{ padding: '72px 32px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
-          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Start free. Upgrade when you&apos;re ready.</h2>
-          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>No credit card needed to start. Upgrade any time as your library grows.</p>
+          <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Try it free for 7 days.</h2>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>Full access, no credit card needed. Subscribe to Pro to keep everything when your trial ends.</p>
         </div>
         <div className="price-grid">
           {/* Free */}
           <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
-            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>Free</p>
+            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>7-day free trial</p>
             <div style={{ marginBottom: '20px' }}>
               <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>to start</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>for 7 days</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['1 capture / day', 'Up to 30 learnings (lifetime)', 'AI summaries & key points', 'Spaced repetition reviews', '3 teach-backs / week', '1 Express trial (lifetime)'].map((f) => (
+              {['Full access to everything in Pro', 'No credit card required', '10 captures / day', 'Quizzes, unlimited teach-backs & Express', 'Spaced repetition reviews', 'Subscribe to keep it after 7 days'].map((f) => (
                 <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
                   <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
                 </li>
               ))}
             </ul>
-            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
-              Get started free
+            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
+              Start 7-day free trial
             </Link>
           </div>
           {/* Pro */}
@@ -353,7 +349,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '14px', textDecoration: 'none', textAlign: 'center', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)' }}>
-              Start free, upgrade anytime
+              Start Free Trial
             </Link>
           </div>
         </div>
@@ -366,11 +362,11 @@ export default async function HomePage() {
             Start building your<br />knowledge library today.
           </h2>
           <p style={{ fontFamily: F, fontSize: '16px', color: INK2, marginBottom: '32px' }}>
-            Free to start. No credit card required.
+            7-day free trial. No credit card required.
           </p>
           <Link href="/signup">
             <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 36px', borderRadius: '12px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 28px -8px rgba(181,70,47,.55)' }}>
-              Get started — it&apos;s free <ArrowRight style={{ width: '18px', height: '18px' }} />
+              Start Free Trial <ArrowRight style={{ width: '18px', height: '18px' }} />
             </button>
           </Link>
         </div>

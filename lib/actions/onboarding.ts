@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { todayISO } from '@/lib/utils';
 import { redirect } from 'next/navigation';
+import { sendWelcomeEmail } from '@/lib/emails/welcome';
 
 // Starter learnings seeded per topic so new users land in a non-empty app.
 const SEED_LEARNINGS: Record<string, { title: string; summary: string; topic: string; keyPoints: string[] }> = {
@@ -140,6 +141,8 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
 
   if (seeds.length === 0) seeds.push(FALLBACK_LEARNING);
 
+  let firstLearningId: string | null = null;
+
   for (const seed of seeds) {
     const [learning] = await db
       .insert(learnings)
@@ -155,6 +158,8 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
         isAiGenerated: true,
       })
       .returning({ id: learnings.id });
+
+    firstLearningId ??= learning.id;
 
     // Create two review items per seed learning.
     await db.insert(reviewItems).values([
@@ -179,6 +184,16 @@ export async function completeOnboarding(name: string, goals: string[]): Promise
         srEase: 2.5,
       },
     ]);
+  }
+
+  try {
+    const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId));
+    if (user?.email) {
+      await sendWelcomeEmail(userId, user.email, name, firstLearningId);
+    }
+  } catch (err) {
+    // Never block onboarding on an email failure.
+    console.error('[onboarding] Failed to send welcome email', err);
   }
 
   redirect('/home');

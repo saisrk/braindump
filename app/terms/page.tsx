@@ -46,10 +46,11 @@ export default function TermsPage() {
 
       <h2>5. Subscriptions &amp; billing</h2>
       <ul>
-        <li><strong>Free plan:</strong> includes a limited number of captures and learnings as described on our pricing page.</li>
-        <li><strong>Pro plan:</strong> unlocks higher limits, quizzes, and additional features for a recurring fee.</li>
-        <li>Paid subscriptions are billed through Stripe and renew automatically until cancelled.</li>
-        <li>You may cancel any time from Settings; access continues until the end of the current billing period. Refunds are handled on a case-by-case basis&mdash;contact us.</li>
+        <li><strong>Free trial:</strong> new accounts receive a 7-day free trial with full access to Pro features. No credit card is required to start, and the trial does not automatically charge you.</li>
+        <li><strong>After the trial:</strong> access to the Service ends when the trial expires unless you subscribe to a Pro plan.</li>
+        <li><strong>Pro plan:</strong> a recurring subscription (billed monthly or annually) that unlocks continued full access.</li>
+        <li>Paid subscriptions are billed through Razorpay and renew automatically until cancelled.</li>
+        <li>You may cancel any time from Settings; access continues until the end of the current billing period. Cancelling during the free trial costs nothing. Refunds are handled on a case-by-case basis&mdash;contact us.</li>
       </ul>
 
       <h2>6. AI-generated content</h2>

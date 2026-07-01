@@ -2,9 +2,7 @@ import { redirect } from 'next/navigation';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getLearning } from '@/lib/data/learnings';
 import { requireUserId } from '@/lib/session';
-import { db } from '@/db';
-import { userProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { getEntitlement } from '@/lib/entitlements';
 import { getLatestQuizAttempt } from '@/lib/data/quiz';
 import { getTeachBackHistory, getQuizHistory, getReviewCardHistory } from '@/lib/data/history';
 import { LearningDetailClient } from './client';
@@ -23,15 +21,15 @@ export default async function LearningDetailPage({
 
     const { learning, reviewItems, teachBacks, confidence } = result;
 
-    const [latestQuiz, teachBackHistory, quizHistory, reviewCardHistory, profileRows] = await Promise.all([
+    const [latestQuiz, teachBackHistory, quizHistory, reviewCardHistory, entitlement] = await Promise.all([
       getLatestQuizAttempt(userId, id),
       getTeachBackHistory(userId, id),
       getQuizHistory(userId, id),
       getReviewCardHistory(userId, id),
-      db.select({ isPro: userProfiles.isPro }).from(userProfiles).where(eq(userProfiles.userId, userId)),
+      getEntitlement(userId),
     ]);
 
-    const isPro = profileRows[0]?.isPro ?? false;
+    const hasAccess = entitlement.hasAccess;
 
     return (
       <div className="flex flex-col h-full">
@@ -46,7 +44,7 @@ export default async function LearningDetailPage({
             teachBackHistory={teachBackHistory}
             quizHistory={quizHistory}
             reviewCardHistory={reviewCardHistory}
-            isPro={isPro}
+            hasAccess={hasAccess}
           />
         </div>
       </div>

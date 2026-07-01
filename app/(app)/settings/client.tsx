@@ -86,9 +86,11 @@ interface Props {
   initialSettings: UserPreferences;
   isPro: boolean;
   subscriptionEndsAt: Date | null;
+  entitlement: 'pro' | 'trial' | 'expired';
+  trialDaysLeft: number | null;
 }
 
-export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: Props) {
+export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, entitlement, trialDaysLeft }: Props) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [logging, setLogging] = useState(false);
@@ -98,6 +100,9 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
   const [portalLoading, setPortalLoading] = useState(false);
   const [difficulty, setDifficulty] = useState<ReviewDifficulty>(initialSettings.reviewDifficulty);
   const [digestEnabled, setDigestEnabled] = useState(initialSettings.dailyDigestEnabled);
+  const [trialEndedEmailEnabled, setTrialEndedEmailEnabled] = useState(initialSettings.trialEndedEmailEnabled);
+  const [weeklyReviewEmailEnabled, setWeeklyReviewEmailEnabled] = useState(initialSettings.weeklyReviewEmailEnabled);
+  const [featureNudgeEmailEnabled, setFeatureNudgeEmailEnabled] = useState(initialSettings.featureNudgeEmailEnabled);
   const [feedback, setFeedback] = useState('');
   const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -124,6 +129,27 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
     setDigestEnabled(v);
     setSaving(true);
     await savePreferences({ dailyDigestEnabled: v });
+    setSaving(false);
+  };
+
+  const handleTrialEndedToggle = async (v: boolean) => {
+    setTrialEndedEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ trialEndedEmailEnabled: v });
+    setSaving(false);
+  };
+
+  const handleWeeklyReviewToggle = async (v: boolean) => {
+    setWeeklyReviewEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ weeklyReviewEmailEnabled: v });
+    setSaving(false);
+  };
+
+  const handleFeatureNudgeToggle = async (v: boolean) => {
+    setFeatureNudgeEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ featureNudgeEmailEnabled: v });
     setSaving(false);
   };
 
@@ -230,14 +256,20 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
               </div>
             ) : (
               <div>
-                <p className="font-semibold text-foreground">Free</p>
-                <p className="text-sm text-muted-foreground mt-0.5 mb-4">1 capture/day · up to 30 learnings · 3 teach-backs/week · 1 Express trial</p>
+                <p className="font-semibold text-foreground">
+                  {entitlement === 'trial' ? 'Free trial' : 'Trial ended'}
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5 mb-4">
+                  {entitlement === 'trial'
+                    ? `Full access${typeof trialDaysLeft === 'number' ? ` · ${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left` : ''} · subscribe to keep it`
+                    : 'Your 7-day free trial has ended. Subscribe to restore full access.'}
+                </p>
                 <button
                   onClick={() => router.push('/pricing')}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '12px', borderRadius: '10px', border: 'none', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)' }}
                 >
                   <Zap style={{ width: '15px', height: '15px' }} />
-                  Upgrade to Pro — from $8/mo
+                  {entitlement === 'trial' ? 'Upgrade to Pro' : 'Subscribe to Pro'}
                 </button>
               </div>
             )}
@@ -270,6 +302,27 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt }: P
                   </p>
                 </div>
                 <Toggle checked={digestEnabled} onChange={handleDigestToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Trial Ending Reminder</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Email when your free trial ends</p>
+                </div>
+                <Toggle checked={trialEndedEmailEnabled} onChange={handleTrialEndedToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Weekly Review Reminder</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">A weekly nudge when items are due for review</p>
+                </div>
+                <Toggle checked={weeklyReviewEmailEnabled} onChange={handleWeeklyReviewToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Feature Nudges</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Prompts to try Quiz, Teach Back, or Express</p>
+                </div>
+                <Toggle checked={featureNudgeEmailEnabled} onChange={handleFeatureNudgeToggle} disabled={saving} />
               </div>
             </div>
           </div>

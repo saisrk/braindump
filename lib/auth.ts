@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import { db } from '@/db';
-import { verificationTokens, users, userProfiles } from '@/db/schema';
+import { verificationTokens, users, userProfiles, emailLoginTokens } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 const hasDb = db && Object.keys(db).length > 0;
@@ -82,6 +82,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Ensure profile row exists for all users (new and returning).
         await db.insert(userProfiles).values({ userId: user.id }).onConflictDoNothing();
+
+        return { id: user.id, email: user.email, name: user.name, image: user.image };
+      },
+    }),
+    Credentials({
+      id: 'magic-link',
+      name: 'Magic link',
+      credentials: {
+        token: { label: 'Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token || !hasDb) return null;
+
+        const token = String(credentials.token);
+        const [record] = await db
+          .select()
+          .from(emailLoginTokens)
+          .where(eq(emailLoginTokens.token, token));
+
+        if (!record) return null;
+        if (record.usedAt) return null;
+        if (new Date() > record.expiresAt) return null;
+
+        // Consume the token — single use.
+        await db
+          .update(emailLoginTokens)
+          .set({ usedAt: new Date() })
+          .where(eq(emailLoginTokens.token, token));
+
+        const [user] = await db.select().from(users).where(eq(users.id, record.userId));
+        if (!user) return null;
 
         return { id: user.id, email: user.email, name: user.name, image: user.image };
       },

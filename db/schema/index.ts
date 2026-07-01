@@ -9,3 +9,4 @@ export { streaks } from './streaks';
 export { quizAttempts } from './quiz-attempts';
 export type { QuizQuestion, QuizAnswer } from './quiz-attempts';
 export { expressResults } from './express-results';
+export { emailLoginTokens } from './email-login-tokens';

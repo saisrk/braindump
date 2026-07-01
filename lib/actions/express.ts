@@ -2,9 +2,10 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { learnings, expressResults, userProfiles } from '@/db/schema';
+import { learnings, expressResults } from '@/db/schema';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
+import { getEntitlement } from '@/lib/entitlements';
 import { getProvenLearningIds } from '@/lib/data/learnings';
 import {
   generateExpress,
@@ -13,7 +14,8 @@ import {
 } from '@/lib/ai/express';
 import type { ExpressHistoryItem } from '@/lib/data/express';
 
-// Express is a lifetime-trial feature for free users: 1 run ever, unlimited for Pro.
+// Express is available throughout the free trial and to Pro subscribers (unlimited),
+// gated only by the proof requirement below. Expired users are paywalled.
 
 /**
  * Ensures express_results table exists and has all expected columns.
@@ -71,7 +73,7 @@ export async function getExpressHistoryAction(): Promise<ExpressHistoryItem[]> {
 export interface RunExpressResult {
   ok: boolean;
   error?: string;
-  /** 'pro_required' | 'not_proven' */
+  /** 'trial_expired' | 'not_proven' */
   errorCode?: string;
   result?: ExpressResult;
   usedCount?: number;
@@ -100,20 +102,14 @@ export async function runExpress(input: {
 }): Promise<RunExpressResult> {
   const userId = await requireUserId();
 
-  // ── Lifetime trial / Pro gate ─────────────────────────────────────
-  // Free users get exactly 1 Express run ever. Pro is unlimited.
-  const [profile] = await db
-    .select({ isPro: userProfiles.isPro, expressTrialUsed: userProfiles.expressTrialUsed })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId));
-
-  const isPro = profile?.isPro ?? false;
-
-  if (!isPro && (profile?.expressTrialUsed ?? false)) {
+  // ── Access gate ───────────────────────────────────────────────────
+  // Trial and Pro users get unlimited Express; expired users are paywalled.
+  const { hasAccess } = await getEntitlement(userId);
+  if (!hasAccess) {
     return {
       ok: false,
-      errorCode: 'pro_required',
-      error: "You've used your one free Express trial. Upgrade to Pro for unlimited generations.",
+      errorCode: 'trial_expired',
+      error: 'Your free trial has ended. Subscribe to Pro for unlimited Express generations.',
     };
   }
 
@@ -181,14 +177,6 @@ export async function runExpress(input: {
       savedId = saved?.id;
     } catch (err) {
       console.error('[express] failed to save result:', (err as Error).message);
-    }
-
-    // Mark trial as used for free users
-    if (!isPro) {
-      await db
-        .update(userProfiles)
-        .set({ expressTrialUsed: true })
-        .where(eq(userProfiles.userId, userId));
     }
 
     return { ok: true, result, usedCount: rows.length, savedId };

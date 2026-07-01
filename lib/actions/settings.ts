@@ -13,6 +13,9 @@ export type ReviewDifficulty = 'relaxed' | 'standard' | 'intensive';
 export interface UserPreferences {
   reviewDifficulty: ReviewDifficulty;
   dailyDigestEnabled: boolean;
+  trialEndedEmailEnabled: boolean;
+  weeklyReviewEmailEnabled: boolean;
+  featureNudgeEmailEnabled: boolean;
 }
 
 export interface UpdateProfileResult {
@@ -63,6 +66,9 @@ export async function getSettings(): Promise<UserPreferences> {
   return {
     reviewDifficulty: (prefs.reviewDifficulty as ReviewDifficulty) ?? 'standard',
     dailyDigestEnabled: (prefs.dailyDigestEnabled as boolean) ?? false,
+    trialEndedEmailEnabled: (prefs.trialEndedEmailEnabled as boolean) ?? true,
+    weeklyReviewEmailEnabled: (prefs.weeklyReviewEmailEnabled as boolean) ?? true,
+    featureNudgeEmailEnabled: (prefs.featureNudgeEmailEnabled as boolean) ?? true,
   };
 }
 
