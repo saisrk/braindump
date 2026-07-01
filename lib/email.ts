@@ -7,6 +7,24 @@ import { emailLoginTokens } from '@/db/schema';
 const AUTO_LOGIN_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
+ * Sends bulk emails one at a time with a delay between each — Resend's plan
+ * caps at 2 requests/second, and firing a whole user list via Promise.all
+ * blows past that and returns 429s. `task` should catch its own per-item
+ * errors (so one failure doesn't stop the rest); this only serializes and
+ * paces the calls.
+ */
+export async function sendSequentially<T>(
+  items: T[],
+  task: (item: T) => Promise<void>,
+  delayMs = 600
+): Promise<void> {
+  for (const item of items) {
+    await task(item);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+}
+
+/**
  * Creates a single-use auto-login token and returns a link that signs the
  * user straight in (via the `magic-link` credentials provider) and lands
  * them on `deepLink` — used so lifecycle emails don't force an OTP re-entry.

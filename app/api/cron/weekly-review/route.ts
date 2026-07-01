@@ -5,9 +5,10 @@ import { eq } from 'drizzle-orm';
 import { resolveEntitlement } from '@/lib/entitlements';
 import { getDueCount } from '@/lib/data/reviews';
 import { sendWeeklyReviewEmail } from '@/lib/emails/weekly-review';
+import { sendSequentially } from '@/lib/email';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -33,8 +34,9 @@ export async function GET(req: NextRequest) {
       .from(users)
       .innerJoin(userProfiles, eq(userProfiles.userId, users.id));
 
-    await Promise.all(
-      allUsers.map(async (user: {
+    await sendSequentially(
+      allUsers,
+      async (user: {
         id: string;
         email: string;
         name: string | null;
@@ -63,7 +65,7 @@ export async function GET(req: NextRequest) {
           console.error('[cron/weekly-review] Failed for user', user.id, err);
           failed++;
         }
-      })
+      }
     );
   } catch (err) {
     console.error('[cron/weekly-review] Fatal error', err);

@@ -4,10 +4,10 @@ import { users, userProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { getDueCount } from '@/lib/data/reviews';
 import { getStreak } from '@/lib/data/activity';
-import { sendDigestEmail } from '@/lib/email';
+import { sendDigestEmail, sendSequentially } from '@/lib/email';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   // Verify cron secret to prevent unauthorised triggers.
@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
       .from(users)
       .leftJoin(userProfiles, eq(userProfiles.userId, users.id));
 
-    await Promise.all(
-      allUsers.map(async (user: { id: string; email: string; name: string | null; preferences: unknown }) => {
+    await sendSequentially(
+      allUsers,
+      async (user: { id: string; email: string; name: string | null; preferences: unknown }) => {
         try {
           // Respect the user's email preference — opt-in model (default false).
           const prefs = (user.preferences ?? {}) as Record<string, unknown>;
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
           console.error('[cron/daily-digest] Failed for user', user.id, err);
           failed++;
         }
-      })
+      }
     );
   } catch (err) {
     console.error('[cron/daily-digest] Fatal error', err);

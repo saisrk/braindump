@@ -4,9 +4,10 @@ import { users, userProfiles } from '@/db/schema';
 import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { resolveEntitlement } from '@/lib/entitlements';
 import { sendTrialAnnouncementEmail } from '@/lib/emails/trial-announcement';
+import { sendSequentially } from '@/lib/email';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * One-off broadcast: tells accounts that existed before the 7-day trial
@@ -45,8 +46,9 @@ export async function GET(req: NextRequest) {
         )
       );
 
-    await Promise.all(
-      candidates.map(async (user: {
+    await sendSequentially(
+      candidates,
+      async (user: {
         id: string;
         email: string;
         name: string | null;
@@ -76,7 +78,7 @@ export async function GET(req: NextRequest) {
           console.error('[admin/announce-trial] Failed for user', user.id, err);
           failed++;
         }
-      })
+      }
     );
   } catch (err) {
     console.error('[admin/announce-trial] Fatal error', err);

@@ -3,9 +3,10 @@ import { db } from '@/db';
 import { users, userProfiles } from '@/db/schema';
 import { and, eq, gt, isNull, lte, sql } from 'drizzle-orm';
 import { sendTrialEndedEmail } from '@/lib/emails/trial-ended';
+import { sendSequentially } from '@/lib/email';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -36,8 +37,9 @@ export async function GET(req: NextRequest) {
         )
       );
 
-    await Promise.all(
-      candidates.map(async (user: { id: string; email: string; name: string | null; preferences: unknown }) => {
+    await sendSequentially(
+      candidates,
+      async (user: { id: string; email: string; name: string | null; preferences: unknown }) => {
         try {
           const prefs = (user.preferences ?? {}) as Record<string, unknown>;
           if (prefs.trialEndedEmailEnabled === false) return;
@@ -52,7 +54,7 @@ export async function GET(req: NextRequest) {
           console.error('[cron/trial-ended] Failed for user', user.id, err);
           failed++;
         }
-      })
+      }
     );
   } catch (err) {
     console.error('[cron/trial-ended] Fatal error', err);

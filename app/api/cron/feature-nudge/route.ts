@@ -4,9 +4,10 @@ import { users, userProfiles, learnings, quizAttempts, teachBacks, expressResult
 import { eq, inArray, asc } from 'drizzle-orm';
 import { resolveEntitlement } from '@/lib/entitlements';
 import { sendFeatureNudgeEmail, type NudgeFeature } from '@/lib/emails/feature-nudge';
+import { sendSequentially } from '@/lib/email';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const INACTIVITY_THRESHOLD_MS = 4 * 24 * 60 * 60 * 1000;
 
@@ -80,8 +81,9 @@ export async function GET(req: NextRequest) {
       .from(users)
       .innerJoin(userProfiles, eq(userProfiles.userId, users.id));
 
-    await Promise.all(
-      allUsers.map(async (user: {
+    await sendSequentially(
+      allUsers,
+      async (user: {
         id: string;
         email: string;
         name: string | null;
@@ -120,7 +122,7 @@ export async function GET(req: NextRequest) {
           console.error('[cron/feature-nudge] Failed for user', user.id, err);
           failed++;
         }
-      })
+      }
     );
   } catch (err) {
     console.error('[cron/feature-nudge] Fatal error', err);
