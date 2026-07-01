@@ -36,6 +36,11 @@ export const userProfiles = pgTable('user_profiles', {
   proSubscriptionEndsAt: timestamp('pro_subscription_ends_at', { withTimezone: true }),
   stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
+  // Idempotency guards for lifecycle emails — set once sent so cron re-runs never double-send.
+  welcomeEmailSentAt: timestamp('welcome_email_sent_at', { withTimezone: true }),
+  trialEndedEmailSentAt: timestamp('trial_ended_email_sent_at', { withTimezone: true }),
+  lastReviewReminderSentAt: timestamp('last_review_reminder_sent_at', { withTimezone: true }),
+  lastReengagementEmailSentAt: timestamp('last_reengagement_email_sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

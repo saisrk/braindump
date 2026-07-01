@@ -100,6 +100,9 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
   const [portalLoading, setPortalLoading] = useState(false);
   const [difficulty, setDifficulty] = useState<ReviewDifficulty>(initialSettings.reviewDifficulty);
   const [digestEnabled, setDigestEnabled] = useState(initialSettings.dailyDigestEnabled);
+  const [trialEndedEmailEnabled, setTrialEndedEmailEnabled] = useState(initialSettings.trialEndedEmailEnabled);
+  const [weeklyReviewEmailEnabled, setWeeklyReviewEmailEnabled] = useState(initialSettings.weeklyReviewEmailEnabled);
+  const [featureNudgeEmailEnabled, setFeatureNudgeEmailEnabled] = useState(initialSettings.featureNudgeEmailEnabled);
   const [feedback, setFeedback] = useState('');
   const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -126,6 +129,27 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
     setDigestEnabled(v);
     setSaving(true);
     await savePreferences({ dailyDigestEnabled: v });
+    setSaving(false);
+  };
+
+  const handleTrialEndedToggle = async (v: boolean) => {
+    setTrialEndedEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ trialEndedEmailEnabled: v });
+    setSaving(false);
+  };
+
+  const handleWeeklyReviewToggle = async (v: boolean) => {
+    setWeeklyReviewEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ weeklyReviewEmailEnabled: v });
+    setSaving(false);
+  };
+
+  const handleFeatureNudgeToggle = async (v: boolean) => {
+    setFeatureNudgeEmailEnabled(v);
+    setSaving(true);
+    await savePreferences({ featureNudgeEmailEnabled: v });
     setSaving(false);
   };
 
@@ -278,6 +302,27 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
                   </p>
                 </div>
                 <Toggle checked={digestEnabled} onChange={handleDigestToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Trial Ending Reminder</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Email when your free trial ends</p>
+                </div>
+                <Toggle checked={trialEndedEmailEnabled} onChange={handleTrialEndedToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Weekly Review Reminder</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">A weekly nudge when items are due for review</p>
+                </div>
+                <Toggle checked={weeklyReviewEmailEnabled} onChange={handleWeeklyReviewToggle} disabled={saving} />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div>
+                  <p className="font-semibold text-foreground">Feature Nudges</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Prompts to try Quiz, Teach Back, or Express</p>
+                </div>
+                <Toggle checked={featureNudgeEmailEnabled} onChange={handleFeatureNudgeToggle} disabled={saving} />
               </div>
             </div>
           </div>
