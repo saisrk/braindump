@@ -7,7 +7,7 @@ import { auth } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: 'Braindump — Remember everything you learn',
-  description: 'Capture an article or note, get AI flashcards in seconds, review with spaced repetition, and turn your knowledge into talking points or interview stories. Free to start.',
+  description: 'Capture an article or note, get AI flashcards in seconds, review with spaced repetition, and turn your knowledge into talking points or interview stories. Start with a 7-day free trial.',
   openGraph: {
     title: 'Braindump — Remember everything you learn',
     description: 'Capture articles & notes → AI flashcards → spaced repetition → Express your knowledge. The complete learning loop.',
@@ -134,7 +134,7 @@ export default async function HomePage() {
               <Link href="/login" style={{ fontFamily: F, fontSize: '14px', fontWeight: 600, color: INK2, textDecoration: 'none' }}>Log in</Link>
               <Link href="/signup">
                 <button style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px -4px rgba(181,70,47,.5)' }}>
-                  Get started free
+                  Start Free Trial
                 </button>
               </Link>
             </>
@@ -167,7 +167,7 @@ export default async function HomePage() {
               <>
                 <Link href="/signup">
                   <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', borderRadius: '10px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '15px', cursor: 'pointer', boxShadow: '0 8px 24px -8px rgba(181,70,47,.55)' }}>
-                    Start for free <ArrowRight style={{ width: '16px', height: '16px' }} />
+                    Start Free Trial <ArrowRight style={{ width: '16px', height: '16px' }} />
                   </button>
                 </Link>
                 <Link href="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '14px 24px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK2, fontFamily: F, fontWeight: 600, fontSize: '15px', textDecoration: 'none' }}>
@@ -178,11 +178,7 @@ export default async function HomePage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
-              <strong style={{ color: INK2 }}>Free</strong> · No credit card needed
-            </p>
-            <span style={{ color: RULE }}>·</span>
-            <p style={{ fontFamily: F, fontSize: '12px', color: FAINT }}>
-              <strong style={{ color: INK2 }}>1</strong> capture/day on free tier
+              <strong style={{ color: INK2 }}>7-day free trial</strong> · No credit card needed
             </p>
           </div>
         </div>
@@ -353,7 +349,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '14px', textDecoration: 'none', textAlign: 'center', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)' }}>
-              Start free, upgrade anytime
+              Start Free Trial
             </Link>
           </div>
         </div>
@@ -366,11 +362,11 @@ export default async function HomePage() {
             Start building your<br />knowledge library today.
           </h2>
           <p style={{ fontFamily: F, fontSize: '16px', color: INK2, marginBottom: '32px' }}>
-            Free to start. No credit card required.
+            7-day free trial. No credit card required.
           </p>
           <Link href="/signup">
             <button style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 36px', borderRadius: '12px', border: 'none', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '16px', cursor: 'pointer', boxShadow: '0 10px 28px -8px rgba(181,70,47,.55)' }}>
-              Get started — it&apos;s free <ArrowRight style={{ width: '18px', height: '18px' }} />
+              Start Free Trial <ArrowRight style={{ width: '18px', height: '18px' }} />
             </button>
           </Link>
         </div>
