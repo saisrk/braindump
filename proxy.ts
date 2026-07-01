@@ -30,6 +30,12 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/auth/send-otp') ||
     pathname.startsWith('/api/auth/verify-otp') ||
+    // Cron/admin routes authenticate themselves via a CRON_SECRET bearer
+    // token, not a user session — Vercel's Cron dispatcher (and manual
+    // curl triggers) never has a logged-in session, so these must bypass
+    // the session gate here or every invocation gets redirected to /login.
+    pathname.startsWith('/api/cron') ||
+    pathname.startsWith('/api/admin') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon');
 
