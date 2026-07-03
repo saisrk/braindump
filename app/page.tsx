@@ -87,13 +87,12 @@ export default async function HomePage() {
           box-shadow: 0 18px 32px -8px rgba(42,38,32,.35), inset -3px 0 6px rgba(0,0,0,.18) !important;
         }
         .hero-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
-        .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 700px; margin: 0 auto; }
+        .price-grid { max-width: 380px; margin: 0 auto; }
         .nav-link   { font-family: ${F}; font-size: 14px; font-weight: 500; color: ${INK2}; text-decoration: none; transition: color 0.15s; }
         .nav-link:hover { color: ${INK}; }
         @media (max-width: 768px) {
           .hero-grid  { grid-template-columns: 1fr !important; gap: 40px !important; }
           .hero-visual{ display: none !important; }
-          .price-grid { grid-template-columns: 1fr !important; }
           .footer-inner { flex-direction: column; align-items: flex-start !important; }
           .hero-h1    { font-size: 36px !important; }
           .nav-links  { display: none !important; }
@@ -306,27 +305,9 @@ export default async function HomePage() {
         <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: TERRACOTTA, marginBottom: '12px' }}>Pricing</p>
           <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '32px', color: INK, marginBottom: '12px' }}>Try it free for 7 days.</h2>
-          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>Full access, no credit card needed. Subscribe to Pro to keep everything when your trial ends.</p>
+          <p style={{ fontFamily: F, fontSize: '16px', color: INK2 }}>7 days full access, free — no credit card needed. Subscribe any time to keep it.</p>
         </div>
         <div className="price-grid">
-          {/* Free */}
-          <div style={{ background: BG, border: `1px solid ${RULE}`, borderRadius: '16px', padding: '28px' }}>
-            <p style={{ fontFamily: F, fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: INK2, marginBottom: '12px' }}>7-day free trial</p>
-            <div style={{ marginBottom: '20px' }}>
-              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '36px', color: INK }}>$0</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: INK2, marginLeft: '6px' }}>for 7 days</span>
-            </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              {['Full access to everything in Pro', 'No credit card required', '10 captures / day', 'Quizzes, unlimited teach-backs & Express', 'Spaced repetition reviews', 'Subscribe to keep it after 7 days'].map((f) => (
-                <li key={f} style={{ display: 'flex', gap: '9px', fontFamily: F, fontSize: '14px', color: INK2, alignItems: 'flex-start' }}>
-                  <Check style={{ width: '14px', height: '14px', color: '#6f8a5a', flexShrink: 0, marginTop: '2px' }} />{f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/signup" style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${RULE}`, background: CARD, color: INK, fontFamily: F, fontWeight: 600, fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
-              Start 7-day free trial
-            </Link>
-          </div>
           {/* Pro */}
           <div style={{ background: CARD, border: `2px solid ${TERRACOTTA}`, borderRadius: '16px', padding: '28px', position: 'relative', boxShadow: '0 12px 32px -12px rgba(181,70,47,.2)' }}>
             <div style={{ position: 'absolute', top: '-13px', left: '50%', transform: 'translateX(-50%)', background: TERRACOTTA, color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '10px', letterSpacing: '1px', padding: '4px 12px', borderRadius: '99px', whiteSpace: 'nowrap' }}>
