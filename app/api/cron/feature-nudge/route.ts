@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, userProfiles, learnings, quizAttempts, teachBacks, expressResults } from '@/db/schema';
-import { eq, inArray, asc } from 'drizzle-orm';
+import { and, eq, inArray, asc, ne } from 'drizzle-orm';
 import { resolveEntitlement } from '@/lib/entitlements';
 import { sendFeatureNudgeEmail, type NudgeFeature } from '@/lib/emails/feature-nudge';
 import { sendSequentially } from '@/lib/email';
@@ -17,7 +17,9 @@ async function pickRecommendation(
   const userLearnings = await db
     .select({ id: learnings.id, title: learnings.title })
     .from(learnings)
-    .where(eq(learnings.userId, userId))
+    // Exclude onboarding's seeded sample learnings — nudging the user to
+    // teach back / quiz content they never actually captured is confusing.
+    .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')))
     .orderBy(asc(learnings.createdAt));
 
   if (userLearnings.length === 0) return null;
