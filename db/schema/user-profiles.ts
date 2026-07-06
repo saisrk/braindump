@@ -41,6 +41,8 @@ export const userProfiles = pgTable('user_profiles', {
   trialEndedEmailSentAt: timestamp('trial_ended_email_sent_at', { withTimezone: true }),
   lastReviewReminderSentAt: timestamp('last_review_reminder_sent_at', { withTimezone: true }),
   lastReengagementEmailSentAt: timestamp('last_reengagement_email_sent_at', { withTimezone: true }),
+  // One-time "sharable streaks" announcement broadcast (migration 0017).
+  streakAnnouncementSentAt: timestamp('streak_announcement_sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
