@@ -332,9 +332,9 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 
 ---
 
-### Feature 13: Daily Review Digest Email
+### Feature 13: Weekly Review Digest Email
 
-**Current state:** Route at `/api/cron/daily-digest` (Vercel Cron, 8am UTC). `lib/email.ts` uses Resend. Opt-in toggle in Settings saves to `user_profiles.preferences.dailyDigestEnabled`. Digest only sends to users where this is `true`.
+**Current state:** Route at `/api/cron/daily-digest` (Vercel Cron, Thursdays 8am UTC — was daily, changed to weekly to reduce email volume once `/api/cron/weekly-review` also started sending a due-items reminder). `lib/email.ts` uses Resend. Opt-in toggle in Settings saves to `user_profiles.preferences.dailyDigestEnabled`. Digest only sends to users where this is `true`.
 
 **Gaps:**
 - [ ] `RESEND_API_KEY` confirmed working in production

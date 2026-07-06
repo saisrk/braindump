@@ -10,6 +10,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
+  // Runs weekly (see vercel.json) — was daily, changed to cut down on email
+  // volume now that /api/cron/weekly-review also sends a due-items reminder.
   // Verify cron secret to prevent unauthorised triggers.
   const secret = process.env.CRON_SECRET;
   const authHeader = req.headers.get('authorization');

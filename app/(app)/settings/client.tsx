@@ -296,9 +296,9 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
               </div>
               <div className="flex items-center justify-between py-4">
                 <div>
-                  <p className="font-semibold text-foreground">Daily Reminder</p>
+                  <p className="font-semibold text-foreground">Weekly Reminder</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    {digestEnabled ? 'Email digest sent each morning with due reviews' : 'Get notified about due reviews by email'}
+                    {digestEnabled ? 'Email digest sent weekly with due reviews and streak' : 'Get notified about due reviews by email'}
                   </p>
                 </div>
                 <Toggle checked={digestEnabled} onChange={handleDigestToggle} disabled={saving} />
