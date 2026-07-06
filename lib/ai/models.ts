@@ -6,4 +6,4 @@ import { anthropic } from '@ai-sdk/anthropic';
 export const FAST_MODEL = anthropic('claude-haiku-4-5');
 
 /** Higher-quality model for grading, reasoning and generation (teach-back, express). */
-export const SMART_MODEL = anthropic('claude-sonnet-4-6');
+export const SMART_MODEL = anthropic('claude-sonnet-5');
