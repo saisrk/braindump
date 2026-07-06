@@ -32,7 +32,7 @@ export async function analyzeBlogContent(
     const { experimental_output } = await generateText({
       model: FAST_MODEL,
       system: 'Extract structured metadata from a web article. Be concise and accurate.',
-      prompt: `URL: ${url}\nTitle: ${title ?? 'Unknown'}\nDomain: ${domain}\n\nContent:\n${text.slice(0, 5000)}`,
+      prompt: `URL: ${url}\nTitle: ${title ?? 'Unknown'}\nDomain: ${domain}\n\nContent:\n${text.slice(0, 12000)}`,
       experimental_output: Output.object({ schema: blogMetadataSchema }),
     });
     return experimental_output;
@@ -45,15 +45,21 @@ export async function analyzeVideoMetadata(
   videoUrl: string,
   videoTitle?: string
 ): Promise<VideoMetadata> {
-  try {
-    const { experimental_output } = await generateText({
-      model: FAST_MODEL,
-      system: 'Extract metadata and learning points from a video URL and title.',
-      prompt: `Video URL: ${videoUrl}\nVideo title: ${videoTitle ?? 'Unknown'}`,
-      experimental_output: Output.object({ schema: videoMetadataSchema }),
-    });
-    return experimental_output;
-  } catch {
-    return { videoTitle: videoTitle ?? 'Unknown Video', videoChannel: 'Unknown', keyPoints: [] };
-  }
+  // Without a transcript there is no grounded content to extract takeaways from —
+  // asking the model for "key points" from just a URL + title only invites it to
+  // fabricate. Return honest metadata instead; transcript-grounded extraction is
+  // tracked separately (Braindump-v2 Phase 4).
+  const domain = (() => {
+    try {
+      return new URL(videoUrl).hostname.replace('www.', '');
+    } catch {
+      return undefined;
+    }
+  })();
+
+  return {
+    videoTitle: videoTitle ?? 'Unknown Video',
+    videoChannel: domain ?? 'Unknown',
+    keyPoints: [],
+  };
 }

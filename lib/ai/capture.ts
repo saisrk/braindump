@@ -109,7 +109,7 @@ export async function generateReviewItems(args: {
       `Title: ${args.title}`,
       `Summary: ${args.summary}`,
       args.keyPoints?.length ? `Key points:\n- ${args.keyPoints.join('\n- ')}` : '',
-      args.sourceContent ? `\nSource material:\n${args.sourceContent.slice(0, 4000)}` : '',
+      args.sourceContent ? `\nSource material:\n${args.sourceContent.slice(0, 12000)}` : '',
     ]
       .filter(Boolean)
       .join('\n'),

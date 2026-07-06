@@ -33,6 +33,7 @@ export type TeachBackFeedback = z.infer<typeof teachBackSchema>;
 export async function gradeTeachBack(args: {
   title: string;
   summary: string;
+  keyPoints?: string[];
   sourceContent?: string;
   explanation: string;
 }): Promise<TeachBackFeedback> {
@@ -46,8 +47,11 @@ export async function gradeTeachBack(args: {
     prompt: [
       `Concept: ${args.title}`,
       `Reference summary: ${args.summary}`,
+      args.keyPoints?.length
+        ? `Reference key points:\n- ${args.keyPoints.join('\n- ')}`
+        : '',
       args.sourceContent
-        ? `Reference material:\n${args.sourceContent.slice(0, 4000)}`
+        ? `Reference material:\n${args.sourceContent.slice(0, 12000)}`
         : '',
       '',
       `The learner's explanation:\n"""${args.explanation}"""`,
