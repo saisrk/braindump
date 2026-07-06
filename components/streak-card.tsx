@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Flame, Snowflake, Share2, Check, Link2 } from 'lucide-react'
+import Link from 'next/link'
+import { Flame, Snowflake, Share2, Check, Link2, Sparkles } from 'lucide-react'
 import { enableStreakSharing, disableStreakSharing } from '@/lib/actions/streak-share'
 import type { StreakDay } from '@/lib/actions/insights'
 
@@ -93,9 +94,50 @@ export function StreakCard({
     }
   }
 
+  // First-time spotlight: nobody has ever been active — the flame/heatmap have
+  // nothing to show yet, so lead with an invitation instead of a "0".
+  const isNew = current === 0 && !history.some((d) => d.active)
+
+  if (isNew) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{
+          background: 'linear-gradient(135deg, rgba(181,70,47,0.08), rgba(199,154,62,0.08))',
+          border: '1.5px dashed rgba(181,70,47,0.35)',
+        }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles size={16} style={{ color: '#b5462f' }} />
+          <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: '#b5462f' }}>
+            Your streak starts today
+          </span>
+        </div>
+        <h2 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '24px', color: 'var(--color-foreground)', margin: '0 0 6px' }}>
+          Capture or review one thing to light the flame 🔥
+        </h2>
+        <p style={{ fontFamily: F, fontSize: '13px', color: 'var(--color-muted-foreground)', margin: '0 0 16px', maxWidth: '480px' }}>
+          Every day you show up counts. Come back tomorrow to keep it going — Braindump tracks it for you.
+        </p>
+        <Link href="/capture" style={{ textDecoration: 'none' }}>
+          <button
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '10px', border: 'none',
+              cursor: 'pointer', background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700,
+              fontSize: '14px', padding: '11px 20px', boxShadow: '0 6px 16px -6px rgba(181,70,47,.5)',
+            }}
+          >
+            <Flame size={16} />
+            Capture your first learning
+          </button>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div
-      className="rounded-2xl p-5"
+      className="rounded-2xl p-6"
       style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -118,80 +160,85 @@ export function StreakCard({
         )}
       </div>
 
-      <div className="flex items-baseline gap-2 mb-1">
-        <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>
-          {current}
-        </span>
-        <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', fontWeight: 500 }}>
-          day{current === 1 ? '' : 's'}
-        </span>
-        <span style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', marginLeft: 'auto' }}>
-          Longest: {longest}
-        </span>
-      </div>
+      {/* Hero row: big number on the left, heatmap fills the rest on wide screens */}
+      <div className="streak-hero-row" style={{ display: 'flex', gap: '28px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ flexShrink: 0 }}>
+          <div className="flex items-baseline gap-2">
+            <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '56px', lineHeight: 1, color: 'var(--color-foreground)' }}>
+              {current}
+            </span>
+            <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', fontWeight: 500 }}>
+              day{current === 1 ? '' : 's'}
+            </span>
+          </div>
+          <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>
+            Longest: {longest}
+          </p>
+          <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', marginTop: '8px', maxWidth: '220px' }}>
+            {milestoneHint(current, longest)}
+          </p>
+        </div>
 
-      <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', marginBottom: '12px' }}>
-        {milestoneHint(current, longest)}
-      </p>
+        <div style={{ flex: '1 1 260px', minWidth: '220px' }}>
+          <div className="flex gap-1" aria-label="Last 14 days of activity">
+            {history.map((d, i) => {
+              const isToday = i === history.length - 1
+              return (
+                <div
+                  key={d.date}
+                  title={`${d.date}${d.active ? ' · active' : ''}`}
+                  style={{
+                    flex: 1,
+                    height: '28px',
+                    borderRadius: '4px',
+                    background: d.active ? '#b5462f' : 'var(--color-border)',
+                    opacity: d.active ? (isToday ? 1 : 0.85) : 0.4,
+                    border: isToday ? '1.5px solid #b5462f' : '1.5px solid transparent',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              )
+            })}
+          </div>
 
-      {/* 14-day activity strip */}
-      <div className="flex gap-1 mb-4" aria-label="Last 14 days of activity">
-        {history.map((d, i) => {
-          const isToday = i === history.length - 1
-          return (
-            <div
-              key={d.date}
-              title={`${d.date}${d.active ? ' · active' : ''}`}
+          {/* Share controls */}
+          <div className="flex items-center gap-2" style={{ marginTop: '14px' }}>
+            <button
+              onClick={handleShare}
+              disabled={busy}
               style={{
-                flex: 1,
-                height: '22px',
-                borderRadius: '4px',
-                background: d.active ? '#b5462f' : 'var(--color-border)',
-                opacity: d.active ? (isToday ? 1 : 0.85) : 0.4,
-                border: isToday ? '1.5px solid #b5462f' : '1.5px solid transparent',
-                boxSizing: 'border-box',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                borderRadius: '10px', border: 'none', cursor: busy ? 'wait' : 'pointer',
+                background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '13px',
+                padding: '9px 16px', opacity: busy ? 0.7 : 1,
               }}
-            />
-          )
-        })}
+            >
+              {copied ? <Check size={15} /> : <Share2 size={15} />}
+              {copied ? 'Link copied' : shareToken ? 'Share streak' : 'Share my streak'}
+            </button>
+            {shareToken && (
+              <button
+                onClick={handleRevoke}
+                disabled={busy}
+                title="Stop sharing — makes your public streak link private again"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '10px', border: '1px solid var(--color-border)', cursor: busy ? 'wait' : 'pointer',
+                  background: 'var(--color-card)', color: 'var(--color-muted-foreground)',
+                  padding: '9px 12px',
+                }}
+              >
+                <Link2 size={15} />
+              </button>
+            )}
+            {shareUrl && (
+              <p style={{ fontFamily: F, fontSize: '11px', color: 'var(--color-muted-foreground)', margin: 0, wordBreak: 'break-all' }}>
+                Link active
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Share controls */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleShare}
-          disabled={busy}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-            borderRadius: '10px', border: 'none', cursor: busy ? 'wait' : 'pointer',
-            background: '#b5462f', color: '#fff', fontFamily: F, fontWeight: 700, fontSize: '13px',
-            padding: '10px', opacity: busy ? 0.7 : 1,
-          }}
-        >
-          {copied ? <Check size={15} /> : <Share2 size={15} />}
-          {copied ? 'Link copied' : shareToken ? 'Share streak' : 'Share my streak'}
-        </button>
-        {shareToken && (
-          <button
-            onClick={handleRevoke}
-            disabled={busy}
-            title="Stop sharing — makes your public streak link private again"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '10px', border: '1px solid var(--color-border)', cursor: busy ? 'wait' : 'pointer',
-              background: 'var(--color-card)', color: 'var(--color-muted-foreground)',
-              padding: '10px 12px',
-            }}
-          >
-            <Link2 size={15} />
-          </button>
-        )}
-      </div>
-      {shareUrl && (
-        <p style={{ fontFamily: F, fontSize: '11px', color: 'var(--color-muted-foreground)', marginTop: '8px', wordBreak: 'break-all' }}>
-          Public link active · {shareUrl}
-        </p>
-      )}
     </div>
   )
 }

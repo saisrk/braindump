@@ -62,11 +62,13 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Streak + stats row */}
-        <div
-          className="mb-6"
-          style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '12px' }}
-        >
+        {/* ── Zone 1: Today ─────────────────────────────────────────── */}
+        <p className="mb-2" style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-muted-foreground)' }}>
+          Today
+        </p>
+
+        {/* Streak hero */}
+        <div className="mb-3">
           <StreakCard
             current={data.streak}
             longest={data.longestStreak}
@@ -75,77 +77,6 @@ export default function HomePage() {
             history={data.streakHistory}
             initialShareToken={data.shareToken}
           />
-
-          {/* Library card */}
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <BookOpen size={16} style={{ color: '#b5462f' }} />
-              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Your library</span>
-            </div>
-            <div className="flex items-baseline gap-2 mb-3">
-              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.total}</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', fontWeight: 500 }}>learnings</span>
-            </div>
-            {/* Topic colour bars */}
-            {data.topTopics.length > 0 && (
-              <>
-                <div className="flex gap-1.5 mb-2">
-                  {data.topTopics.map(({ topic, color }) => (
-                    <div
-                      key={topic}
-                      style={{ flex: 1, height: '4px', borderRadius: '2px', background: color }}
-                    />
-                  ))}
-                </div>
-                <p style={{ fontFamily: F, fontSize: '11px', color: 'var(--color-muted-foreground)' }}>
-                  {data.topTopics.map(t => t.topic).join(' · ')}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div
-          className="mb-6"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
-        >
-          {/* Mastered */}
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <Brain size={16} style={{ color: '#46557a' }} />
-              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Mastered</span>
-            </div>
-            <div className="flex items-baseline gap-1.5 mb-1">
-              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.masteredCount}</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)' }}>/ {data.total}</span>
-            </div>
-            <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)' }}>Fully taught back</p>
-          </div>
-
-          {/* Ready to revisit */}
-          <div
-            className="rounded-2xl p-5"
-            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 size={16} style={{ color: '#6f8a5a' }} />
-              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Ready to revisit</span>
-            </div>
-            <div className="flex items-baseline gap-1.5 mb-1">
-              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.due}</span>
-              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)' }}>due</span>
-            </div>
-            <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)' }}>
-              {data.dueThisWeek > data.due ? `${data.dueThisWeek - data.due} more this week` : 'All caught up this week'}
-            </p>
-          </div>
         </div>
 
         {/* CTA row */}
@@ -182,6 +113,84 @@ export default function HomePage() {
               Review {data.due > 0 ? `${data.due} due` : 'flashcards'}
             </button>
           </Link>
+        </div>
+
+        {/* ── Zone 2: Your library ──────────────────────────────────── */}
+        <p className="mb-2" style={{ fontFamily: F, fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-muted-foreground)' }}>
+          Your library
+        </p>
+
+        {/* Normalized 3-up stats row */}
+        <div
+          className="mb-6"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}
+        >
+          {/* Library */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen size={16} style={{ color: '#b5462f' }} />
+              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Library</span>
+            </div>
+            <div className="flex items-baseline gap-1.5 mb-1">
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.total}</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)', fontWeight: 500 }}>learnings</span>
+            </div>
+            {/* Topic colour bars */}
+            {data.topTopics.length > 0 ? (
+              <>
+                <div className="flex gap-1.5 mb-2" style={{ marginTop: '8px' }}>
+                  {data.topTopics.map(({ topic, color }) => (
+                    <div
+                      key={topic}
+                      style={{ flex: 1, height: '4px', borderRadius: '2px', background: color }}
+                    />
+                  ))}
+                </div>
+                <p style={{ fontFamily: F, fontSize: '11px', color: 'var(--color-muted-foreground)' }}>
+                  {data.topTopics.map(t => t.topic).join(' · ')}
+                </p>
+              </>
+            ) : (
+              <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)' }}>Across {data.topicCount} volume{data.topicCount !== 1 ? 's' : ''}</p>
+            )}
+          </div>
+
+          {/* Mastered */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Brain size={16} style={{ color: '#46557a' }} />
+              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Mastered</span>
+            </div>
+            <div className="flex items-baseline gap-1.5 mb-1">
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.masteredCount}</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)' }}>/ {data.total}</span>
+            </div>
+            <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)' }}>Fully taught back</p>
+          </div>
+
+          {/* Ready to revisit */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <CheckCircle2 size={16} style={{ color: '#6f8a5a' }} />
+              <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>Ready to revisit</span>
+            </div>
+            <div className="flex items-baseline gap-1.5 mb-1">
+              <span style={{ fontFamily: SERIF, fontWeight: 700, fontSize: '44px', lineHeight: 1, color: 'var(--color-foreground)' }}>{data.due}</span>
+              <span style={{ fontFamily: F, fontSize: '14px', color: 'var(--color-muted-foreground)' }}>due</span>
+            </div>
+            <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)' }}>
+              {data.dueThisWeek > data.due ? `${data.dueThisWeek - data.due} more this week` : 'All caught up this week'}
+            </p>
+          </div>
         </div>
 
         {/* Pick up where you left off */}
