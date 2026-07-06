@@ -27,6 +27,8 @@ export async function proxy(request: NextRequest) {
 
   const isPublic =
     publicPaths.includes(pathname) ||
+    // Public, opt-in streak share pages (and their generated OG images).
+    pathname.startsWith('/share') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/auth/send-otp') ||
     pathname.startsWith('/api/auth/verify-otp') ||

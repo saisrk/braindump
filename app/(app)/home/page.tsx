@@ -7,6 +7,7 @@ import { Brain, Clock, Sparkles, CheckCircle2, Plus, BookOpen } from 'lucide-rea
 import { EmptyState } from '@/components/ui/empty-state'
 import { getDashboardStats, type DashboardData, type VolumeStatus } from '@/lib/actions/insights'
 import { DashboardTour } from '@/components/dashboard-tour'
+import { StreakCard } from '@/components/streak-card'
 import { topicGradient } from '@/lib/book-colors'
 
 const F = "'Inter', system-ui, sans-serif"
@@ -61,12 +62,21 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Stats row */}
+        {/* Streak + stats row */}
         <div
           className="mb-6"
-          style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px' }}
+          style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '12px' }}
         >
-          {/* Library card — wide */}
+          <StreakCard
+            current={data.streak}
+            longest={data.longestStreak}
+            freezeTokens={data.freezeTokens}
+            activeToday={data.streakActiveToday}
+            history={data.streakHistory}
+            initialShareToken={data.shareToken}
+          />
+
+          {/* Library card */}
           <div
             className="rounded-2xl p-5"
             style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
@@ -96,7 +106,13 @@ export default function HomePage() {
               </>
             )}
           </div>
+        </div>
 
+        {/* Stats row */}
+        <div
+          className="mb-6"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+        >
           {/* Mastered */}
           <div
             className="rounded-2xl p-5"
