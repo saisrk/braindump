@@ -154,6 +154,7 @@ export async function runExpress(input: {
         summary: l.summary,
         topic: l.topic,
         tags: l.tags ?? [],
+        keyPoints: l.keyPoints ?? [],
       })),
     });
 

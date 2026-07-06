@@ -48,6 +48,7 @@ export async function submitTeachBack(input: {
     const feedback = await gradeTeachBack({
       title: learning.title,
       summary: learning.summary ?? '',
+      keyPoints: learning.keyPoints ?? [],
       explanation: input.explanation.trim(),
     });
 

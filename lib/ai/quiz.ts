@@ -41,18 +41,41 @@ export async function generateQuiz(args: {
       `Title: ${args.title}`,
       `Summary: ${args.summary}`,
       args.keyPoints?.length ? `Key points:\n- ${args.keyPoints.join('\n- ')}` : '',
-      args.sourceContent ? `\nSource material:\n${args.sourceContent.slice(0, 4000)}` : '',
+      args.sourceContent ? `\nSource material:\n${args.sourceContent.slice(0, 12000)}` : '',
     ]
       .filter(Boolean)
       .join('\n'),
     experimental_output: Output.object({ schema: quizSchema }),
   });
 
-  return experimental_output.questions.map((q) => ({
-    ...q,
-    id: nanoid(),
-    options: q.type === 'mcq' ? q.options : undefined,
-  }));
+  return experimental_output.questions
+    .map((q) => {
+      // The model is instructed to make correctAnswer match an option verbatim,
+      // but structured output can't guarantee it. Repair near-misses (whitespace/
+      // case drift) and drop questions we can't reconcile so grading never
+      // silently marks a right answer wrong.
+      if (q.type === 'mcq') {
+        const exactMatch = q.options.includes(q.correctAnswer);
+        if (!exactMatch) {
+          const normalized = q.correctAnswer.trim().toLowerCase();
+          const repaired = q.options.find(
+            (o) => o.trim().toLowerCase() === normalized
+          );
+          if (repaired) {
+            q = { ...q, correctAnswer: repaired };
+          } else {
+            return null;
+          }
+        }
+      }
+      return q;
+    })
+    .filter((q): q is NonNullable<typeof q> => q !== null)
+    .map((q) => ({
+      ...q,
+      id: nanoid(),
+      options: q.type === 'mcq' ? q.options : undefined,
+    }));
 }
 
 /**

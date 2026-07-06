@@ -10,6 +10,7 @@ interface LearningContext {
   summary: string | null;
   topic: string | null;
   tags: string[];
+  keyPoints: string[];
 }
 
 /* talking points ---------------------------------------------------- */
@@ -65,6 +66,12 @@ function contextBlock(learnings: LearningContext[]): string {
       (l, i) =>
         `${i + 1}. ${l.title}${l.topic ? ` [${l.topic}]` : ''}\n   ${
           l.summary ?? ''
+        }${
+          l.keyPoints.length
+            ? `\n   Key points:\n${l.keyPoints
+                .map((kp) => `   - ${kp}`)
+                .join('\n')}`
+            : ''
         }`
     )
     .join('\n');
