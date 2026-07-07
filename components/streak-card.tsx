@@ -32,6 +32,33 @@ function milestoneHint(current: number, longest: number): string {
   return `${away} day${away === 1 ? '' : 's'} to match your best`
 }
 
+type StreakTier = 'lapsed' | 'building' | 'strong'
+
+/** Tiered tone for returning users — distinct from the brand-new spotlight. */
+function tierInfo(current: number, longest: number): { tier: StreakTier; badge: string; message: string } {
+  if (current === 0) {
+    return {
+      tier: 'lapsed',
+      badge: 'Pick it back up',
+      message: longest > 1
+        ? `You've hit ${longest} days before — one capture or review today starts a new run.`
+        : 'One capture or review today gets you going again.',
+    }
+  }
+  if (current < 3) {
+    return {
+      tier: 'building',
+      badge: 'Building momentum',
+      message: `Off to a good start. ${milestoneHint(current, longest)} — a little consistency turns this into a habit.`,
+    }
+  }
+  return {
+    tier: 'strong',
+    badge: '🔥 On a roll',
+    message: `You're on fire — ${milestoneHint(current, longest)}. Don't break the chain!`,
+  }
+}
+
 export function StreakCard({
   current,
   longest,
@@ -97,6 +124,7 @@ export function StreakCard({
   // First-time spotlight: nobody has ever been active — the flame/heatmap have
   // nothing to show yet, so lead with an invitation instead of a "0".
   const isNew = current === 0 && !history.some((d) => d.active)
+  const { tier, badge, message } = tierInfo(current, longest)
 
   if (isNew) {
     return (
@@ -141,9 +169,19 @@ export function StreakCard({
       style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <Flame size={16} style={{ color: '#b5462f' }} />
+        <Flame size={16} style={{ color: tier === 'lapsed' ? 'var(--color-muted-foreground)' : '#b5462f' }} />
         <span style={{ fontFamily: F, fontSize: '13px', fontWeight: 600, color: 'var(--color-muted-foreground)' }}>
           Learning streak
+        </span>
+        <span
+          style={{
+            fontFamily: F, fontSize: '11px', fontWeight: 700,
+            color: tier === 'strong' ? '#b5462f' : tier === 'building' ? '#9c7a23' : 'var(--color-muted-foreground)',
+            background: tier === 'strong' ? 'rgba(181,70,47,0.1)' : tier === 'building' ? 'rgba(199,154,62,0.12)' : 'var(--color-border)',
+            borderRadius: '99px', padding: '2px 9px',
+          }}
+        >
+          {badge}
         </span>
         {freezeTokens > 0 && (
           <span
@@ -174,8 +212,8 @@ export function StreakCard({
           <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', margin: '2px 0 0' }}>
             Longest: {longest}
           </p>
-          <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', marginTop: '8px', maxWidth: '220px' }}>
-            {milestoneHint(current, longest)}
+          <p style={{ fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', marginTop: '8px', maxWidth: '240px' }}>
+            {message}
           </p>
         </div>
 
