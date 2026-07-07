@@ -182,7 +182,7 @@ The differentiator: most read-later apps are graveyards. Braindump closes the lo
 
 ### Feature 5: Capture
 
-**Current state:** Full pipeline. Skeleton-first instant save → async enrichment. Daily quota enforced in `saveCapture` and `saveSkeleton`: 1 capture/day + 30-learning lifetime cap for free, 10 captures/day for Pro.
+**Current state:** Full pipeline. Skeleton-first instant save → async enrichment. Daily quota enforced in `saveSkeleton`: 10 captures/day for trial/Pro. (The older `saveCapture` wizard-step function was dead code — removed; it duplicated persistence logic and was the only capture path that called `recordActivity`, which is now called from `saveSkeleton` instead.)
 
 **Gaps:**
 - [ ] Daily quota shows raw error string, not a designed upgrade prompt
