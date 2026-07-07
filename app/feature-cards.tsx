@@ -109,6 +109,40 @@ function TeachBackPreview() {
   )
 }
 
+function StreakPreview() {
+  const [count, setCount] = useState(0)
+  const [showing, setShowing] = useState(false)
+  const days = [false, true, true, false, true, true, true]
+  useEffect(() => {
+    const t = setTimeout(() => setShowing(true), 300)
+    const interval = setInterval(() => setCount((c) => (c < 5 ? c + 1 : c)), 220)
+    return () => { clearTimeout(t); clearInterval(interval) }
+  }, [])
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px', transition: 'opacity 0.4s', opacity: showing ? 1 : 0 }}>
+        <span style={{ fontFamily: S.serif, fontWeight: 700, fontSize: '32px', color: '#b5462f' }}>{count}</span>
+        <span style={{ fontSize: '12px', color: '#7c7361', fontFamily: S.font }}>day streak 🔥</span>
+      </div>
+      <div style={{ display: 'flex', gap: '5px' }}>
+        {days.map((active, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1, height: '20px', borderRadius: '4px',
+              background: active ? '#b5462f' : '#ede8df',
+              opacity: showing ? (active ? 0.85 : 0.5) : 0,
+              transition: 'opacity 0.3s',
+              transitionDelay: `${i * 0.06}s`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ExpressPreview() {
   const [active, setActive] = useState(0)
   const [showing, setShowing] = useState(false)
@@ -167,6 +201,14 @@ const FEATURES = [
     desc: 'Turn your library into talking points, STAR stories, or a profile summary in seconds.',
     detail: 'Pick a format and your learnings are articulated for interviews, bios, or conversations — ready to copy and use.',
     Preview: ExpressPreview,
+  },
+  {
+    icon: '🔥',
+    color: '#b5462f',
+    title: 'Streaks',
+    desc: 'Every capture or review counts toward your streak — a daily nudge to keep showing up.',
+    detail: 'Track your streak on the dashboard, freeze it when life happens, and share your progress with a public link.',
+    Preview: StreakPreview,
   },
 ]
 

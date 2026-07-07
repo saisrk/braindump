@@ -6,6 +6,7 @@ import { and, eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { getEntitlement } from '@/lib/entitlements';
 import { generateQuiz, gradeOneliner } from '@/lib/ai/quiz';
+import { recordActivity } from '@/lib/data/activity';
 import { getLatestQuizAttempt, cooldownHoursRemaining } from '@/lib/data/quiz';
 import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
@@ -121,6 +122,10 @@ export async function submitQuizAttempt(input: {
     answers: gradedAnswers,
     score,
   });
+
+  // Taking a quiz is genuine learning activity — count it toward the daily
+  // streak just like capture and review.
+  await recordActivity(userId, 'review');
 
   // Auto-add failed questions to review queue (deduplication: check existing questions)
   const failedQuestions = input.questions.filter((q) =>

@@ -13,6 +13,8 @@ import {
   saveTodaySummary,
   getDashboardStats as getStats,
   getStreak,
+  getRecentLogs,
+  type DailyLog,
 } from '@/lib/data/activity';
 import { suggestWhatsNext, type WhatsNextSuggestion } from '@/lib/ai/capture';
 import { generateDailySummary } from '@/lib/ai/express';
@@ -32,8 +34,18 @@ export interface VolumeStatus {
   hasSummary: boolean;
 }
 
+export interface StreakDay {
+  date: string;
+  active: boolean;
+}
+
 export interface DashboardData {
   streak: number;
+  longestStreak: number;
+  freezeTokens: number;
+  streakActiveToday: boolean;
+  streakHistory: StreakDay[];
+  shareToken: string | null;
   todayLearnings: number;
   due: number;
   dueThisWeek: number;
@@ -56,7 +68,7 @@ export async function getDashboardStats(): Promise<DashboardData> {
   weekFromNow.setDate(weekFromNow.getDate() + 7);
   const weekISO = weekFromNow.toISOString().slice(0, 10);
 
-  const [streak, todayCaptures, dueItems, stats, profileRows, allLearnings] = await Promise.all([
+  const [streak, todayCaptures, dueItems, stats, profileRows, allLearnings, recentLogs] = await Promise.all([
     getStreak(userId),
     getTodaysCaptures(userId),
     getDueReviewItems(userId),
@@ -65,7 +77,23 @@ export async function getDashboardStats(): Promise<DashboardData> {
       .from(userProfiles)
       .where(eq(userProfiles.userId, userId)),
     listLearnings(userId, { sort: 'recent' }),
+    getRecentLogs(userId, 14),
   ]);
+
+  // Build a 14-day activity strip (oldest → newest) for the streak heatmap.
+  // A day is "active" if the user captured or reviewed anything that day.
+  const activeDates = new Set(
+    recentLogs
+      .filter((l: DailyLog) => (l.itemsCaptured ?? 0) > 0 || (l.itemsReviewed ?? 0) > 0)
+      .map((l: DailyLog) => l.date)
+  );
+  const streakHistory: StreakDay[] = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (13 - i));
+    const off = d.getTimezoneOffset() * 60000;
+    const iso = new Date(d.getTime() - off).toISOString().slice(0, 10);
+    return { date: iso, active: activeDates.has(iso) };
+  });
 
   // Due this week (today + 7 days)
   const [weekRow] = await db
@@ -169,6 +197,11 @@ export async function getDashboardStats(): Promise<DashboardData> {
 
   return {
     streak: streak.currentCount ?? 0,
+    longestStreak: streak.longest ?? 0,
+    freezeTokens: streak.freezeTokens ?? 0,
+    streakActiveToday: streak.lastActiveDate === today,
+    streakHistory,
+    shareToken: streak.shareToken ?? null,
     todayLearnings: todayCaptures.length,
     due: dueItems.length,
     dueThisWeek,

@@ -6,6 +6,7 @@ import { and, eq } from 'drizzle-orm';
 import { requireUserId } from '@/lib/session';
 import { getEntitlement } from '@/lib/entitlements';
 import { gradeTeachBack, type TeachBackFeedback } from '@/lib/ai/teachback';
+import { recordActivity } from '@/lib/data/activity';
 import { revalidatePath } from 'next/cache';
 
 export interface TeachBackResult {
@@ -64,6 +65,10 @@ export async function submitTeachBack(input: {
       followUpQuestions: feedback.followUpQuestions,
       encouragement: feedback.encouragement,
     });
+
+    // Completing a teach-back is genuine learning activity — count it toward
+    // the daily streak just like capture and review.
+    await recordActivity(userId, 'review');
 
     revalidatePath(`/library/${learning.id}`);
     revalidatePath('/home');

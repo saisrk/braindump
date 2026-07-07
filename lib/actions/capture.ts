@@ -1,11 +1,10 @@
 'use server';
 
 import { db } from '@/db';
-import { learnings, reviewItems } from '@/db/schema';
+import { learnings } from '@/db/schema';
 import { requireUserId, getOptionalUserId } from '@/lib/session';
 import {
   summarizeCapture,
-  generateReviewItems,
   type CaptureSummary,
 } from '@/lib/ai/capture';
 import { extractFromUrl, isValidUrl } from '@/lib/extract';
@@ -13,7 +12,6 @@ import { analyzeBlogContent, analyzeVideoMetadata } from '@/lib/ai/content-analy
 import { detectVideoUrl } from '@/lib/video-detection';
 import { recordActivity } from '@/lib/data/activity';
 import { getEntitlement } from '@/lib/entitlements';
-import { todayISO } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { and, eq, gte, ne, count } from 'drizzle-orm';
 
@@ -91,152 +89,6 @@ export async function analyzeCapture(input: {
       ok: false,
       error: 'The AI summary failed. Please try again in a moment.',
     };
-  }
-}
-
-export interface SaveCaptureInput {
-  title: string;
-  summary: string;
-  topic: string;
-  tags: string[];
-  difficulty: number;
-  sourceType: SourceType;
-  sourceRef?: string | null;
-  /** Cleaned source text used for review generation. */
-  resolvedContent?: string;
-  keyPoints?: string[];
-  /** When false, skip AI review-item generation (faster save). */
-  generateReviews?: boolean;
-  // NEW: Content metadata from organization step
-  author?: string;
-  publishDate?: string;
-  domain?: string;
-  videoUrl?: string;
-  videoTitle?: string;
-  videoChannel?: string;
-  videoDuration?: number;
-  contentType?: string;
-}
-
-export interface SaveCaptureResult {
-  ok: boolean;
-  error?: string;
-  /**
-   * 'trial_expired' when the user's free trial has ended and they have no subscription.
-   * 'pro_daily_limit' when the user has hit the 10/day capture limit.
-   */
-  errorCode?: 'trial_expired' | 'pro_daily_limit';
-  learningId?: string;
-  reviewCount?: number;
-}
-
-/**
- * Step 2 of capture: persist the (possibly edited) learning, generate a
- * starter review set, and record streak activity.
- */
-export async function saveCapture(
-  input: SaveCaptureInput
-): Promise<SaveCaptureResult> {
-  const userId = await requireUserId();
-
-  if (!input.title?.trim()) {
-    return { ok: false, error: 'A title is required.' };
-  }
-
-  // Access gate: trial or Pro may capture; expired users are paywalled.
-  const { hasAccess } = await getEntitlement(userId);
-  if (!hasAccess) {
-    return {
-      ok: false,
-      errorCode: 'trial_expired',
-      error: 'Your free trial has ended. Subscribe to Pro to keep capturing.',
-    };
-  }
-
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
-  const [{ todayCount }] = await db
-    .select({ todayCount: count() })
-    .from(learnings)
-    .where(and(eq(learnings.userId, userId), gte(learnings.createdAt, todayStart), ne(learnings.sourceType, 'sample')));
-
-  if (todayCount >= PRO_DAILY_CAPTURE_LIMIT) {
-    return {
-      ok: false,
-      errorCode: 'pro_daily_limit',
-      error: `You've captured ${PRO_DAILY_CAPTURE_LIMIT} learnings today — the daily maximum. Come back tomorrow to keep going.`,
-    };
-  }
-
-  try {
-    const [learning] = await db
-      .insert(learnings)
-      .values({
-        userId,
-        title: input.title.trim(),
-        summary: input.summary?.trim() || null,
-        topic: input.topic?.trim() || null,
-        tags: input.tags ?? [],
-        difficulty: input.difficulty ?? null,
-        sourceType: input.sourceType,
-        sourceRef: input.sourceRef ?? null,
-        // NEW: Persist content metadata
-        author: input.author ?? null,
-        publishDate: input.publishDate ? new Date(input.publishDate) : null,
-        domain: input.domain ?? null,
-        videoUrl: input.videoUrl ?? null,
-        videoTitle: input.videoTitle ?? null,
-        videoChannel: input.videoChannel ?? null,
-        videoDuration: input.videoDuration ?? null,
-        contentType: input.contentType ?? null,
-        keyPoints: input.keyPoints ?? [],
-        isAiGenerated: true,
-      })
-      .returning();
-
-    let reviewCount = 0;
-    if (input.generateReviews !== false) {
-      try {
-        const items = await generateReviewItems({
-          title: input.title,
-          summary: input.summary,
-          keyPoints: input.keyPoints,
-          sourceContent: input.resolvedContent,
-        });
-        if (items.length) {
-          await db.insert(reviewItems).values(
-            items.map((it) => ({
-              userId,
-              learningId: learning.id,
-              type: it.type,
-              question: it.question,
-              answer: it.answer,
-              dueDate: todayISO(),
-              srInterval: 1,
-              srEase: 2.5,
-            }))
-          );
-          reviewCount = items.length;
-        }
-      } catch (err) {
-        // Review generation is best-effort; the learning is still saved.
-        console.log(
-          '[v0] generateReviewItems error:',
-          (err as Error).message
-        );
-      }
-    }
-
-    await recordActivity(userId, 'capture');
-
-    revalidatePath('/home');
-    revalidatePath('/library');
-    revalidatePath('/review');
-
-    return { ok: true, learningId: learning.id, reviewCount };
-  } catch (err) {
-    console.log('[v0] saveCapture error:', (err as Error).message);
-    return { ok: false, error: 'Failed to save. Please try again.' };
   }
 }
 
@@ -336,6 +188,10 @@ export async function saveSkeleton(input: {
         isAiGenerated: true,
       })
       .returning({ id: learnings.id });
+
+    // Count today toward the streak the moment a capture is created —
+    // don't gate this on enrichment succeeding.
+    await recordActivity(userId, 'capture');
 
     revalidatePath('/library');
     return { ok: true, learningId: learning.id };

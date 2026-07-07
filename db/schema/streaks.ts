@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, integer, date, text } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const streaks = pgTable('streaks', {
@@ -7,4 +7,6 @@ export const streaks = pgTable('streaks', {
   longest: integer('longest').default(0),
   lastActiveDate: date('last_active_date'),
   freezeTokens: integer('freeze_tokens').default(0),
+  // Opt-in, revocable public share token. Null means the streak is private.
+  shareToken: text('share_token'),
 });

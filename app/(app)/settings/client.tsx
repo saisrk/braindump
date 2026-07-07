@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, Sun, Moon, Trash2, ChevronDown, Zap } from 'lucide-react';
+import { LogOut, Sun, Moon, Trash2, ChevronDown, Zap, Flame, Copy, Check } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { useTheme } from 'next-themes';
 import { logout } from '@/lib/actions/auth';
 import { savePreferences, deleteAccount, type UserPreferences, type ReviewDifficulty } from '@/lib/actions/settings';
+import { enableStreakSharing, disableStreakSharing } from '@/lib/actions/streak-share';
 import { cancelSubscription } from '@/lib/actions/billing';
 import { CONTACT_EMAIL } from '@/lib/constants';
 
@@ -88,9 +89,10 @@ interface Props {
   subscriptionEndsAt: Date | null;
   entitlement: 'pro' | 'trial' | 'expired';
   trialDaysLeft: number | null;
+  initialShareToken: string | null;
 }
 
-export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, entitlement, trialDaysLeft }: Props) {
+export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, entitlement, trialDaysLeft, initialShareToken }: Props) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [logging, setLogging] = useState(false);
@@ -105,6 +107,36 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
   const [featureNudgeEmailEnabled, setFeatureNudgeEmailEnabled] = useState(initialSettings.featureNudgeEmailEnabled);
   const [feedback, setFeedback] = useState('');
   const [feedbackState, setFeedbackState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [shareToken, setShareToken] = useState<string | null>(initialShareToken);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const shareUrl = shareToken && typeof window !== 'undefined'
+    ? `${window.location.origin}/share/streak/${shareToken}`
+    : null;
+
+  const handleShareToggle = async (v: boolean) => {
+    if (shareBusy) return;
+    setShareBusy(true);
+    try {
+      if (v) {
+        const res = await enableStreakSharing();
+        if (res.ok && res.token) setShareToken(res.token);
+      } else {
+        await disableStreakSharing();
+        setShareToken(null);
+      }
+    } finally {
+      setShareBusy(false);
+    }
+  };
+
+  const handleCopyShare = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  };
 
   const handleLogout = async () => {
     setLogging(true);
@@ -325,6 +357,43 @@ export function SettingsClient({ initialSettings, isPro, subscriptionEndsAt, ent
                 <Toggle checked={featureNudgeEmailEnabled} onChange={handleFeatureNudgeToggle} disabled={saving} />
               </div>
             </div>
+          </div>
+
+          {/* Sharing */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <Flame className="h-4 w-4" style={{ color: '#b5462f' }} />
+              <h3 className="font-display font-semibold text-primary">Streak Sharing</h3>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="pr-4">
+                <p className="font-semibold text-foreground">Public streak page</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {shareToken
+                    ? 'Anyone with your link can see your streak, longest streak, and learning counts — never your content.'
+                    : 'Create a public link to show off your learning streak. Off by default; revocable anytime.'}
+                </p>
+              </div>
+              <Toggle checked={!!shareToken} onChange={handleShareToggle} disabled={shareBusy} />
+            </div>
+            {shareUrl && (
+              <div
+                className="mt-4 flex items-center gap-2 rounded-lg border border-border p-2.5"
+                style={{ background: 'var(--color-background)' }}
+              >
+                <span style={{ flex: 1, fontFamily: F, fontSize: '12px', color: 'var(--color-muted-foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {shareUrl}
+                </span>
+                <button
+                  onClick={handleCopyShare}
+                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold"
+                  style={{ background: '#b5462f', color: '#fff', border: 'none', cursor: 'pointer' }}
+                >
+                  {shareCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {shareCopied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Account */}
