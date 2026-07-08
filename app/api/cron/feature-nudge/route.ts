@@ -17,9 +17,17 @@ async function pickRecommendation(
   const userLearnings = await db
     .select({ id: learnings.id, title: learnings.title })
     .from(learnings)
-    // Exclude onboarding's seeded sample learnings — nudging the user to
-    // teach back / quiz content they never actually captured is confusing.
-    .where(and(eq(learnings.userId, userId), ne(learnings.sourceType, 'sample')))
+    .where(and(
+      eq(learnings.userId, userId),
+      // Exclude onboarding's seeded sample learnings — nudging the user to
+      // teach back / quiz content they never actually captured is confusing.
+      ne(learnings.sourceType, 'sample'),
+      // Exclude anything still enriching or that failed enrichment — the
+      // title/summary/keyPoints a nudge or the linked feature depends on
+      // aren't there yet (or never will be), so the email would point at
+      // a learning that can't actually be taught back, quizzed, or expressed.
+      eq(learnings.status, 'ready'),
+    ))
     .orderBy(asc(learnings.createdAt));
 
   if (userLearnings.length === 0) return null;
