@@ -23,6 +23,8 @@ export type SourceType = 'url' | 'text' | 'file' | 'wizard';
 export interface AnalyzeResult {
   ok: boolean;
   error?: string;
+  /** Machine-readable failure reason for the capture-issue modal; unset means a plain validation message. */
+  errorKind?: 'thin_content' | 'ai_failed';
   summary?: CaptureSummary;
   resolvedContent?: string;
   /** True when content was sourced via web search fallback (page was blocked). */
@@ -56,6 +58,7 @@ export async function analyzeCapture(input: {
     if (!extracted || extracted.text.length < 80) {
       return {
         ok: false,
+        errorKind: 'thin_content',
         error: "Couldn't read that page and the web search fallback found nothing. Try pasting the text directly.",
       };
     }
@@ -66,13 +69,13 @@ export async function analyzeCapture(input: {
         const summary = await summarizeCapture({ content, sourceRef, sourceType: input.sourceType });
         return { ok: true, summary, resolvedContent: content, fromSearch: true };
       } catch (err) {
-        return { ok: false, error: 'AI summary failed after web search. Please try again.' };
+        return { ok: false, errorKind: 'ai_failed', error: 'AI summary failed after web search. Please try again.' };
       }
     }
   }
 
   if (content.length < 10) {
-    return { ok: false, error: 'Add a little more detail to summarize.' };
+    return { ok: false, errorKind: 'ai_failed', error: 'Add a little more detail to summarize.' };
   }
 
   try {
@@ -87,6 +90,7 @@ export async function analyzeCapture(input: {
     console.log('[v0] analyzeCapture error:', (err as Error).message);
     return {
       ok: false,
+      errorKind: 'ai_failed',
       error: 'The AI summary failed. Please try again in a moment.',
     };
   }
@@ -125,8 +129,10 @@ export interface SaveSkeletonResult {
   /**
    * 'trial_expired' when the user's free trial has ended and they have no subscription.
    * 'pro_daily_limit' when the user has hit the 10/day capture limit.
+   * 'too_short' when text content has nothing for AI to work with — caught here so we
+   * never create a 'processing' row destined to fail silently in the async enrich step.
    */
-  errorCode?: 'trial_expired' | 'pro_daily_limit';
+  errorCode?: 'trial_expired' | 'pro_daily_limit' | 'too_short';
   learningId?: string;
 }
 
@@ -140,6 +146,14 @@ export async function saveSkeleton(input: {
   rawContent?: string; // original text/URL the user entered
 }): Promise<SaveSkeletonResult> {
   const userId = await requireUserId();
+
+  if (input.sourceType === 'text' && (input.rawContent?.trim().length ?? 0) < 10) {
+    return {
+      ok: false,
+      errorCode: 'too_short',
+      error: 'Add a sentence or two of detail so AI has something to work with.',
+    };
+  }
 
   // Access gate: trial or Pro may capture; expired users are paywalled.
   const { hasAccess } = await getEntitlement(userId);

@@ -23,5 +23,7 @@ export const learnings = pgTable('learnings', {
   videoDuration: integer('video_duration'), // in seconds
   isAiGenerated: boolean('is_ai_generated').default(true), // whether metadata came from LLM analysis
   status: text('status').default('ready').notNull(), // 'processing' | 'ready' | 'failed'
+  // Set only when status = 'failed'; drives which capture-issue-modal copy to show on retry.
+  failureReason: text('failure_reason'), // 'thin_content' | 'ai_failed'
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });

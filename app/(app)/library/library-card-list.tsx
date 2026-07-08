@@ -1,9 +1,14 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LearningWithMeta } from '@/lib/data/learnings';
 import { confidenceLabel } from '@/lib/sr';
+import { CaptureIssueModal } from '../capture/capture-issue-modal';
+import type { ServerIssueKind } from '@/lib/source-issues';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -28,12 +33,53 @@ function ConfidenceDot({ score }: { score: number }) {
 }
 
 export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
+  const [openFailedId, setOpenFailedId] = useState<string | null>(null);
+  const openItem = items.find((i) => i.id === openFailedId);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {openItem && (
+        <CaptureIssueModal
+          kind={(openItem.failureReason as ServerIssueKind) ?? 'ai_failed'}
+          onDismiss={() => setOpenFailedId(null)}
+          actionHref="/capture"
+        />
+      )}
       {items.map((item) => {
         const processing = item.status === 'processing';
         const failed = item.status === 'failed';
         const due = item.dueCount > 0;
+
+        if (failed) {
+          return (
+            <button
+              key={item.id}
+              onClick={() => setOpenFailedId(item.id)}
+              className="block text-left w-full"
+            >
+              <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap mb-2">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/15 text-red-400 uppercase tracking-wide">
+                        Failed
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Tap to see why and what to do next.</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground flex-shrink-0 pt-0.5 whitespace-nowrap">
+                    {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                </div>
+              </Card>
+            </button>
+          );
+        }
 
         return (
           <Link key={item.id} href={`/library/${item.id}`} className="block no-underline">
@@ -71,11 +117,6 @@ export function LibraryCardList({ items }: { items: LearningWithMeta[] }) {
                           : 'bg-red-400/15 text-red-400'
                       }`}>
                         Quiz {item.latestQuizScore}%
-                      </span>
-                    )}
-                    {failed && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-500/15 text-red-400 uppercase tracking-wide">
-                        Failed
                       </span>
                     )}
                   </div>

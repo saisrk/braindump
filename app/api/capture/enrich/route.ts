@@ -49,7 +49,11 @@ export async function POST(request: Request) {
     if (!result.ok || !result.summary) {
       await db
         .update(learnings)
-        .set({ status: 'failed', title: 'Analysis failed — tap to retry' })
+        .set({
+          status: 'failed',
+          title: 'Analysis failed — tap to retry',
+          failureReason: result.errorKind ?? 'ai_failed',
+        })
         .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
       return NextResponse.json({ error: result.error }, { status: 422 });
     }
@@ -106,7 +110,7 @@ export async function POST(request: Request) {
     if (learningId) {
       await db
         .update(learnings)
-        .set({ status: 'failed', title: 'Analysis failed — tap to retry' })
+        .set({ status: 'failed', title: 'Analysis failed — tap to retry', failureReason: 'ai_failed' })
         .where(and(eq(learnings.id, learningId), eq(learnings.userId, userId)));
     }
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

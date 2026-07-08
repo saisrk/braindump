@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Link2 } from 'lucide-react';
 import { saveSkeleton } from '@/lib/actions/capture';
+import { detectSourceIssue, type CaptureIssueKind } from '@/lib/source-issues';
+import { CaptureIssueModal } from './capture-issue-modal';
 
 type Phase = 'form' | 'saving' | 'success';
 type LimitReason = 'pro_daily_limit' | 'trial_expired';
@@ -16,9 +18,16 @@ export default function CapturePage() {
   const [phase, setPhase] = useState<Phase>('form');
   const [error, setError] = useState('');
   const [limitReason, setLimitReason] = useState<LimitReason | null>(null);
+  const [issue, setIssue] = useState<CaptureIssueKind | null>(null);
   const [newId, setNewId] = useState<string | null>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   const hasContent = url.trim() || note.trim();
+
+  function dismissIssue() {
+    setIssue(null);
+    noteRef.current?.focus();
+  }
 
   async function handleCapture() {
     if (!hasContent) return;
@@ -28,6 +37,15 @@ export default function CapturePage() {
 
     const isUrl = url.trim().startsWith('http://') || url.trim().startsWith('https://');
     const rawContent = note.trim() || url.trim();
+
+    if (isUrl) {
+      const precheck = detectSourceIssue(url.trim());
+      if (precheck) {
+        setIssue(precheck);
+        setPhase('form');
+        return;
+      }
+    }
 
     try {
       const result = await saveSkeleton({
@@ -39,6 +57,8 @@ export default function CapturePage() {
       if (!result.ok || !result.learningId) {
         if (result.errorCode === 'pro_daily_limit' || result.errorCode === 'trial_expired') {
           setLimitReason(result.errorCode);
+        } else if (result.errorCode === 'too_short') {
+          setIssue('too_short');
         } else {
           setError(result.error ?? 'Failed to save. Please try again.');
         }
@@ -206,6 +226,7 @@ export default function CapturePage() {
           100% { left: 200%; width: 60%; }
         }
       `}</style>
+      {issue && <CaptureIssueModal kind={issue} onDismiss={dismissIssue} />}
       <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-8">
 
         {/* Header */}
@@ -252,6 +273,7 @@ export default function CapturePage() {
             What&apos;s worth remembering?
           </label>
           <textarea
+            ref={noteRef}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={handleKeyDown}
